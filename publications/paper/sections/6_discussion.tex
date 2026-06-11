@@ -25,11 +25,11 @@ on boundary-adjacent frames) is a natural next step, but it requires an
 independent calibration split that the present protocol does not reserve.
 
 \textbf{Sources of uncertainty.} The two uncertainty analyses answer
-complementary questions. Video-level bootstrap intervals
-(Table~\ref{tab:confidence}) quantify how much the test score depends on
-which videos were sampled, and remain the dominant term: their widths are an
-order of magnitude larger than the seed-induced standard deviations of
-Table~\ref{tab:seed_robustness}. Training-seed variability, the usual
+complementary questions. Paired video bootstrap intervals
+(Table~\ref{tab:paired_delta}) quantify how much the measured deltas depend
+on which videos were sampled, and remain the dominant term: their widths are
+an order of magnitude larger than the seed-induced standard deviations of
+Section~\ref{sec:seed_robustness}. Training-seed variability, the usual
 objection to single-run reports, is bounded below 0.005 F1 across all three
 datasets by the three-seed study. The remaining unquantified term is protocol
 variability --- the frozen five-fold selection is itself a function of the
@@ -38,8 +38,9 @@ bootstrap-resampled validation sets.
 
 \textbf{The ClipShots gap is a precision problem.} The transition-type
 breakdown shows gradual-transition recall (0.8089) trailing cut recall
-(0.8991), but the dominant loss is aggregate precision (0.6498): open-world
-content produces false-positive peaks that survive smoothing. A frozen
+(0.8991), but the dominant loss is aggregate precision
+(\PaperDeployClipPrecision): open-world content produces false-positive
+peaks that survive smoothing. A frozen
 representation cannot adapt to this distribution shift by construction, so
 threshold or temperature adjustments only trade recall for precision along a
 fixed curve. Closing the gap likely requires domain-adaptive components ---

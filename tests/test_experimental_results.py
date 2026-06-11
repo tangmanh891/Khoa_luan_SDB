@@ -66,13 +66,17 @@ def test_paper_snapshot_generated_tables_and_release_are_present():
     assert r"\newcommand{\PaperDeployClipFOne}{0.7530}" in macros
     assert r"\newcommand{\PaperDeployClipBestFOne}{0.7557}" in macros
     assert r"\newcommand{\PaperDeployTemperature}{0.3878}" in macros
-    assert r"\newcommand{\PaperBFourShotFOne}{0.8540}" in macros
-    assert r"\newcommand{\PaperBFourClipFOne}{0.7441}" in macros
+    assert r"\newcommand{\PaperBFourVsAOneShotPP}{1.62}" in macros
+    assert r"\newcommand{\PaperBFourVsAOneClipPP}{4.57}" in macros
     assert r"\PaperMainResultRows" in tables
-    assert r"\PaperProtocolMatchedRows" in tables
-    assert r"\PaperConfidenceRows" in tables
-    assert r"\PaperControlledAblationRows" in tables
+    assert r"\PaperAblationDeltaRows" in tables
+    assert r"\textbf{+0.0162}" in tables
     assert "no EMA" not in tables
+    # The replication's absolute scores must not appear anywhere in the paper
+    # outputs: replication results are delta-only by design.
+    for forbidden in ("0.8540", "0.9570", "0.7441"):
+        assert forbidden not in macros
+        assert forbidden not in tables
     assert (paper / "releases" / "AutoShotV2_Paper.pdf").stat().st_size > 250_000
 
 

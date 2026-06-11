@@ -34,10 +34,9 @@ Fig.~\ref{fig:pipeline} shows the deployed inference pipeline.
 }
 \caption{AutoShotV2 inference pipeline. The searched AutoShot backbone is
 frozen; AutoShotV2 retrains the decision stage and adds calibration and
-temporal smoothing before thresholding. The deployed checkpoint uses
-$T^{*}=\PaperDeployTemperature$; the controlled B4 replication of
-Section~\ref{sec:protocol} selects $T=\PaperBFourTemperature$ under its
-frozen validation-only protocol.}
+temporal smoothing before thresholding. The controlled replication of
+Section~\ref{sec:protocol} re-fits its own temperature on its validation
+pool under the frozen validation-only protocol.}
 \label{fig:pipeline}
 \end{figure*}
 
@@ -147,9 +146,8 @@ Gaussian filter smooths the calibrated sequence:
     G_{\sigma}(k)=\frac{1}{\sqrt{2\pi}\sigma}\exp\!\left(-\frac{k^2}{2\sigma^2}\right).
     \label{eq:gaussian}
 \end{equation}
-Two operating points of this pipeline appear in the paper: the deployed
-checkpoint fits $T^{*}=\PaperDeployTemperature$ on its validation pool,
-while the controlled B4 replication selects $T=\PaperBFourTemperature$
+The deployed checkpoint fits $T^{*}=\PaperDeployTemperature$ on its
+validation pool; the controlled replication re-fits its own temperature
 under the frozen protocol below. Both use $\sigma=\PaperGaussianSigma$ and
 $\theta=\PaperDeployThreshold$.
 
@@ -165,11 +163,10 @@ F1 per source dataset within each held-out fold, averaging those per-source
 values into a fold-level macro-F1, and then averaging the macro-F1 over the
 five folds. Ties prefer lower smoothing and then the threshold nearest 0.10.
 After selecting $\sigma$ and $\theta$, the final temperature is fitted on
-all validation videos. This procedure selects $T=\PaperBFourTemperature$,
-$\sigma=\PaperGaussianSigma$, and $\theta=\PaperDeployThreshold$. The
-manifest containing folds, key hashes, search space, and selected values is
-written before test evaluation. We denote the resulting BCE plus temperature
-plus Gaussian configuration B4.
+all validation videos; the selected values are listed in
+Table~\ref{tab:protocol}. The manifest containing folds, key hashes, search
+space, and selected values is written before test evaluation. We denote the
+resulting BCE plus temperature plus Gaussian configuration B4.
 
 \subsection{Cache and Run Provenance}
 

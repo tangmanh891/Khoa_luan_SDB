@@ -74,12 +74,14 @@ tracked and checksummed, but its test logits were not retained, so
 logit-level analyses cannot be re-run for this checkpoint. \emph{Track 2
 (controlled replication)} retrains the head under the frozen validation-only
 protocol of Section~\ref{sec:protocol} (configuration B4) with full logit
-caches; every confidence interval, paired bootstrap, calibration diagnostic,
-ablation, and seed study in this paper is anchored on this track. The two
-tracks use different validation pools, so their temperatures and absolute
-scores differ slightly; reporting both keeps the headline faithful to the
-deployed system while keeping every statistical claim verifiable from
-tracked artifacts.
+caches; every paired bootstrap, calibration diagnostic, ablation, and seed
+study in this paper is anchored on this track. Because the replication was
+trained in a separate environment with its own validation pool, its absolute
+scores differ slightly from the deployed checkpoint; to keep a single
+consistent set of absolute numbers, all replication results are therefore
+reported as \emph{differences} against its internal BCE control (A1), which
+are invariant to that environment offset, while absolute F1 values in this
+paper always refer to the deployed checkpoint.
 
 \subsection{Main Results}
 
@@ -171,57 +173,18 @@ Bootstrap & 10,000 video resamples, seed 42 \\
 \end{tabular}
 \end{table}
 
-Table~\ref{tab:main_results} compares configurations that share the controlled
-Phase 2 protocol. B4 is selected exclusively by the frozen five-fold
-validation manifest. Relative to A1, B4 improves SHOT by
+Relative to the A1 control, the selected B4 configuration improves SHOT by
 \PaperBFourVsAOneShotPP{} F1 points and ClipShots by
 \PaperBFourVsAOneClipPP{} points, while BBC is unchanged after rounding.
 Temperature scaling alone preserves the validation-selected operating point;
 Gaussian smoothing is the component that changes boundary decisions.
 
-\begin{table}[!t]
-\caption{Protocol-Matched F1 Scores (B4: Selected Configuration)}
-\label{tab:main_results}
-\centering
-\small
-\renewcommand{\arraystretch}{1.08}
-\resizebox{\columnwidth}{!}{%
-\begin{tabular}{L{2.15in}C{0.55in}C{0.55in}C{0.7in}}
-\toprule
-\textbf{Configuration} & \textbf{SHOT} & \textbf{BBC} & \textbf{ClipShots} \\
-\midrule
-\PaperProtocolMatchedRows
-\bottomrule
-\end{tabular}
-}
-\end{table}
-
-Table~\ref{tab:confidence} reports the corresponding B4 operating points and
-video-level bootstrap intervals. BBC has only 11 sampling units, so its
-interval should be interpreted cautiously. ClipShots has high recall but lower
-precision, indicating cross-domain false positives rather than a general
-failure to detect transitions.
-
-\begin{table}[!t]
-\caption{B4 Operating Point and Video-Level Bootstrap 95\% Confidence Intervals}
-\label{tab:confidence}
-\centering
-\scriptsize
-\renewcommand{\arraystretch}{1.08}
-\setlength{\tabcolsep}{2pt}
-\begin{tabular}{L{0.48in}C{0.34in}C{0.95in}C{0.46in}C{0.46in}C{0.35in}}
-\toprule
-\textbf{Dataset} & \textbf{F1} & \textbf{F1 95\% CI} & \textbf{Precision} & \textbf{Recall} & \textbf{Videos} \\
-\midrule
-\PaperConfidenceRows
-\bottomrule
-\end{tabular}
-\end{table}
-
-Table~\ref{tab:paired_delta} directly bootstraps the per-video difference
-between A1 at its validation-selected threshold and B4 at its frozen operating
-point. The intervals support a positive B4 delta on SHOT and ClipShots. The BBC
-interval contains zero, so we make no improvement claim for that dataset.
+Table~\ref{tab:paired_delta} bootstraps the per-video difference between A1
+at its validation-selected threshold and B4 at its frozen operating point
+(10,000 paired video resamples). The intervals support a positive B4 delta
+on SHOT and ClipShots. The BBC interval contains zero, so we make no
+improvement claim for that dataset; BBC also has only 11 sampling units, so
+its interval should be interpreted cautiously.
 
 \begin{table}[!t]
 \caption{Paired Video Bootstrap Difference, B4 Minus A1}
@@ -299,16 +262,16 @@ small aggregate ECE, consistent with domain-shifted false positives.
 \label{sec:ablation}
 
 Table~\ref{tab:ablation} reports the outcome of the design space of
-Section~\ref{sec:objectives}. A2, A3, and B1 show that Focal Loss and
-many-hot supervision do not improve the A1 control. B5 combines these
-training changes with B4 post-processing and is numerically similar on SHOT
-but slightly weaker on BBC and ClipShots. The gain therefore comes from
-calibrated post-processing rather than the more complex training objective.
-A0 is omitted because its per-dataset best-threshold protocol is not a
-direct controlled comparison.
+Section~\ref{sec:objectives} as F1 differences against the A1 control. A2,
+A3, and B1 show that Focal Loss and many-hot supervision do not improve the
+control. B5 combines these training changes with B4 post-processing and is
+numerically similar on SHOT but slightly weaker on BBC and ClipShots. The
+gain therefore comes from calibrated post-processing rather than the more
+complex training objective. A0 is omitted because its per-dataset
+best-threshold protocol is not a direct controlled comparison.
 
 \begin{table}[!t]
-\caption{Controlled Phase 2 Ablation (A0 Historical Baseline Excluded)}
+\caption{Controlled Phase 2 Ablation: $\Delta$F1 Against the A1 BCE Control}
 \label{tab:ablation}
 \centering
 \scriptsize
@@ -318,7 +281,7 @@ direct controlled comparison.
 \toprule
 \textbf{Configuration} & \textbf{SHOT} & \textbf{BBC} & \textbf{ClipShots} \\
 \midrule
-\PaperControlledAblationRows
+\PaperAblationDeltaRows
 \bottomrule
 \end{tabular}
 \end{table}
@@ -376,8 +339,9 @@ model does not predict a transition type.
 
 The gradual-transition recall of 0.8089 is lower than the cut recall of
 0.8991, but it is not the dominant source of the overall ClipShots gap.
-The aggregate ClipShots precision is only 0.6498, indicating that open-world
-effects and domain shift create many false-positive peaks.
+The aggregate ClipShots precision is only \PaperDeployClipPrecision{},
+indicating that open-world effects and domain shift create many
+false-positive peaks.
 
 \subsection{Training-Seed Robustness}
 \label{sec:seed_robustness}
@@ -387,34 +351,16 @@ To quantify optimization variability, we retrained the BCE one-hot head
 data seed, the training-video selection, and the sample cache identity fixed.
 Each run selected its own post-processing configuration with the frozen
 five-fold validation-only protocol of Section~\ref{sec:protocol} before any
-test evaluation. Table~\ref{tab:seed_robustness} reports test means and
-sample standard deviations. Seed-induced F1 variation is below 0.001 on SHOT
-and BBC and below 0.005 on ClipShots, an order of magnitude smaller than the
-video-sampling confidence intervals of Table~\ref{tab:confidence}; the
-pipeline is therefore stable with respect to head-training randomness. The
-absolute values differ from the controlled B4 numbers because this study
-retrains the head from scratch and re-selects its protocol per seed (seed 42
-selected $\sigma{=}1.0$ and $\theta{=}0.30$), so the two tables answer
-different questions: Table~\ref{tab:ablation} isolates component
-contributions on the historical cache, whereas this study isolates
-training-seed sensitivity end to end.
-
-\begin{table}[!t]
-\caption{Three-Seed Robustness of the End-to-End Pipeline (Mean $\pm$ Sample Standard Deviation Over Training Seeds 42--44)}
-\label{tab:seed_robustness}
-\centering
-\small
-\renewcommand{\arraystretch}{1.08}
-\resizebox{\columnwidth}{!}{%
-\begin{tabular}{L{0.85in}C{1.0in}C{1.0in}C{1.0in}}
-\toprule
-\textbf{Dataset} & \textbf{F1} & \textbf{Precision} & \textbf{Recall} \\
-\midrule
-\PaperSeedRobustnessRows
-\bottomrule
-\end{tabular}
-}
-\end{table}
+test evaluation. Consistent with the delta-only reporting of
+Section~\ref{sec:tracks}, we summarize this study by its dispersion: the
+sample standard deviation of test F1 across seeds is
+\PaperSeedShotFOneStd{} on SHOT, \PaperSeedBBCFOneStd{} on BBC, and
+\PaperSeedClipFOneStd{} on ClipShots --- below 0.005 on every dataset and an
+order of magnitude smaller than the paired bootstrap interval widths of
+Table~\ref{tab:paired_delta}. The pipeline is therefore stable with respect
+to head-training randomness; this study isolates training-seed sensitivity
+end to end, complementing the component analysis of
+Table~\ref{tab:ablation}.
 
 \subsection{Limitations}
 

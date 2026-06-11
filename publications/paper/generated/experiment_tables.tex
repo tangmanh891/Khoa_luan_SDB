@@ -10,26 +10,6 @@ AutoShotV2 (ours), fixed deploy threshold & \textbf{0.8545} & \textbf{0.9656} & 
 AutoShotV2 (ours), ClipShots best sweep & -- & -- & 0.7557 \\
 }
 
-\newcommand{\PaperProtocolMatchedRows}{%
-A1 -- BCE + one-hot & 0.8378 & 0.9570 & 0.6983 \\
-P1 -- A1 + Gaussian & 0.8432 & 0.9436 & 0.7519 \\
-P2 -- A1 + temperature & 0.8378 & 0.9570 & 0.6983 \\
-B4 -- A1 + temperature + Gaussian & \textbf{0.8540} & \textbf{0.9570} & \textbf{0.7441} \\
-B5 -- Focal + many-hot + B4 & 0.8542 & 0.9551 & 0.7409 \\
-}
-
-\newcommand{\PaperDeployDetailRows}{%
-SHOT & 0.10 & 0.8557 & 0.8533 & \textbf{0.8545} \\
-BBC & 0.10 & 0.9750 & 0.9564 & \textbf{0.9656} \\
-ClipShots & 0.10 & 0.6662 & 0.8659 & 0.7530 \\
-}
-
-\newcommand{\PaperConfidenceRows}{%
-SHOT & 0.8540 & [0.8329, 0.8733] & 0.8617 & 0.8466 & 200 \\
-BBC & 0.9570 & [0.9310, 0.9717] & 0.9733 & 0.9412 & 11 \\
-ClipShots & 0.7441 & [0.6997, 0.7841] & 0.6498 & 0.8703 & 500 \\
-}
-
 \newcommand{\PaperCalibrationMetricRows}{%
 Before temperature scaling & 0.013006 & 0.002194 & 0.007149 & 0.007149 & 0.080506 \\
 After temperature scaling & 0.009591 & 0.001911 & 0.002214 & 0.002243 & 0.070405 \\
@@ -56,30 +36,17 @@ Training epochs / seed & 20 / 42 \\
 Post-process CPU cost & 21.1 ms / $10^6$ frames \\
 }
 
-\newcommand{\PaperCalibrationCVRows}{%
-A0 -- AutoShot baseline & 0.8443 & 0.9538 & \textbf{0.7881} \\
-A1 -- Phase2 control & \textbf{0.8540} & \textbf{0.9631} & 0.7575 \\
-B5 -- Phase2 full & 0.8539 & 0.9584 & 0.7555 \\
-}
-
-\newcommand{\PaperControlledAblationRows}{%
-A1 -- BCE + one-hot & 0.8378 & 0.9570 & 0.6983 \\
-A2 -- Focal only & 0.8378 & 0.9567 & 0.6967 \\
-A3 -- Many-hot only & 0.8375 & 0.9563 & 0.7005 \\
-P1 -- Gaussian only & 0.8432 & 0.9436 & 0.7519 \\
-P2 -- Temperature only & 0.8378 & 0.9570 & 0.6983 \\
-B1 -- Focal + many-hot & 0.8384 & 0.9559 & 0.7006 \\
-B4 -- Temperature + Gaussian (selected) & \textbf{0.8540} & \textbf{0.9570} & \textbf{0.7441} \\
-B5 -- Full candidate & 0.8542 & 0.9551 & 0.7409 \\
+\newcommand{\PaperAblationDeltaRows}{%
+A2 -- Focal only & -0.0000 & -0.0003 & -0.0017 \\
+A3 -- Many-hot only & -0.0003 & -0.0008 & +0.0021 \\
+P1 -- Gaussian only & +0.0054 & -0.0134 & +0.0536 \\
+P2 -- Temperature only & +0.0000 & +0.0000 & +0.0000 \\
+B1 -- Focal + many-hot & +0.0006 & -0.0011 & +0.0023 \\
+B4 -- Temperature + Gaussian (selected) & \textbf{+0.0162} & \textbf{-0.0000} & \textbf{+0.0457} \\
+B5 -- Full candidate & +0.0164 & -0.0019 & +0.0425 \\
 }
 
 \newcommand{\PaperClipBreakdownRows}{%
 Cut & 4907 & 4412 & 495 & 0.8991 \\
 Gradual & 2302 & 1862 & 440 & 0.8089 \\
-}
-
-\newcommand{\PaperSeedRobustnessRows}{%
-SHOT & 0.8526 $\pm$ 0.0007 & 0.7660 $\pm$ 0.0007 & 0.9612 $\pm$ 0.0008 \\
-BBC & 0.9451 $\pm$ 0.0008 & 0.9459 $\pm$ 0.0021 & 0.9443 $\pm$ 0.0007 \\
-ClipShots & 0.6584 $\pm$ 0.0049 & 0.5208 $\pm$ 0.0066 & 0.8952 $\pm$ 0.0014 \\
 }
