@@ -40,7 +40,7 @@ ABLATION_LABELS = {
     "P2_temperature_only": "P2 -- Temperature only",
     "B1_focal_manyhot": "B1 -- Focal + many-hot",
     "B4_temperature_gaussian": "B4 -- Temperature + Gaussian",
-    "B5_full_candidate": "B5 -- Full candidate no-EMA",
+    "B5_full_candidate": "B5 -- Full candidate",
 }
 
 ABLATION_NOTES = {
@@ -141,7 +141,7 @@ def build_ablation_experiments() -> list[dict[str, Any]]:
         experiments.append(
             {
                 "id": experiment_id,
-                "group": "Ablation no-EMA",
+                "group": "Ablation Phase 2",
                 "label": ABLATION_LABELS[experiment_id],
                 "protocol": "controlled_phase2",
                 "reproducibility": "logits",
@@ -200,102 +200,6 @@ def build_calibration_experiments() -> list[dict[str, Any]]:
     return experiments
 
 
-def ema_metric(dataset: str, payload: dict[str, Any], key: str) -> dict[str, Any]:
-    if dataset == "shot":
-        model = payload["models"][key]["best_threshold"]
-        videos = payload["models"][key]["n_videos"]
-        return metric_block(model, videos)
-    if dataset == "bbc":
-        model = payload["shot_level"][key]
-        return {
-            "f1": model["f1_best"],
-            "precision": model["p_best"],
-            "recall": model["r_best"],
-            "threshold": model["thr_best"],
-            "videos": model["n_videos"],
-        }
-    model = payload["models"][key]
-    return {
-        "f1": model["f1_best"],
-        "precision": model["p_best"],
-        "recall": model["r_best"],
-        "threshold": model["thr_best"],
-        "videos": model["n_videos"],
-    }
-
-
-def build_ema_experiments() -> list[dict[str, Any]]:
-    alpha_paths = {
-        "shot": REPORTS / "ema_study" / "results_autoshot_alpha999.json",
-        "bbc": REPORTS / "ema_study" / "results_bbc_alpha999.json",
-        "clipshots": REPORTS / "ema_study" / "results_clipshots_alpha999.json",
-    }
-    noema_paths = {
-        "shot": REPORTS / "ema_study" / "results_autoshot_noema.json",
-        "bbc": REPORTS / "ema_study" / "results_bbc_noema.json",
-        "clipshots": REPORTS / "ema_study" / "results_clipshots_noema.json",
-    }
-    alpha = {dataset: load_json(path) for dataset, path in alpha_paths.items()}
-    noema = {dataset: load_json(path) for dataset, path in noema_paths.items()}
-    definitions = (
-        (
-            "ema_phase1_raw",
-            "A -- Phase 1 raw",
-            alpha,
-            {"shot": "autoshot_phase1_raw", "bbc": "A_phase1_raw", "clipshots": "A_phase1_raw"},
-            "Baseline raw trong EMA study.",
-        ),
-        (
-            "ema_phase1_gaussian",
-            "B -- Phase 1 + Gaussian",
-            alpha,
-            {
-                "shot": "autoshot_phase1_gaussian",
-                "bbc": "B_phase1_gauss",
-                "clipshots": "B_phase1_gauss",
-            },
-            "Gaussian hậu xử lý rất mạnh trên ClipShots.",
-        ),
-        (
-            "ema_full_model_alpha999",
-            "D-EMA, alpha=0.999",
-            alpha,
-            {"shot": "autoshot_ema", "bbc": "D_ema", "clipshots": "D_ema"},
-            "Fine-tune toàn model + EMA.",
-        ),
-        (
-            "ema_full_model_noema",
-            "D-noEMA control",
-            noema,
-            {"shot": "autoshot_ema", "bbc": "D_ema", "clipshots": "D_ema"},
-            "Fine-tune toàn model, tắt EMA.",
-        ),
-    )
-    sources = [
-        str(path.relative_to(ROOT)).replace("\\", "/")
-        for path in (*alpha_paths.values(), *noema_paths.values())
-    ]
-    experiments = []
-    for identifier, label, payloads, keys, note in definitions:
-        metrics = {
-            dataset: ema_metric(dataset, payloads[dataset], keys[dataset])
-            for dataset in DATASET_ORDER
-        }
-        experiments.append(
-            {
-                "id": identifier,
-                "group": "EMA full fine-tune",
-                "label": label,
-                "protocol": "full_model_finetune",
-                "reproducibility": "result_json",
-                "sources": sources,
-                "metrics": metrics,
-                "note": note,
-            }
-        )
-    return experiments
-
-
 def build_manifest() -> dict[str, Any]:
     literature_path = REPORTS / "literature_results.json"
     literature = load_json(literature_path)["comparison_models"]
@@ -310,7 +214,6 @@ def build_manifest() -> dict[str, Any]:
         build_deploy_experiments()
         + build_ablation_experiments()
         + build_calibration_experiments()
-        + build_ema_experiments()
     )
     deploy_best = next(item for item in experiments if item["id"] == "phase2_best_sweep")
     comparison_models = literature + [

@@ -21,7 +21,7 @@ def test_experiment_manifest_is_complete_and_current():
 
     manifest = json.loads(expected[ROOT / "reports" / "experimental_results.json"])
     experiments = {item["id"]: item for item in manifest["experiments"]}
-    assert len(experiments) == 21
+    assert len(experiments) == 17
     assert len(manifest["comparison_models"]) == 6
 
     for experiment_id in sync.ABLATION_ORDER:

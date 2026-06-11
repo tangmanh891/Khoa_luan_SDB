@@ -177,7 +177,7 @@
     },
     {
       "id": "A0_autoshot_original",
-      "group": "Ablation no-EMA",
+      "group": "Ablation Phase 2",
       "label": "A0 -- AutoShot gốc",
       "protocol": "controlled_phase2",
       "reproducibility": "logits",
@@ -217,7 +217,7 @@
     },
     {
       "id": "A1_phase2_bce_onehot",
-      "group": "Ablation no-EMA",
+      "group": "Ablation Phase 2",
       "label": "A1 -- BCE + one-hot",
       "protocol": "controlled_phase2",
       "reproducibility": "logits",
@@ -257,7 +257,7 @@
     },
     {
       "id": "A2_focal_only",
-      "group": "Ablation no-EMA",
+      "group": "Ablation Phase 2",
       "label": "A2 -- Focal only",
       "protocol": "controlled_phase2",
       "reproducibility": "logits",
@@ -297,7 +297,7 @@
     },
     {
       "id": "A3_manyhot_only",
-      "group": "Ablation no-EMA",
+      "group": "Ablation Phase 2",
       "label": "A3 -- Many-hot only",
       "protocol": "controlled_phase2",
       "reproducibility": "logits",
@@ -337,7 +337,7 @@
     },
     {
       "id": "P1_gaussian_only",
-      "group": "Ablation no-EMA",
+      "group": "Ablation Phase 2",
       "label": "P1 -- Gaussian only",
       "protocol": "controlled_phase2",
       "reproducibility": "logits",
@@ -377,7 +377,7 @@
     },
     {
       "id": "P2_temperature_only",
-      "group": "Ablation no-EMA",
+      "group": "Ablation Phase 2",
       "label": "P2 -- Temperature only",
       "protocol": "controlled_phase2",
       "reproducibility": "logits",
@@ -417,7 +417,7 @@
     },
     {
       "id": "B1_focal_manyhot",
-      "group": "Ablation no-EMA",
+      "group": "Ablation Phase 2",
       "label": "B1 -- Focal + many-hot",
       "protocol": "controlled_phase2",
       "reproducibility": "logits",
@@ -457,7 +457,7 @@
     },
     {
       "id": "B4_temperature_gaussian",
-      "group": "Ablation no-EMA",
+      "group": "Ablation Phase 2",
       "label": "B4 -- Temperature + Gaussian",
       "protocol": "controlled_phase2",
       "reproducibility": "logits",
@@ -497,8 +497,8 @@
     },
     {
       "id": "B5_full_candidate",
-      "group": "Ablation no-EMA",
-      "label": "B5 -- Full candidate no-EMA",
+      "group": "Ablation Phase 2",
+      "label": "B5 -- Full candidate",
       "protocol": "controlled_phase2",
       "reproducibility": "logits",
       "sources": [
@@ -738,162 +738,6 @@
         }
       },
       "note": "Mức trần lạc quan; không dùng làm deploy honest."
-    },
-    {
-      "id": "ema_phase1_raw",
-      "group": "EMA full fine-tune",
-      "label": "A -- Phase 1 raw",
-      "protocol": "full_model_finetune",
-      "reproducibility": "result_json",
-      "sources": [
-        "reports/ema_study/results_autoshot_alpha999.json",
-        "reports/ema_study/results_bbc_alpha999.json",
-        "reports/ema_study/results_clipshots_alpha999.json",
-        "reports/ema_study/results_autoshot_noema.json",
-        "reports/ema_study/results_bbc_noema.json",
-        "reports/ema_study/results_clipshots_noema.json"
-      ],
-      "metrics": {
-        "shot": {
-          "f1": 0.841178,
-          "precision": 0.8478,
-          "recall": 0.834658,
-          "threshold": 0.296,
-          "videos": 200
-        },
-        "bbc": {
-          "f1": 0.955415,
-          "precision": 0.973639,
-          "recall": 0.937861,
-          "threshold": 0.23,
-          "videos": 11
-        },
-        "clipshots": {
-          "f1": 0.764821,
-          "precision": 0.745912,
-          "recall": 0.784714,
-          "threshold": 0.6,
-          "videos": 500
-        }
-      },
-      "note": "Baseline raw trong EMA study."
-    },
-    {
-      "id": "ema_phase1_gaussian",
-      "group": "EMA full fine-tune",
-      "label": "B -- Phase 1 + Gaussian",
-      "protocol": "full_model_finetune",
-      "reproducibility": "result_json",
-      "sources": [
-        "reports/ema_study/results_autoshot_alpha999.json",
-        "reports/ema_study/results_bbc_alpha999.json",
-        "reports/ema_study/results_clipshots_alpha999.json",
-        "reports/ema_study/results_autoshot_noema.json",
-        "reports/ema_study/results_bbc_noema.json",
-        "reports/ema_study/results_clipshots_noema.json"
-      ],
-      "metrics": {
-        "shot": {
-          "f1": 0.847743,
-          "precision": 0.855812,
-          "recall": 0.839825,
-          "threshold": 0.06,
-          "videos": 200
-        },
-        "bbc": {
-          "f1": 0.951523,
-          "precision": 0.965371,
-          "recall": 0.938068,
-          "threshold": 0.06,
-          "videos": 11
-        },
-        "clipshots": {
-          "f1": 0.789856,
-          "precision": 0.74851,
-          "recall": 0.836038,
-          "threshold": 0.15,
-          "videos": 500
-        }
-      },
-      "note": "Gaussian hậu xử lý rất mạnh trên ClipShots."
-    },
-    {
-      "id": "ema_full_model_alpha999",
-      "group": "EMA full fine-tune",
-      "label": "D-EMA, alpha=0.999",
-      "protocol": "full_model_finetune",
-      "reproducibility": "result_json",
-      "sources": [
-        "reports/ema_study/results_autoshot_alpha999.json",
-        "reports/ema_study/results_bbc_alpha999.json",
-        "reports/ema_study/results_clipshots_alpha999.json",
-        "reports/ema_study/results_autoshot_noema.json",
-        "reports/ema_study/results_bbc_noema.json",
-        "reports/ema_study/results_clipshots_noema.json"
-      ],
-      "metrics": {
-        "shot": {
-          "f1": 0.841732,
-          "precision": 0.833853,
-          "recall": 0.849762,
-          "threshold": 0.02,
-          "videos": 200
-        },
-        "bbc": {
-          "f1": 0.96042,
-          "precision": 0.977142,
-          "recall": 0.944261,
-          "threshold": 0.06,
-          "videos": 11
-        },
-        "clipshots": {
-          "f1": 0.786032,
-          "precision": 0.776095,
-          "recall": 0.796227,
-          "threshold": 0.1,
-          "videos": 500
-        }
-      },
-      "note": "Fine-tune toàn model + EMA."
-    },
-    {
-      "id": "ema_full_model_noema",
-      "group": "EMA full fine-tune",
-      "label": "D-noEMA control",
-      "protocol": "full_model_finetune",
-      "reproducibility": "result_json",
-      "sources": [
-        "reports/ema_study/results_autoshot_alpha999.json",
-        "reports/ema_study/results_bbc_alpha999.json",
-        "reports/ema_study/results_clipshots_alpha999.json",
-        "reports/ema_study/results_autoshot_noema.json",
-        "reports/ema_study/results_bbc_noema.json",
-        "reports/ema_study/results_clipshots_noema.json"
-      ],
-      "metrics": {
-        "shot": {
-          "f1": 0.837144,
-          "precision": 0.844939,
-          "recall": 0.829491,
-          "threshold": 0.02,
-          "videos": 200
-        },
-        "bbc": {
-          "f1": 0.9494,
-          "precision": 0.9758,
-          "recall": 0.9244,
-          "threshold": 0.06,
-          "videos": 11
-        },
-        "clipshots": {
-          "f1": 0.763826,
-          "precision": 0.730113,
-          "recall": 0.800805,
-          "threshold": 0.06,
-          "videos": 500
-        }
-      },
-      "note": "Fine-tune toàn model, tắt EMA."
     }
   ],
   "supplemental_results": {

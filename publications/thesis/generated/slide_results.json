@@ -367,7 +367,7 @@
     },
     {
       "id": "B5_full_candidate",
-      "label": "B5 -- Full candidate no-EMA",
+      "label": "B5 -- Full candidate",
       "metrics": {
         "shot": {
           "f1": 0.8541791342509476,

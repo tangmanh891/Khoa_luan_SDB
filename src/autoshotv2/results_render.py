@@ -108,8 +108,6 @@ def render_tex_macros(manifest: dict[str, Any]) -> str:
     deploy_threshold = experiments["phase2_deploy_threshold"]["metrics"]
     a0 = experiments["A0_autoshot_original"]["metrics"]
     b4 = experiments["B4_temperature_gaussian"]["metrics"]
-    ema = experiments["ema_full_model_alpha999"]["metrics"]
-    noema = experiments["ema_full_model_noema"]["metrics"]
     transnet = comparisons["transnetv2_reported"]["metrics"]
     definitions = {
         "ASVTwoShotFOne": f4(deploy["shot"]["f1"]),
@@ -122,12 +120,6 @@ def render_tex_macros(manifest: dict[str, Any]) -> str:
         "BFourShotFOne": f4(b4["shot"]["f1"]),
         "BFourBBCFOne": f4(b4["bbc"]["f1"]),
         "BFourClipFOne": f4(b4["clipshots"]["f1"]),
-        "EMAShotFOne": f4(ema["shot"]["f1"]),
-        "EMABBCFOne": f4(ema["bbc"]["f1"]),
-        "EMAClipFOne": f4(ema["clipshots"]["f1"]),
-        "EMAShotDelta": f"{ema['shot']['f1'] - noema['shot']['f1']:+.4f}",
-        "EMABBCDelta": f"{ema['bbc']['f1'] - noema['bbc']['f1']:+.4f}",
-        "EMAClipDelta": f"{ema['clipshots']['f1'] - noema['clipshots']['f1']:+.4f}",
         "TransNetShotFOne": f4(transnet["shot"]),
         "ASVTwoVsTransNetShotPP": f"{(deploy['shot']['f1'] - transnet['shot']) * 100:.1f}",
         "ASVTwoVsAutoShotShotPP": f"{(deploy['shot']['f1'] - a0['shot']['f1']) * 100:.1f}",
@@ -161,11 +153,6 @@ def render_tex_tables(manifest: dict[str, Any]) -> str:
         f"{f4(experiments['calibration_cv_A1_phase2_control']['metrics']['bbc']['f1'])} & "
         rf"\textbf{{{f4(experiments['calibration_cv_A0_autoshot_baseline']['metrics']['clipshots']['f1'])}}} & "
         "A1 tốt nhất trên SHOT/BBC, A0 tốt nhất trên ClipShots. \\\\",
-        "Fine-tune toàn model + EMA & "
-        f"{f4(experiments['ema_full_model_alpha999']['metrics']['shot']['f1'])} & "
-        f"{f4(experiments['ema_full_model_alpha999']['metrics']['bbc']['f1'])} & "
-        f"{f4(experiments['ema_full_model_alpha999']['metrics']['clipshots']['f1'])} & "
-        "EMA tốt hơn no-EMA nhưng không thay thế pipeline deploy. \\\\",
     ]
     lines += [r"\newcommand{\ExperimentOverviewRows}{%", *overview_rows, "}", ""]
 
@@ -214,24 +201,6 @@ def render_tex_tables(manifest: dict[str, Any]) -> str:
             f"{tex_escape(item['label'])} & {values[0]} & {values[1]} & {values[2]} \\\\"
         )
     lines += [r"\newcommand{\AblationRows}{%", *rows, "}", ""]
-
-    ema_order = (
-        "ema_phase1_raw",
-        "ema_phase1_gaussian",
-        "ema_full_model_noema",
-        "ema_full_model_alpha999",
-    )
-    rows = []
-    for identifier in ema_order:
-        item = experiments[identifier]
-        metrics = item["metrics"]
-        rows.append(
-            f"{tex_escape(item['label'])} & "
-            f"{tex_value(metrics['shot']['f1'], identifier == 'ema_phase1_gaussian')} & "
-            f"{tex_value(metrics['bbc']['f1'], identifier == 'ema_full_model_alpha999')} & "
-            f"{tex_value(metrics['clipshots']['f1'], identifier == 'ema_phase1_gaussian')} \\\\"
-        )
-    lines += [r"\newcommand{\EMAStudyRows}{%", *rows, "}", ""]
 
     calibration_rows = []
     for identifier in (
@@ -543,6 +512,8 @@ def render_paper_tex_tables(manifest: dict[str, Any]) -> str:
         "P2_temperature_only": "P2 -- Temperature only",
         "B1_focal_manyhot": "B1 -- Focal + many-hot",
         "B4_temperature_gaussian": "B4 -- Temperature + Gaussian",
+        # Label string is frozen: it appears verbatim in the generated paper
+        # tables, which must stay byte-identical to the submitted version.
         "B5_full_candidate": "B5 -- Full candidate, no EMA",
     }
     ablation_rows = []
