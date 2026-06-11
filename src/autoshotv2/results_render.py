@@ -1,0 +1,574 @@
+"""Render the consolidated experiment manifest into publication outputs."""
+
+from __future__ import annotations
+
+import json
+from typing import Any
+
+from autoshotv2.results_manifest import ABLATION_ORDER, DATASET_LABELS, DATASET_ORDER
+
+
+def f4(value: float | None) -> str:
+    return "-" if value is None else f"{value:.4f}"
+
+
+def f3(value: float | None) -> str:
+    return "-" if value is None else f"{value:.3f}"
+
+
+def experiment_map(manifest: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    return {item["id"]: item for item in manifest["experiments"]}
+
+
+def comparison_map(manifest: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    return {item["id"]: item for item in manifest["comparison_models"]}
+
+
+def render_markdown(manifest: dict[str, Any]) -> str:
+    lines = [
+        "# Bảng Tổng Hợp Kết Quả Thực Nghiệm AutoShotV2",
+        "",
+        "File này được sinh từ `reports/experimental_results.json` bằng",
+        "`python scripts/sync_experimental_results.py --write`. Không sửa trực tiếp.",
+        "",
+        "Các nhóm dùng protocol khác nhau; chỉ so sánh trực tiếp trong cùng nhóm.",
+        "",
+        "## Bảng Tất Cả Thực Nghiệm",
+        "",
+        "| Nhóm | Thực nghiệm / protocol | SHOT | BBC | ClipShots | Ghi chú |",
+        "|---|---|---:|---:|---:|---|",
+    ]
+    for item in manifest["experiments"]:
+        metrics = item["metrics"]
+        lines.append(
+            "| {group} | `{identifier}` - {label} | {shot} | {bbc} | {clip} | {note} |".format(
+                group=item["group"],
+                identifier=item["id"],
+                label=item["label"],
+                shot=f4(metrics["shot"]["f1"]),
+                bbc=f4(metrics["bbc"]["f1"]),
+                clip=f4(metrics["clipshots"]["f1"]),
+                note=item["note"].replace("|", "\\|"),
+            )
+        )
+
+    by_id = experiment_map(manifest)
+    lines += [
+        "",
+        "## Kết Quả Checkpoint Deploy",
+        "",
+        "| Dataset | Chế độ | Threshold | F1 | Precision | Recall | TP | FP | FN |",
+        "|---|---|---:|---:|---:|---:|---:|---:|---:|",
+    ]
+    for experiment_id in ("phase2_deploy_threshold", "phase2_best_sweep"):
+        item = by_id[experiment_id]
+        for dataset in DATASET_ORDER:
+            metric = item["metrics"][dataset]
+            lines.append(
+                f"| {DATASET_LABELS[dataset]} | {item['protocol']} | "
+                f"{f4(metric.get('threshold'))} | {f4(metric['f1'])} | "
+                f"{f4(metric['precision'])} | {f4(metric['recall'])} | "
+                f"{metric['tp']} | {metric['fp']} | {metric['fn']} |"
+            )
+
+    lines += [
+        "",
+        "## Nguồn Và Mức Tái Lập",
+        "",
+        "- `result_json`: tái lập ở mức đọc lại JSON đã chốt hoặc chạy lại từ checkpoint/dataset.",
+        "- `logits`: có thể tính lại metric từ logits và ground truth khi artifact tương ứng có sẵn.",
+        "- `literature` và `legacy_result`: chỉ dùng trong bảng so sánh, không được coi là run mới.",
+        "",
+    ]
+    return "\n".join(lines)
+
+
+def tex_escape(value: str) -> str:
+    replacements = {
+        "\\": r"\textbackslash{}",
+        "&": r"\&",
+        "%": r"\%",
+        "#": r"\#",
+        "_": r"\_",
+        "{": r"\{",
+        "}": r"\}",
+    }
+    return "".join(replacements.get(char, char) for char in value)
+
+
+def tex_value(value: float | None, bold: bool = False) -> str:
+    rendered = "chưa chạy" if value is None else f"{value:.4f}"
+    return rf"\textbf{{{rendered}}}" if bold else rendered
+
+
+def render_tex_macros(manifest: dict[str, Any]) -> str:
+    experiments = experiment_map(manifest)
+    comparisons = comparison_map(manifest)
+    deploy = experiments["phase2_best_sweep"]["metrics"]
+    deploy_threshold = experiments["phase2_deploy_threshold"]["metrics"]
+    a0 = experiments["A0_autoshot_original"]["metrics"]
+    b4 = experiments["B4_temperature_gaussian"]["metrics"]
+    ema = experiments["ema_full_model_alpha999"]["metrics"]
+    noema = experiments["ema_full_model_noema"]["metrics"]
+    transnet = comparisons["transnetv2_reported"]["metrics"]
+    definitions = {
+        "ASVTwoShotFOne": f4(deploy["shot"]["f1"]),
+        "ASVTwoBBCFOne": f4(deploy["bbc"]["f1"]),
+        "ASVTwoClipFOne": f4(deploy["clipshots"]["f1"]),
+        "ASVTwoClipDeployFOne": f4(deploy_threshold["clipshots"]["f1"]),
+        "ASVTwoShotPrecision": f4(deploy["shot"]["precision"]),
+        "ASVTwoShotRecall": f4(deploy["shot"]["recall"]),
+        "AutoShotOriginalShotFOne": f4(a0["shot"]["f1"]),
+        "BFourShotFOne": f4(b4["shot"]["f1"]),
+        "BFourBBCFOne": f4(b4["bbc"]["f1"]),
+        "BFourClipFOne": f4(b4["clipshots"]["f1"]),
+        "EMAShotFOne": f4(ema["shot"]["f1"]),
+        "EMABBCFOne": f4(ema["bbc"]["f1"]),
+        "EMAClipFOne": f4(ema["clipshots"]["f1"]),
+        "EMAShotDelta": f"{ema['shot']['f1'] - noema['shot']['f1']:+.4f}",
+        "EMABBCDelta": f"{ema['bbc']['f1'] - noema['bbc']['f1']:+.4f}",
+        "EMAClipDelta": f"{ema['clipshots']['f1'] - noema['clipshots']['f1']:+.4f}",
+        "TransNetShotFOne": f4(transnet["shot"]),
+        "ASVTwoVsTransNetShotPP": f"{(deploy['shot']['f1'] - transnet['shot']) * 100:.1f}",
+        "ASVTwoVsAutoShotShotPP": f"{(deploy['shot']['f1'] - a0['shot']['f1']) * 100:.1f}",
+    }
+    lines = [
+        "% Generated by scripts/sync_experimental_results.py. Do not edit.",
+    ]
+    lines.extend(rf"\newcommand{{\{name}}}{{{value}}}" for name, value in definitions.items())
+    lines.append("")
+    return "\n".join(lines)
+
+
+def render_tex_tables(manifest: dict[str, Any]) -> str:
+    comparisons = comparison_map(manifest)
+    experiments = experiment_map(manifest)
+    lines = ["% Generated by scripts/sync_experimental_results.py. Do not edit.", ""]
+
+    overview_rows = [
+        "Checkpoint triển khai chính & "
+        rf"\textbf{{{f4(experiments['phase2_best_sweep']['metrics']['shot']['f1'])}}} & "
+        rf"\textbf{{{f4(experiments['phase2_best_sweep']['metrics']['bbc']['f1'])}}} & "
+        f"{f4(experiments['phase2_best_sweep']['metrics']['clipshots']['f1'])} & "
+        "AutoShotV2 deploy; ClipShots dùng best sweep. \\\\",
+        "Ablation Pha 2 tốt nhất (B4) & "
+        f"{f4(experiments['B4_temperature_gaussian']['metrics']['shot']['f1'])} & "
+        f"{f4(experiments['B4_temperature_gaussian']['metrics']['bbc']['f1'])} & "
+        f"{f4(experiments['B4_temperature_gaussian']['metrics']['clipshots']['f1'])} & "
+        "Temperature + Gaussian, không cần huấn luyện lại. \\\\",
+        "Hiệu chỉnh hậu xử lý CV & "
+        f"{f4(experiments['calibration_cv_A1_phase2_control']['metrics']['shot']['f1'])} & "
+        f"{f4(experiments['calibration_cv_A1_phase2_control']['metrics']['bbc']['f1'])} & "
+        rf"\textbf{{{f4(experiments['calibration_cv_A0_autoshot_baseline']['metrics']['clipshots']['f1'])}}} & "
+        "A1 tốt nhất trên SHOT/BBC, A0 tốt nhất trên ClipShots. \\\\",
+        "Fine-tune toàn model + EMA & "
+        f"{f4(experiments['ema_full_model_alpha999']['metrics']['shot']['f1'])} & "
+        f"{f4(experiments['ema_full_model_alpha999']['metrics']['bbc']['f1'])} & "
+        f"{f4(experiments['ema_full_model_alpha999']['metrics']['clipshots']['f1'])} & "
+        "EMA tốt hơn no-EMA nhưng không thay thế pipeline deploy. \\\\",
+    ]
+    lines += [r"\newcommand{\ExperimentOverviewRows}{%", *overview_rows, "}", ""]
+
+    comparison_order = (
+        "autoshot_reported",
+        "autoshot_reproduced_legacy",
+        "transnetv2_reported",
+        "transnetv2_reproduced",
+        "autoshot_v1_gaussian",
+        "autoshotv2_deploy",
+    )
+    rows = []
+    for identifier in comparison_order:
+        item = comparisons[identifier]
+        metrics = item["metrics"]
+        rows.append(
+            f"{tex_escape(item['name'])} & "
+            f"{tex_value(metrics['shot'], identifier == 'autoshotv2_deploy')} & "
+            f"{tex_value(metrics['bbc'], identifier == 'autoshotv2_deploy')} & "
+            f"{tex_value(metrics['clipshots'])} \\\\"
+        )
+    lines += [r"\newcommand{\MainComparisonRows}{%", *rows, "}", ""]
+
+    deploy = experiments["phase2_best_sweep"]["metrics"]
+    rows = []
+    for dataset in ("shot", "clipshots", "bbc"):
+        metric = deploy[dataset]
+        rows.append(
+            f"{DATASET_LABELS[dataset]} & {metric['threshold']:.2f} & "
+            f"{metric['precision']:.4f} & {metric['recall']:.4f} & "
+            f"{tex_value(metric['f1'], dataset in {'shot', 'bbc'})} & "
+            f"{metric['tp']} / {metric['fp']} / {metric['fn']} \\\\"
+        )
+    lines += [r"\newcommand{\DeployPRFRows}{%", *rows, "}", ""]
+
+    rows = []
+    for identifier in ABLATION_ORDER:
+        item = experiments[identifier]
+        metrics = item["metrics"]
+        values = [
+            tex_value(metrics["shot"]["f1"], identifier == "B4_temperature_gaussian"),
+            tex_value(metrics["bbc"]["f1"], identifier == "B4_temperature_gaussian"),
+            tex_value(metrics["clipshots"]["f1"], identifier == "B4_temperature_gaussian"),
+        ]
+        rows.append(
+            f"{tex_escape(item['label'])} & {values[0]} & {values[1]} & {values[2]} \\\\"
+        )
+    lines += [r"\newcommand{\AblationRows}{%", *rows, "}", ""]
+
+    ema_order = (
+        "ema_phase1_raw",
+        "ema_phase1_gaussian",
+        "ema_full_model_noema",
+        "ema_full_model_alpha999",
+    )
+    rows = []
+    for identifier in ema_order:
+        item = experiments[identifier]
+        metrics = item["metrics"]
+        rows.append(
+            f"{tex_escape(item['label'])} & "
+            f"{tex_value(metrics['shot']['f1'], identifier == 'ema_phase1_gaussian')} & "
+            f"{tex_value(metrics['bbc']['f1'], identifier == 'ema_full_model_alpha999')} & "
+            f"{tex_value(metrics['clipshots']['f1'], identifier == 'ema_phase1_gaussian')} \\\\"
+        )
+    lines += [r"\newcommand{\EMAStudyRows}{%", *rows, "}", ""]
+
+    calibration_rows = []
+    for identifier in (
+        "calibration_cv_A0_autoshot_baseline",
+        "calibration_cv_A1_phase2_control",
+        "calibration_cv_B5_phase2_full",
+    ):
+        item = experiments[identifier]
+        metrics = item["metrics"]
+        calibration_rows.append(
+            f"{tex_escape(item['label'].replace(', 5-fold CV', ''))} & "
+            f"{tex_value(metrics['shot']['f1'], identifier.endswith('A1_phase2_control'))} & "
+            f"{tex_value(metrics['bbc']['f1'], identifier.endswith('A1_phase2_control'))} & "
+            f"{tex_value(metrics['clipshots']['f1'], identifier.endswith('A0_autoshot_baseline'))} \\\\"
+        )
+    lines += [r"\newcommand{\CalibrationCVRows}{%", *calibration_rows, "}", ""]
+
+    shot = comparisons
+    lines += [
+        r"\newcommand{\AppendixShotRows}{%",
+        "SHOT tập kiểm tra & "
+        f"{f4(shot['transnetv2_reported']['metrics']['shot'])} & "
+        f"{f4(experiments['A0_autoshot_original']['metrics']['shot']['f1'])} & "
+        rf"\textbf{{{f4(experiments['phase2_best_sweep']['metrics']['shot']['f1'])}}} \\",
+        "}",
+        "",
+        r"\newcommand{\AppendixClipshotsRows}{%",
+        "ClipShots (theo báo cáo) & "
+        f"{f4(shot['transnetv2_reported']['metrics']['clipshots'])} & "
+        rf"\textbf{{{f4(shot['autoshot_reported']['metrics']['clipshots'])}}} & "
+        f"{f4(experiments['phase2_best_sweep']['metrics']['clipshots']['f1'])} \\\\",
+        "ClipShots (tự chạy lại) & "
+        f"{f4(shot['transnetv2_reproduced']['metrics']['clipshots'])} & "
+        f"{f4(shot['autoshot_reproduced_legacy']['metrics']['clipshots'])} & "
+        f"{f4(experiments['phase2_best_sweep']['metrics']['clipshots']['f1'])} \\\\",
+        "}",
+        "",
+    ]
+
+    rows = []
+    for item in manifest["experiments"]:
+        metrics = item["metrics"]
+        rows.append(
+            f"{tex_escape(item['group'])} & {tex_escape(item['label'])} & "
+            f"{f4(metrics['shot']['f1'])} & {f4(metrics['bbc']['f1'])} & "
+            f"{f4(metrics['clipshots']['f1'])} & {tex_escape(item['note'])} \\\\"
+        )
+    lines += [r"\newcommand{\AllExperimentsRows}{%", *rows, "}", ""]
+    return "\n".join(lines)
+
+
+def render_slide_data(manifest: dict[str, Any]) -> str:
+    experiments = experiment_map(manifest)
+    comparisons = comparison_map(manifest)
+    deploy = experiments["phase2_best_sweep"]["metrics"]
+    a0 = experiments["A0_autoshot_original"]["metrics"]
+    data = {
+        "schema_version": 1,
+        "comparison_models": manifest["comparison_models"],
+        "deploy": deploy,
+        "ablation": [
+            {
+                "id": identifier,
+                "label": experiments[identifier]["label"],
+                "metrics": experiments[identifier]["metrics"],
+            }
+            for identifier in ABLATION_ORDER
+        ],
+        "summary": {
+            "shot_f1": deploy["shot"]["f1"],
+            "bbc_f1": deploy["bbc"]["f1"],
+            "clipshots_f1": deploy["clipshots"]["f1"],
+            "shot_delta_vs_transnet_pp": (
+                deploy["shot"]["f1"] - comparisons["transnetv2_reported"]["metrics"]["shot"]
+            )
+            * 100,
+            "shot_delta_vs_autoshot_pp": (
+                deploy["shot"]["f1"] - a0["shot"]["f1"]
+            )
+            * 100,
+        },
+    }
+    return json.dumps(data, ensure_ascii=False, indent=2) + "\n"
+
+
+def render_paper_tex_macros(manifest: dict[str, Any]) -> str:
+    experiments = experiment_map(manifest)
+    comparisons = comparison_map(manifest)
+    b4 = experiments["B4_temperature_gaussian"]["metrics"]
+    a1 = experiments["A1_phase2_bce_onehot"]["metrics"]
+    autoshot = comparisons["autoshot_reproduced_legacy"]["metrics"]
+    transnet = comparisons["transnetv2_reported"]["metrics"]
+    analysis = manifest["supplemental_results"]["paper_analysis"]
+    protocol = analysis["protocol"]
+    definitions = {
+        "PaperTemperature": f"{protocol['temperature']:.4f}",
+        "PaperGaussianSigma": f"{protocol['sigma']:.1f}",
+        "PaperDeployThreshold": f"{protocol['threshold']:.2f}",
+        "PaperMatchTolerance": str(protocol["matching_tolerance_frames"]),
+        "PaperASVTwoShotFOne": f4(b4["shot"]["f1"]),
+        "PaperASVTwoBBCFOne": f4(b4["bbc"]["f1"]),
+        "PaperASVTwoClipFOne": f4(b4["clipshots"]["f1"]),
+        "PaperASVTwoClipDeployFOne": f4(b4["clipshots"]["f1"]),
+        "PaperASVTwoClipBestFOne": f4(b4["clipshots"]["f1"]),
+        "PaperASVTwoShotPrecision": f4(b4["shot"]["precision"]),
+        "PaperASVTwoShotRecall": f4(b4["shot"]["recall"]),
+        "PaperAOneShotFOne": f4(a1["shot"]["f1"]),
+        "PaperAOneBBCFOne": f4(a1["bbc"]["f1"]),
+        "PaperAOneClipFOne": f4(a1["clipshots"]["f1"]),
+        "PaperAutoShotShotFOne": f4(autoshot["shot"]),
+        "PaperTransNetShotFOne": f4(transnet["shot"]),
+        "PaperASVTwoVsAOneShotPP": f"{(b4['shot']['f1'] - a1['shot']['f1']) * 100:.2f}",
+        "PaperASVTwoVsAOneBBCPP": f"{(b4['bbc']['f1'] - a1['bbc']['f1']) * 100:.2f}",
+        "PaperASVTwoVsAOneClipPP": f"{(b4['clipshots']['f1'] - a1['clipshots']['f1']) * 100:.2f}",
+        "PaperASVTwoVsAutoShotPP": f"{(b4['shot']['f1'] - autoshot['shot']) * 100:.2f}",
+        "PaperASVTwoVsTransNetPP": f"{(b4['shot']['f1'] - transnet['shot']) * 100:.2f}",
+    }
+    lines = ["% Generated by scripts/sync_experimental_results.py. Do not edit."]
+    lines.extend(rf"\newcommand{{\{name}}}{{{value}}}" for name, value in definitions.items())
+    lines.append("")
+    return "\n".join(lines)
+
+
+def paper_metric(value: float | None, bold: bool = False) -> str:
+    rendered = "--" if value is None else f"{value:.4f}"
+    return rf"\textbf{{{rendered}}}" if bold else rendered
+
+
+def render_paper_tex_tables(manifest: dict[str, Any]) -> str:
+    experiments = experiment_map(manifest)
+    comparisons = comparison_map(manifest)
+    analysis = manifest["supplemental_results"]["paper_analysis"]
+    lines = ["% Generated by scripts/sync_experimental_results.py. Do not edit.", ""]
+
+    comparison_rows = []
+    comparison_definitions = (
+        ("autoshot_reported", "AutoShot, reported in original paper"),
+        ("autoshot_reproduced_legacy", "AutoShot, reproduced"),
+        ("transnetv2_reported", "TransNetV2, reported baseline"),
+        ("transnetv2_reproduced", "TransNetV2, reproduced"),
+        ("autoshot_v1_gaussian", "AutoShot reproduced + Gaussian smoothing"),
+    )
+    for identifier, label in comparison_definitions:
+        metrics = comparisons[identifier]["metrics"]
+        comparison_rows.append(
+            f"{label} & {paper_metric(metrics['shot'])} & "
+            f"{paper_metric(metrics['bbc'])} & {paper_metric(metrics['clipshots'])} \\\\"
+        )
+
+    deploy = experiments["phase2_deploy_threshold"]["metrics"]
+    best = experiments["phase2_best_sweep"]["metrics"]
+    comparison_rows += [
+        "AutoShotV2, fixed deploy threshold & "
+        f"{paper_metric(deploy['shot']['f1'], True)} & "
+        f"{paper_metric(deploy['bbc']['f1'], True)} & "
+        f"{paper_metric(deploy['clipshots']['f1'])} \\\\",
+        "AutoShotV2, ClipShots best sweep & -- & -- & "
+        f"{paper_metric(best['clipshots']['f1'])} \\\\",
+    ]
+    lines += [r"\newcommand{\PaperMainResultRows}{%", *comparison_rows, "}", ""]
+
+    protocol_rows = []
+    protocol_definitions = (
+        ("A1_phase2_bce_onehot", "A1 -- BCE + one-hot"),
+        ("P1_gaussian_only", "P1 -- A1 + Gaussian"),
+        ("P2_temperature_only", "P2 -- A1 + temperature"),
+        ("B4_temperature_gaussian", "B4 -- A1 + temperature + Gaussian"),
+        ("B5_full_candidate", "B5 -- Focal + many-hot + B4"),
+    )
+    for identifier, label in protocol_definitions:
+        metrics = experiments[identifier]["metrics"]
+        selected = identifier == "B4_temperature_gaussian"
+        protocol_rows.append(
+            f"{tex_escape(label)} & "
+            f"{paper_metric(metrics['shot']['f1'], selected)} & "
+            f"{paper_metric(metrics['bbc']['f1'], selected)} & "
+            f"{paper_metric(metrics['clipshots']['f1'], selected)} \\\\"
+        )
+    lines += [r"\newcommand{\PaperProtocolMatchedRows}{%", *protocol_rows, "}", ""]
+
+    reported_rows = []
+    for identifier, label in (
+        ("autoshot_reported", "AutoShot (reported)"),
+        ("transnetv2_reported", "TransNetV2 (reported)"),
+    ):
+        metrics = comparisons[identifier]["metrics"]
+        reported_rows.append(
+            f"{label} & {paper_metric(metrics['shot'])} & "
+            f"{paper_metric(metrics['bbc'])} & {paper_metric(metrics['clipshots'])} \\\\"
+        )
+    lines += [r"\newcommand{\PaperReportedBaselineRows}{%", *reported_rows, "}", ""]
+
+    archived_rows = []
+    for identifier, label in (
+        ("phase2_deploy_threshold", "Deploy checkpoint, fixed threshold"),
+        ("phase2_best_sweep", "Deploy checkpoint, best sweep"),
+    ):
+        metrics = experiments[identifier]["metrics"]
+        archived_rows.append(
+            f"{label} & {paper_metric(metrics['shot']['f1'])} & "
+            f"{paper_metric(metrics['bbc']['f1'])} & "
+            f"{paper_metric(metrics['clipshots']['f1'])} \\\\"
+        )
+    lines += [r"\newcommand{\PaperArchivedResultRows}{%", *archived_rows, "}", ""]
+
+    deploy_detail_rows = []
+    for dataset in DATASET_ORDER:
+        metric = deploy[dataset]
+        deploy_detail_rows.append(
+            f"{DATASET_LABELS[dataset]} & {metric['threshold']:.2f} & "
+            f"{metric['precision']:.4f} & {metric['recall']:.4f} & "
+            f"{paper_metric(metric['f1'], dataset in {'shot', 'bbc'})} \\\\"
+        )
+    lines += [r"\newcommand{\PaperDeployDetailRows}{%", *deploy_detail_rows, "}", ""]
+
+    confidence_rows = []
+    for dataset in DATASET_ORDER:
+        result = analysis["bootstrap"][dataset]
+        metrics = result["metrics"]
+        confidence_rows.append(
+            f"{DATASET_LABELS[dataset]} & {metrics['f1']['value']:.4f} & "
+            f"[{metrics['f1']['ci95_low']:.4f}, {metrics['f1']['ci95_high']:.4f}] & "
+            f"{metrics['precision']['value']:.4f} & {metrics['recall']['value']:.4f} & "
+            f"{result['n_videos']} \\\\"
+        )
+    lines += [r"\newcommand{\PaperConfidenceRows}{%", *confidence_rows, "}", ""]
+
+    calibration = analysis["calibration"]
+    calibration_metric_rows = []
+    for key, label in (
+        ("before", "Before temperature scaling"),
+        ("after_temperature", "After temperature scaling"),
+    ):
+        metric = calibration[key]
+        calibration_metric_rows.append(
+            f"{label} & {metric['nll']:.6f} & {metric['brier']:.6f} & "
+            f"{metric['ece']:.6f} & {metric['adaptive_ece']:.6f} & "
+            f"{metric['class_balanced_ece']:.6f} \\\\"
+        )
+    lines += [
+        r"\newcommand{\PaperCalibrationMetricRows}{%",
+        *calibration_metric_rows,
+        "}",
+        "",
+    ]
+
+    paired_rows = []
+    for dataset in DATASET_ORDER:
+        metric = analysis["paired_delta_vs_a1"][dataset]
+        paired_rows.append(
+            f"{DATASET_LABELS[dataset]} & {metric['delta']:.4f} & "
+            f"[{metric['ci95_low']:.4f}, {metric['ci95_high']:.4f}] & "
+            f"{'Yes' if metric['excludes_zero'] else 'No'} \\\\"
+        )
+    lines += [r"\newcommand{\PaperPairedDeltaRows}{%", *paired_rows, "}", ""]
+
+    test_calibration_rows = []
+    for dataset in DATASET_ORDER:
+        metric = analysis["test_calibration"][dataset]["after_temperature"]
+        test_calibration_rows.append(
+            f"{DATASET_LABELS[dataset]} & {metric['nll']:.6f} & "
+            f"{metric['brier']:.6f} & {metric['ece']:.6f} & "
+            f"{metric['adaptive_ece']:.6f} & "
+            f"{metric['class_balanced_ece']:.6f} \\\\"
+        )
+    lines += [
+        r"\newcommand{\PaperTestCalibrationRows}{%",
+        *test_calibration_rows,
+        "}",
+        "",
+    ]
+
+    efficiency = analysis["efficiency"]
+    benchmark = efficiency["postprocess_benchmark"]
+    efficiency_rows = [
+        f"Frozen backbone parameters & {efficiency['frozen_backbone_parameters']:,} \\\\",
+        f"Trainable Phase 2 head parameters & {efficiency['trainable_head_parameters']:,} \\\\",
+        f"Deployed primary-path parameters & {efficiency['deployed_primary_path_parameters']:,} \\\\",
+        f"Training videos / sampled frames & {efficiency['training_videos']} / "
+        f"{efficiency['training_samples']:,} \\\\",
+        f"Training epochs / seed & {efficiency['epochs']} / {efficiency['training_seed']} \\\\",
+        "Post-process CPU cost & "
+        f"{benchmark['milliseconds_per_million_frames']:.1f} ms / $10^6$ frames \\\\",
+    ]
+    lines += [r"\newcommand{\PaperEfficiencyRows}{%", *efficiency_rows, "}", ""]
+
+    calibration_labels = {
+        "calibration_cv_A0_autoshot_baseline": "A0 -- AutoShot baseline",
+        "calibration_cv_A1_phase2_control": "A1 -- Phase2 control",
+        "calibration_cv_B5_phase2_full": "B5 -- Phase2 full",
+    }
+    calibration_rows = []
+    for identifier, label in calibration_labels.items():
+        metrics = experiments[identifier]["metrics"]
+        calibration_rows.append(
+            f"{tex_escape(label)} & "
+            f"{paper_metric(metrics['shot']['f1'], identifier.endswith('A1_phase2_control'))} & "
+            f"{paper_metric(metrics['bbc']['f1'], identifier.endswith('A1_phase2_control'))} & "
+            f"{paper_metric(metrics['clipshots']['f1'], identifier.endswith('A0_autoshot_baseline'))} \\\\"
+        )
+    lines += [r"\newcommand{\PaperCalibrationCVRows}{%", *calibration_rows, "}", ""]
+
+    paper_ablation_labels = {
+        "A0_autoshot_original": "A0 -- AutoShot baseline",
+        "A1_phase2_bce_onehot": "A1 -- BCE + one-hot",
+        "A2_focal_only": "A2 -- Focal only",
+        "A3_manyhot_only": "A3 -- Many-hot only",
+        "P1_gaussian_only": "P1 -- Gaussian only",
+        "P2_temperature_only": "P2 -- Temperature only",
+        "B1_focal_manyhot": "B1 -- Focal + many-hot",
+        "B4_temperature_gaussian": "B4 -- Temperature + Gaussian",
+        "B5_full_candidate": "B5 -- Full candidate, no EMA",
+    }
+    ablation_rows = []
+    for identifier in ABLATION_ORDER:
+        if identifier == "A0_autoshot_original":
+            continue
+        item = experiments[identifier]
+        metrics = item["metrics"]
+        selected = identifier == "B4_temperature_gaussian"
+        label = paper_ablation_labels[identifier]
+        if selected:
+            label += " (selected)"
+        ablation_rows.append(
+            f"{tex_escape(label)} & "
+            f"{paper_metric(metrics['shot']['f1'], selected)} & "
+            f"{paper_metric(metrics['bbc']['f1'], selected)} & "
+            f"{paper_metric(metrics['clipshots']['f1'], selected)} \\\\"
+        )
+    lines += [r"\newcommand{\PaperControlledAblationRows}{%", *ablation_rows, "}", ""]
+
+    breakdown = manifest["supplemental_results"]["clipshots_transition_breakdown"]
+    breakdown_rows = []
+    for item in breakdown["transition_types"]:
+        breakdown_rows.append(
+            f"{tex_escape(item['label'])} & {item['ground_truth']} & "
+            f"{item['matched']} & {item['missed']} & {item['recall']:.4f} \\\\"
+        )
+    lines += [r"\newcommand{\PaperClipBreakdownRows}{%", *breakdown_rows, "}", ""]
+    return "\n".join(lines)
