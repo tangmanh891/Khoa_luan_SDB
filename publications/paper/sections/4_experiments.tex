@@ -267,6 +267,43 @@ The gradual-transition recall of 0.8089 is lower than the cut recall of
 The aggregate ClipShots precision is only 0.6498, indicating that open-world
 effects and domain shift create many false-positive peaks.
 
+\subsection{Training-Seed Robustness}
+\label{sec:seed_robustness}
+
+To quantify optimization variability, we retrained the BCE one-hot head
+\PaperSeedCount{} times with training seeds 42, 43, and 44 while holding the
+data seed, the training-video selection, and the sample cache identity fixed.
+Each run selected its own post-processing configuration with the frozen
+five-fold validation-only protocol of Section~\ref{sec:protocol} before any
+test evaluation. Table~\ref{tab:seed_robustness} reports test means and
+sample standard deviations. Seed-induced F1 variation is below 0.001 on SHOT
+and BBC and below 0.005 on ClipShots, an order of magnitude smaller than the
+video-sampling confidence intervals of Table~\ref{tab:confidence}; the
+pipeline is therefore stable with respect to head-training randomness. The
+absolute values differ from the headline B4 numbers because this study
+retrains the head from scratch and re-selects its protocol per seed (seed 42
+selected $\sigma{=}1.0$ and $\theta{=}0.30$), so the two tables answer
+different questions: Table~\ref{tab:ablation} isolates component
+contributions on the historical cache, whereas this study isolates
+training-seed sensitivity end to end.
+
+\begin{table}[!t]
+\caption{Three-Seed Robustness of the End-to-End Pipeline (Mean $\pm$ Sample Standard Deviation Over Training Seeds 42--44)}
+\label{tab:seed_robustness}
+\centering
+\small
+\renewcommand{\arraystretch}{1.08}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{L{0.85in}C{1.0in}C{1.0in}C{1.0in}}
+\toprule
+\textbf{Dataset} & \textbf{F1} & \textbf{Precision} & \textbf{Recall} \\
+\midrule
+\PaperSeedRobustnessRows
+\bottomrule
+\end{tabular}
+}
+\end{table}
+
 \subsection{Archived Checkpoint Results and Limitations}
 
 For auditability, Table~\ref{tab:archived} preserves the earlier deploy
@@ -291,11 +328,12 @@ and confidence-interval analysis.
 }
 \end{table}
 
-The study has four important limitations. First, the reported head was trained
-with one seed; bootstrap intervals capture video sampling uncertainty but not
-optimization variability. The revised runner fixes data seed 42 and schedules
-training seeds 42, 43, and 44, but the original AutoShot base checkpoint needed
-to execute those runs is not included in the present artifact bundle. Second,
+The study has four important limitations. First, the headline B4 head itself
+was trained with one seed; the three-seed study of
+Section~\ref{sec:seed_robustness} bounds optimization variability for the
+retrained pipeline (F1 sample standard deviation at or below 0.005 on every
+dataset), but it re-selects its protocol per seed and therefore does not
+reproduce the historical B4 checkpoint bit for bit. Second,
 the historical sample cache recorded 400 videos and 33,174 frames but not the
 exact selected IDs; strict manifests fix this for future runs but cannot
 retroactively prove the old cache contents. Third, validation calibration

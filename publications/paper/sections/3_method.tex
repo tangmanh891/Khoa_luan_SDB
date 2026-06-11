@@ -67,6 +67,7 @@ temperature scaling and Gaussian smoothing to the controlled A1 BCE logits.}
 \end{figure*}
 
 \subsection{Validation-Only Protocol Selection}
+\label{sec:protocol}
 
 Temperature scaling rescales the primary logit without changing its ranking:
 \begin{equation}
@@ -81,8 +82,10 @@ We select the complete operating point using five-fold validation. Folds are
 stratified by source dataset. For each held-out fold, temperature is fitted on
 the other four folds by minimizing binary cross-entropy. We search
 $\sigma\in\{0,1,2,3\}$ and
-$\theta\in\{0.05,0.10,\ldots,0.50\}$, scoring each pair by mean macro-F1
-across validation sources and folds. Ties prefer lower smoothing and then the
+$\theta\in\{0.05,0.10,\ldots,0.50\}$. Each pair is scored by first computing
+F1 per source dataset within each held-out fold, averaging those per-source
+values into a fold-level macro-F1, and then averaging the macro-F1 over the
+five folds. Ties prefer lower smoothing and then the
 threshold nearest 0.10. After selecting $\sigma$ and $\theta$, the final
 temperature is fitted on all validation videos. This procedure selects
 $T=\PaperTemperature$, $\sigma=\PaperGaussianSigma$, and

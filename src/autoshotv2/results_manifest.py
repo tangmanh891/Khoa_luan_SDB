@@ -200,6 +200,26 @@ def build_calibration_experiments() -> list[dict[str, Any]]:
     return experiments
 
 
+def build_journal_seed_study() -> dict[str, Any]:
+    """Three-seed reproducibility study (BCE one-hot head, frozen per-seed protocol)."""
+    payload = load_json(ROOT / "artifacts" / "experiments" / "journal_study" / "journal_results.json")
+    datasets = {}
+    for dataset in DATASET_ORDER:
+        block = payload["datasets"][dataset]
+        datasets[dataset] = {
+            "n_seeds": block["n_seeds"],
+            "mean": block["mean"],
+            "sample_std": block["sample_std"],
+            "runs": block["runs"],
+        }
+    return {
+        "training_seeds": payload["training_seeds"],
+        "data_seed": payload["data_seed"],
+        "source": "artifacts/experiments/journal_study/journal_results.json",
+        "datasets": datasets,
+    }
+
+
 def build_manifest() -> dict[str, Any]:
     literature_path = REPORTS / "literature_results.json"
     literature = load_json(literature_path)["comparison_models"]
@@ -239,5 +259,6 @@ def build_manifest() -> dict[str, Any]:
         "supplemental_results": {
             "clipshots_transition_breakdown": clipshots_breakdown,
             "paper_analysis": paper_analysis,
+            "journal_seed_study": build_journal_seed_study(),
         },
     }
