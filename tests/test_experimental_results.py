@@ -56,7 +56,7 @@ def test_slide_data_matches_manifest():
 def test_paper_snapshot_generated_tables_and_release_are_present():
     paper = ROOT / "publications" / "paper"
     assert (paper / "main.tex").is_file()
-    assert len(list((paper / "sections").glob("*.tex"))) == 7
+    assert len(list((paper / "sections").glob("*.tex"))) == 8
     assert (paper / "images" / "reliability_diagram.png").stat().st_size > 20_000
 
     macros = (paper / "generated" / "experiment_macros.tex").read_text(encoding="utf-8")

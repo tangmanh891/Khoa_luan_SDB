@@ -1,0 +1,48 @@
+\section{Discussion}
+\label{sec:discussion}
+
+\textbf{Where the gain comes from.} The controlled ablation separates two
+mechanisms that are often conflated. Training-side changes (Focal Loss,
+many-hot supervision) leave the BCE control statistically unchanged, whereas
+post-processing moves the operating point: Gaussian smoothing changes boundary
+decisions and temperature scaling improves probability quality without
+changing the ranking. For frozen-feature pipelines this ordering matters
+practically, because the post-processing search costs CPU milliseconds per
+million frames while retraining alternatives cost GPU hours, and because the
+search can be re-run per deployment domain without touching the
+representation.
+
+\textbf{What aggregate calibration hides.} After temperature scaling the
+equal-width ECE falls to 0.002214, yet the class-balanced ECE remains
+0.070405 --- roughly thirty times larger. The gap is a direct consequence of
+boundary sparsity: non-boundary frames dominate every confidence bin, so a
+near-perfect aggregate score is compatible with poorly calibrated
+probabilities exactly on the rare positive class that the task cares about.
+Reporting only aggregate ECE would therefore overstate calibration quality
+for SBD and, we suspect, for other sparse temporal-event tasks. Class-wise
+or event-conditional calibration (for example, fitting a separate temperature
+on boundary-adjacent frames) is a natural next step, but it requires an
+independent calibration split that the present protocol does not reserve.
+
+\textbf{Sources of uncertainty.} The two uncertainty analyses answer
+complementary questions. Video-level bootstrap intervals
+(Table~\ref{tab:confidence}) quantify how much the test score depends on
+which videos were sampled, and remain the dominant term: their widths are an
+order of magnitude larger than the seed-induced standard deviations of
+Table~\ref{tab:seed_robustness}. Training-seed variability, the usual
+objection to single-run reports, is bounded below 0.005 F1 across all three
+datasets by the three-seed study. The remaining unquantified term is protocol
+variability --- the frozen five-fold selection is itself a function of the
+validation videos --- which could be probed by repeating the selection over
+bootstrap-resampled validation sets.
+
+\textbf{The ClipShots gap is a precision problem.} The transition-type
+breakdown shows gradual-transition recall (0.8089) trailing cut recall
+(0.8991), but the dominant loss is aggregate precision (0.6498): open-world
+content produces false-positive peaks that survive smoothing. A frozen
+representation cannot adapt to this distribution shift by construction, so
+threshold or temperature adjustments only trade recall for precision along a
+fixed curve. Closing the gap likely requires domain-adaptive components ---
+either lightweight adapters on the frozen backbone or domain-specific
+post-processing selection --- rather than further tuning of the present
+search space.
