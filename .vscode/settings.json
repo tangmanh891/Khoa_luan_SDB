@@ -1,0 +1,41 @@
+{
+  "latex-workshop.latex.autoBuild.run": "onSave",
+  "latex-workshop.latex.recipe.default": "first",
+  "latex-workshop.latex.outDir": "%DIR%/build",
+  "latex-workshop.view.pdf.viewer": "tab",
+  "latex-workshop.latex.recipes": [
+    {
+      "name": "pdflatex -> biber -> pdflatex x2",
+      "tools": [
+        "pdflatex-build-dir",
+        "biber-build-dir",
+        "pdflatex-build-dir",
+        "pdflatex-build-dir"
+      ]
+    }
+  ],
+  "latex-workshop.latex.tools": [
+    {
+      "name": "pdflatex-build-dir",
+      "command": "pdflatex",
+      "args": [
+        "-interaction=nonstopmode",
+        "-halt-on-error",
+        "-file-line-error",
+        "-output-directory=%OUTDIR%",
+        "%DOC%"
+      ],
+      "env": {}
+    },
+    {
+      "name": "biber-build-dir",
+      "command": "biber",
+      "args": [
+        "--input-directory=%OUTDIR%",
+        "--output-directory=%OUTDIR%",
+        "%DOCFILE%"
+      ],
+      "env": {}
+    }
+  ]
+}

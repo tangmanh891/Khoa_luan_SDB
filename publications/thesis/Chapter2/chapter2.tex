@@ -4,7 +4,7 @@
 \begin{quotation}
 \noindent
 \small\textit{
-Chương này trình bày nền tảng lý thuyết và các công trình liên quan cho bài toán phát hiện ranh giới cảnh quay (SBD), từ phương pháp cổ điển dựa trên đặc trưng thủ công, đến phương pháp học sâu hiện đại với CNN/3D ConvNet/Transformer, và gần đây nhất là hướng tìm kiếm kiến trúc mạng nơ-ron (NAS). Trên cơ sở đó, chương xác định các khoảng trống nghiên cứu làm nền cho phương pháp ở Chương~\ref{ch:phuong_phap_de_xuat}, thiết lập ở Chương~\ref{ch:bo_du_lieu_va_thuc_nghiem} và kết quả ở Chương~\ref{ch:ket_qua_thuc_nghiem}.
+Chương này trình bày nền tảng lý thuyết và các công trình liên quan cho bài toán phát hiện ranh giới cảnh quay (SBD), từ phương pháp cổ điển dựa trên đặc trưng thủ công, đến phương pháp học sâu hiện đại với CNN/3D ConvNet/Transformer, và gần đây nhất là hướng tìm kiếm kiến trúc mạng nơ-ron (NAS). Trên cơ sở đó, chương xác định các khoảng trống nghiên cứu làm nền cho phương pháp ở Chương~\ref{ch:phuong_phap_de_xuat}, cũng như phần dữ liệu và thực nghiệm ở Chương~\ref{ch:bo_du_lieu_va_thuc_nghiem}.
 }
 \end{quotation}
 \vspace{1em}
@@ -71,7 +71,7 @@ Hai cải tiến đáng chú ý của TransNetV2 so với TransNet là:
     \item \textbf{Hai đầu phân loại song song:} Một đầu dự đoán xác suất chuyển cảnh đơn-khung (single-frame chuyển cảnh), một đầu dự đoán xác suất "thuộc về một chuyển cảnh dần" (all-frames-of-chuyển cảnh). Hai tín hiệu này được kết hợp ở giai đoạn suy diễn để vừa định vị chính xác vị trí cut, vừa bao quát được toàn bộ vùng gradual.
 \end{itemize}
 
-Tuy là mô hình cơ sở mạnh, TransNetV2 chủ yếu được tối ưu trên các bộ dữ liệu video dài (phim, tài liệu) như BBC Planet Earth và RAI. Khi áp dụng sang video ngắn có shot dày đặc, hiệu ứng chuyển cảnh phức tạp và nhiều nhiễu thị giác, kiến trúc mạng xương sống cố định bộc lộ giới hạn về tổng quát hóa. Chi tiết kiến trúc và hàm mục tiêu của TransNetV2 được trình bày đầy đủ trong Chương~\ref{ch:phuong_phap_de_xuat} (Phần A) vì TransNetV2 đóng vai trò mô hình cơ sở trực tiếp của khóa luận.
+Tuy là mô hình cơ sở mạnh, TransNetV2 chủ yếu được tối ưu trên các bộ dữ liệu video dài (phim, tài liệu) như BBC Planet Earth. Khi áp dụng sang video ngắn có shot dày đặc, hiệu ứng chuyển cảnh phức tạp và nhiều nhiễu thị giác, kiến trúc mạng xương sống cố định bộc lộ giới hạn về tổng quát hóa. Chi tiết kiến trúc và hàm mục tiêu của TransNetV2 được trình bày đầy đủ trong Chương~\ref{ch:phuong_phap_de_xuat} (Phần A) vì TransNetV2 đóng vai trò mô hình cơ sở trực tiếp của khóa luận.
 
 \subsection{Tiếp cận Transformer và multi-modal}
 Sau thành công của Transformer \cite{vaswani2017attention} trong xử lý chuỗi, nhiều nghiên cứu SBD gần đây áp dụng cơ chế self-attention để mô hình hóa phụ thuộc xa giữa các khung hình. Esteve và cộng sự \cite{esteve2023shot} đề xuất một mô hình kết hợp 3D depthwise convolution với visual attention, cho thấy attention có thể bổ trợ tốt cho convolution trong việc phát hiện các chuyển cảnh dần dài. Theo cùng hướng, nhiều công trình khảo sát trong các tổng kết gần đây \cite{Kar2024_VideoSBD_IssuesChallengesSolutions} cho thấy xu hướng dùng kết hợp đa phương thức (kết hợp đặc trưng hình ảnh với âm thanh hoặc tín hiệu chuyển động) để tăng tính bền vững khi chuyển miền dữ liệu.
@@ -102,7 +102,7 @@ Trên tập SHOT, AutoShot cho thấy ưu thế rõ rệt so với mô hình cơ
 
 \section{So sánh tổng quan các công trình liên quan}
 \label{sec:method_comparison_table}
-Bảng~\ref{tab:related_work_comparison} tổng hợp các nhóm phương pháp tiêu biểu theo hướng tiếp cận, loại mô hình, bộ dữ liệu thường được sử dụng, ưu điểm và hạn chế. Mục tiêu của bảng là đặt các công trình liên quan vào cùng một bức tranh phương pháp luận; các kết quả định lượng chi tiết được trình bày riêng ở Chương~\ref{ch:ket_qua_thuc_nghiem}.
+Bảng~\ref{tab:related_work_comparison} tổng hợp các nhóm phương pháp tiêu biểu theo hướng tiếp cận, loại mô hình, bộ dữ liệu thường được sử dụng, ưu điểm và hạn chế. Mục tiêu của bảng là đặt các công trình liên quan vào cùng một bức tranh phương pháp luận; các kết quả định lượng chi tiết được trình bày riêng ở Chương~\ref{ch:bo_du_lieu_va_thuc_nghiem}.
 
 \begin{table}[htbp]
     \centering
@@ -113,9 +113,9 @@ Bảng~\ref{tab:related_work_comparison} tổng hợp các nhóm phương pháp 
         \toprule
         \textbf{Nhóm phương pháp} & \textbf{Loại mô hình} & \textbf{Bộ dữ liệu (Dataset) thường dùng} & \textbf{Ưu điểm} & \textbf{Hạn chế} \\
         \midrule
-        Đặc trưng thủ công & Histogram, pixel difference, edge-based, compressed-domain & BBC, RAI và các tập video truyền thống & Đơn giản, dễ triển khai, chi phí thấp & Phụ thuộc ngưỡng, dễ nhiễu bởi ánh sáng/chuyển động, yếu với chuyển cảnh dần phức tạp \\
+        Đặc trưng thủ công & Histogram, pixel difference, edge-based, compressed-domain & BBC và các tập video truyền thống & Đơn giản, dễ triển khai, chi phí thấp & Phụ thuộc ngưỡng, dễ nhiễu bởi ánh sáng/chuyển động, yếu với chuyển cảnh dần phức tạp \\
         Đặc trưng học sâu \cite{hassanien2017largescale} & 3D ConvNet/C3D & Tập dữ liệu SBD quy mô lớn & Học đặc trưng không-thời gian đầu-cuối, giảm phụ thuộc đặc trưng thủ công & Nhiều tham số, chi phí huấn luyện cao, cửa sổ thời gian cố định \\
-        TransNet/TransNetV2 \cite{soucek2019transnet,soucek2020transnetv2} & CNN 3D giãn nở, frame similarity, hai đầu phân loại & BBC, RAI, ClipShots & Mô hình cơ sở mạnh, cân bằng tốt giữa độ chính xác và tốc độ & Mạng xương sống thiết kế thủ công, chưa tối ưu riêng cho video ngắn có nhịp cắt dày \\
+        TransNet/TransNetV2 \cite{soucek2019transnet,soucek2020transnetv2} & CNN 3D giãn nở, frame similarity, hai đầu phân loại & BBC, ClipShots & Mô hình cơ sở mạnh, cân bằng tốt giữa độ chính xác và tốc độ & Mạng xương sống thiết kế thủ công, chưa tối ưu riêng cho video ngắn có nhịp cắt dày \\
         AutoShot \cite{zhu2023autoshot} & NAS trên mạng xương sống SBD & SHOT, ClipShots và các tập đánh giá bổ sung & Tự động tìm kiến trúc phù hợp hơn với video ngắn, kế thừa quy trình mạnh từ TransNetV2 & Chi phí NAS cao, còn ít phân tích về tầng phân loại và hậu xử lý xác suất \\
         AutoShotV2 & Mạng xương sống AutoShot + cải tiến tầng phân loại & SHOT, BBC, ClipShots & Tập trung cải thiện tầng phân loại và hậu xử lý mà không thay đổi toàn bộ mạng xương sống & Cần kiểm tra thêm khả năng tổng quát hóa đa miền và các biến thể chuyển cảnh phức tạp \\
         \bottomrule
@@ -127,9 +127,9 @@ Bảng~\ref{tab:related_work_comparison} tổng hợp các nhóm phương pháp 
 Từ khảo sát ở các mục \ref{sec:classical_methods}--\ref{sec:nas_for_sbd} và bảng so sánh tổng quan~\ref{tab:related_work_comparison}, Khóa luận xác định ba khoảng trống nghiên cứu chính làm cơ sở cho phương pháp đề xuất:
 
 \begin{itemize}
-    \item \textbf{Khoảng trống 1 -- Sai khác miền dữ liệu giữa video dài truyền thống và video ngắn hiện đại.} Hầu hết các kiến trúc mạnh hiện nay (đặc biệt TransNetV2) được tối ưu trên dữ liệu video dài như BBC Planet Earth và RAI, vốn có nhịp cắt cảnh thưa và ít hiệu ứng kỹ xảo. Khi chuyển sang video ngắn -- nơi shot trung bình ngắn dưới 5 giây và xuất hiện dày đặc các hiệu ứng dissolve/wipe -- các kiến trúc này không còn tối ưu. NAS là một hướng tiềm năng để giải quyết, nhưng chi phí tính toán của NAS vẫn là rào cản với nhiều đơn vị nghiên cứu vừa và nhỏ.
+    \item \textbf{Khoảng trống 1 -- Sai khác miền dữ liệu giữa video dài truyền thống và video ngắn hiện đại.} Hầu hết các kiến trúc mạnh hiện nay (đặc biệt TransNetV2) được tối ưu trên dữ liệu video dài như BBC Planet Earth, vốn có nhịp cắt cảnh thưa và ít hiệu ứng kỹ xảo. Khi chuyển sang video ngắn -- nơi shot trung bình ngắn dưới 5 giây và xuất hiện dày đặc các hiệu ứng dissolve/wipe -- các kiến trúc này không còn tối ưu. NAS là một hướng tiềm năng để giải quyết, nhưng chi phí tính toán của NAS vẫn là rào cản với nhiều đơn vị nghiên cứu vừa và nhỏ.
  
-    \item \textbf{Khoảng trống 2 -- Tổng quát hóa đa miền chưa được giải quyết trọn vẹn.} Mô hình tối ưu cho một miền dữ liệu có thể suy giảm khi chuyển sang các miền khác như ClipShots hoặc BBC. Hiện tượng dịch chuyển miền dữ liệu trong SBD chưa có giải pháp tổng quát: các nghiên cứu hiện hành thường báo cáo kết quả tốt nhất trên một bộ dữ liệu mục tiêu mà chưa phân tích hệ thống mức suy giảm chéo. Điều này tạo nhu cầu cho các thực nghiệm đánh giá chéo có hệ thống, như được tiến hành trong Chương~\ref{ch:ket_qua_thuc_nghiem} của khóa luận.
+    \item \textbf{Khoảng trống 2 -- Tổng quát hóa đa miền chưa được giải quyết trọn vẹn.} Mô hình tối ưu cho một miền dữ liệu có thể suy giảm khi chuyển sang các miền khác như ClipShots hoặc BBC. Hiện tượng dịch chuyển miền dữ liệu trong SBD chưa có giải pháp tổng quát: các nghiên cứu hiện hành thường báo cáo kết quả tốt nhất trên một bộ dữ liệu mục tiêu mà chưa phân tích hệ thống mức suy giảm chéo. Điều này tạo nhu cầu cho các thực nghiệm đánh giá chéo có hệ thống, như được tiến hành trong Chương~\ref{ch:bo_du_lieu_va_thuc_nghiem} của khóa luận.
  
     \item \textbf{Khoảng trống 3 -- Thiếu phân tích hệ thống về hiệu chỉnh xác suất và hậu xử lý.} Phần lớn các công trình SBD tập trung cải tiến mạng xương sống (DeepSBD, TransNetV2, AutoShot) trong khi ít phân tích hệ thống về các kỹ thuật ở tầng đầu ra: hàm mất mát cho dữ liệu mất cân bằng (Focal Loss \cite{Lin2017FocalLoss}), giám sát theo ranh giới với nhãn many-hot, hiệu chỉnh nhiệt độ (temperature scaling \cite{Guo2017Calibration}) để cải thiện độ tin cậy (calibration) của xác suất dự đoán, và làm mượt Gaussian để giảm phổ tần số cao trong dòng xác suất đầu ra. Đây là khoảng trống mà khóa luận trực tiếp đề xuất giải pháp thông qua AutoShotV2.
 \end{itemize}
