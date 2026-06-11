@@ -117,26 +117,29 @@ def select_validation_protocol(
         )
 
     for sigma in sigmas:
+        # Predictions depend only on (fold, sigma); compute once per fold
+        # instead of once per (fold, sigma, threshold).
+        fold_predictions = [
+            logits_to_pred_dict(
+                _subset(logits, context["held"]),
+                temperature=context["temperature"],
+                sigma=sigma,
+            )
+            for context in fold_contexts
+        ]
         for threshold in thresholds:
             fold_scores = []
-            for context in fold_contexts:
-                held = context["held"]
-                temperature = context["temperature"]
-                held_probabilities = logits_to_pred_dict(
-                    _subset(logits, held),
-                    temperature=temperature,
-                    sigma=sigma,
-                )
+            for context, held_probabilities in zip(fold_contexts, fold_predictions):
                 macro_f1, source_f1 = _macro_source_f1(
                     held_probabilities,
-                    _subset(ground_truth, held),
+                    _subset(ground_truth, context["held"]),
                     entries,
                     threshold,
                 )
                 fold_scores.append(
                     {
                         "fold": context["fold"],
-                        "temperature": temperature,
+                        "temperature": context["temperature"],
                         "macro_source_f1": macro_f1,
                         "source_f1": source_f1,
                     }
