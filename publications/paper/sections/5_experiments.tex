@@ -88,9 +88,9 @@ paper always refer to the deployed checkpoint.
 Table~\ref{tab:overall} reports F1 across SHOT, BBC, and ClipShots. With the
 fixed deployment configuration, AutoShotV2 reaches
 \PaperDeployShotFOne{} on SHOT and \PaperDeployBBCFOne{} on BBC, improving
-over the reproduced AutoShot baseline by \PaperDeployVsAutoShotPP{} F1
-points and over the reported TransNetV2 baseline by
-\PaperDeployVsTransNetPP{} points on SHOT (Fig.~\ref{fig:bars}). On
+over the reproduced AutoShot baseline by \PaperDeployVsAutoShotPP\% and
+over the reported TransNetV2 baseline by \PaperDeployVsTransNetPP\% in
+absolute F1 on SHOT (Fig.~\ref{fig:bars}). On
 ClipShots the fixed configuration reaches \PaperDeployClipFOne{}; a separate
 test-set threshold sweep reaches \PaperDeployClipBestFOne{} at
 $\theta=0.15$, reported for transparency but not treated as the fixed
@@ -137,8 +137,8 @@ reproduction was not evaluated on SHOT.
 \draw (0,0) -- (0,2.7);
 \end{tikzpicture}
 \caption{F1-score comparison on SHOT. AutoShotV2 improves the reproduced
-AutoShot baseline by \PaperDeployVsAutoShotPP{} points and the reported
-TransNetV2 baseline by \PaperDeployVsTransNetPP{} points.}
+AutoShot baseline by \PaperDeployVsAutoShotPP\% and the reported
+TransNetV2 baseline by \PaperDeployVsTransNetPP\% in absolute F1.}
 \label{fig:bars}
 \end{figure}
 
@@ -174,8 +174,9 @@ Bootstrap & 10,000 video resamples, seed 42 \\
 \end{table}
 
 Relative to the A1 control, the selected B4 configuration improves SHOT by
-\PaperBFourVsAOneShotPP{} F1 points and ClipShots by
-\PaperBFourVsAOneClipPP{} points, while BBC is unchanged after rounding.
+\PaperBFourVsAOneShotPP\% and ClipShots by
+\PaperBFourVsAOneClipPP\% in absolute F1, while BBC is unchanged after
+rounding.
 Temperature scaling alone preserves the validation-selected operating point;
 Gaussian smoothing is the component that changes boundary decisions.
 
@@ -187,7 +188,7 @@ improvement claim for that dataset; BBC also has only 11 sampling units, so
 its interval should be interpreted cautiously.
 
 \begin{table}[!t]
-\caption{Paired Video Bootstrap Difference, B4 Minus A1}
+\caption{Paired Video Bootstrap Difference, B4 Minus A1 (Absolute Percentage Points)}
 \label{tab:paired_delta}
 \centering
 \small
@@ -271,7 +272,7 @@ complex training objective. A0 is omitted because its per-dataset
 best-threshold protocol is not a direct controlled comparison.
 
 \begin{table}[!t]
-\caption{Controlled Phase 2 Ablation: $\Delta$F1 Against the A1 BCE Control}
+\caption{Controlled Phase 2 Ablation: $\Delta$F1 Against the A1 BCE Control (Absolute Percentage Points)}
 \label{tab:ablation}
 \centering
 \scriptsize
@@ -354,8 +355,8 @@ five-fold validation-only protocol of Section~\ref{sec:protocol} before any
 test evaluation. Consistent with the delta-only reporting of
 Section~\ref{sec:tracks}, we summarize this study by its dispersion: the
 sample standard deviation of test F1 across seeds is
-\PaperSeedShotFOneStd{} on SHOT, \PaperSeedBBCFOneStd{} on BBC, and
-\PaperSeedClipFOneStd{} on ClipShots --- below 0.005 on every dataset and an
+\PaperSeedShotFOneStd\% on SHOT, \PaperSeedBBCFOneStd\% on BBC, and
+\PaperSeedClipFOneStd\% on ClipShots --- below 0.5\% on every dataset and an
 order of magnitude smaller than the paired bootstrap interval widths of
 Table~\ref{tab:paired_delta}. The pipeline is therefore stable with respect
 to head-training randomness; this study isolates training-seed sensitivity
@@ -370,7 +371,7 @@ checksummed but whose test logits were not retained
 (Section~\ref{sec:tracks}); the controlled track therefore carries every
 logit-level claim, and the three-seed study of
 Section~\ref{sec:seed_robustness} bounds optimization variability (F1 sample
-standard deviation at or below 0.005 on every dataset) without reproducing
+standard deviation at or below 0.5\% on every dataset) without reproducing
 either checkpoint bit for bit. Second, the historical sample cache recorded
 400 videos and 33,174 frames but not the exact selected IDs; strict
 manifests fix this for future runs but cannot retroactively prove the old

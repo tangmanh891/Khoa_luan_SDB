@@ -14,8 +14,8 @@ one-dimensional Gaussian smoothing before thresholding. With a fixed
 deployment configuration ($T^{*}=\PaperDeployTemperature$), AutoShotV2
 reaches an F1-score of \PaperDeployShotFOne{} on the SHOT test set of 200
 short videos, improving over the reproduced AutoShot baseline by
-\PaperDeployVsAutoShotPP{} F1 points and over the reported TransNetV2
-baseline by \PaperDeployVsTransNetPP{} points, and transfers to BBC
+\PaperDeployVsAutoShotPP\% and over the reported TransNetV2
+baseline by \PaperDeployVsTransNetPP\% in absolute F1, and transfers to BBC
 documentary footage (\PaperDeployBBCFOne) while remaining limited on
 open-world ClipShots (\PaperDeployClipFOne). A controlled replication under
 a frozen validation-only protocol shows that the gain comes from calibrated
@@ -25,7 +25,7 @@ BBC. Temperature scaling reduces validation NLL from 0.013006 to 0.009591
 and equal-width ECE from 0.007149 to 0.002214, while class-balanced ECE
 remains 0.070405, showing that aggregate frame-level calibration metrics are
 optimistic under severe boundary sparsity. A three-seed replication bounds
-training-seed F1 variability below 0.005 on every dataset. We release
+training-seed F1 variability below 0.5\% on every dataset. We release
 validation-selection manifests, per-video statistics, analysis code, and
 checksum-oriented artifact tooling.
 \end{abstract}

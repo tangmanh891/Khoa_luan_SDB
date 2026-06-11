@@ -45,12 +45,12 @@ false-positive peaks caused by sudden flashes or camera shakes.
 With the fixed deployment configuration, AutoShotV2 achieves an F1-score of
 \PaperDeployShotFOne{} on the SHOT test set, improving over the reproduced
 AutoShot baseline and the reported TransNetV2 baseline by
-\PaperDeployVsAutoShotPP{} and \PaperDeployVsTransNetPP{} F1 points,
+\PaperDeployVsAutoShotPP\% and \PaperDeployVsTransNetPP\% in absolute F1,
 respectively. A controlled replication under a frozen, validation-only
 five-fold protocol disentangles the sources of this gain: the training-loss
 alternatives change F1 only marginally, whereas calibrated post-processing
-adds \PaperBFourVsAOneShotPP{} F1 points on SHOT and
-\PaperBFourVsAOneClipPP{} points on ClipShots over the BCE control, with
+adds \PaperBFourVsAOneShotPP\% on SHOT and
+\PaperBFourVsAOneClipPP\% on ClipShots in absolute F1 over the BCE control, with
 paired bootstrap intervals confirming the deltas on SHOT and ClipShots but
 not BBC.
 

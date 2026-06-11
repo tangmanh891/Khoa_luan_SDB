@@ -15,9 +15,9 @@ After temperature scaling & 0.009591 & 0.001911 & 0.002214 & 0.002243 & 0.070405
 }
 
 \newcommand{\PaperPairedDeltaRows}{%
-SHOT & 0.0162 & [0.0093, 0.0236] & Yes \\
-BBC & -0.0000 & [-0.0033, 0.0041] & No \\
-ClipShots & 0.0457 & [0.0267, 0.0670] & Yes \\
+SHOT & +1.62\% & [+0.93\%, +2.36\%] & Yes \\
+BBC & -0.00\% & [-0.33\%, +0.41\%] & No \\
+ClipShots & +4.57\% & [+2.67\%, +6.70\%] & Yes \\
 }
 
 \newcommand{\PaperTestCalibrationRows}{%
@@ -36,13 +36,13 @@ Post-process CPU cost & 21.1 ms / $10^6$ frames \\
 }
 
 \newcommand{\PaperAblationDeltaRows}{%
-A2 -- Focal only & -0.0000 & -0.0003 & -0.0017 \\
-A3 -- Many-hot only & -0.0003 & -0.0008 & +0.0021 \\
-P1 -- Gaussian only & +0.0054 & -0.0134 & +0.0536 \\
-P2 -- Temperature only & +0.0000 & +0.0000 & +0.0000 \\
-B1 -- Focal + many-hot & +0.0006 & -0.0011 & +0.0023 \\
-B4 -- Temperature + Gaussian (selected) & \textbf{+0.0162} & \textbf{-0.0000} & \textbf{+0.0457} \\
-B5 -- Full candidate & +0.0164 & -0.0019 & +0.0425 \\
+A2 -- Focal only & -0.00\% & -0.03\% & -0.17\% \\
+A3 -- Many-hot only & -0.03\% & -0.08\% & +0.21\% \\
+P1 -- Gaussian only & +0.54\% & -1.34\% & +5.36\% \\
+P2 -- Temperature only & +0.00\% & +0.00\% & +0.00\% \\
+B1 -- Focal + many-hot & +0.06\% & -0.11\% & +0.23\% \\
+B4 -- Temperature + Gaussian (selected) & \textbf{+1.62\%} & \textbf{-0.00\%} & \textbf{+4.57\%} \\
+B5 -- Full candidate & +1.64\% & -0.19\% & +4.25\% \\
 }
 
 \newcommand{\PaperClipBreakdownRows}{%

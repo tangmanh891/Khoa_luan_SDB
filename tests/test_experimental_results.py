@@ -70,7 +70,7 @@ def test_paper_snapshot_generated_tables_and_release_are_present():
     assert r"\newcommand{\PaperBFourVsAOneClipPP}{4.57}" in macros
     assert r"\PaperMainResultRows" in tables
     assert r"\PaperAblationDeltaRows" in tables
-    assert r"\textbf{+0.0162}" in tables
+    assert r"\textbf{+1.62\%}" in tables
     assert "no EMA" not in tables
     # The replication's absolute scores must not appear anywhere in the paper
     # outputs: replication results are delta-only by design.
