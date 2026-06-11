@@ -2272,8 +2272,8 @@
       "device": "CPU",
       "frames": 4255691,
       "rounds": 3,
-      "median_seconds": 0.13595940000232076,
-      "milliseconds_per_million_frames": 31.94766725364242
+      "median_seconds": 0.08975490000011632,
+      "milliseconds_per_million_frames": 21.090558501572676
     }
   }
 }
