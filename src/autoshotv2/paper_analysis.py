@@ -629,7 +629,12 @@ def write_summary(path: Path, result: dict[str, Any]) -> None:
     path.write_text("\n".join(lines), encoding="utf-8")
 
 
-def run_analysis() -> dict[str, Any]:
+def _load_analysis_inputs() -> tuple[
+    dict[str, Any],
+    dict[str, dict[str, np.ndarray]],
+    dict[str, dict[str, np.ndarray]],
+]:
+    """Validate the frozen protocol and load logits plus ground truth."""
     frozen_protocol = json.loads(FROZEN_PROTOCOL_PATH.read_text(encoding="utf-8"))
     selected_protocol = frozen_protocol["selected"]
     expected = (B4_TEMPERATURE, B4_SIGMA, B4_THRESHOLD)
@@ -653,7 +658,19 @@ def run_analysis() -> dict[str, Any]:
         "bbc": load_bbc_ground_truth(),
         "clipshots": load_clipshots_ground_truth(logits_by_dataset["clipshots"]),
     }
+    return frozen_protocol, logits_by_dataset, ground_truth
 
+
+def _bootstrap_and_paired_stats(
+    logits_by_dataset: dict[str, dict[str, np.ndarray]],
+    ground_truth: dict[str, dict[str, np.ndarray]],
+) -> tuple[
+    dict[str, Any],
+    dict[str, Any],
+    list[dict[str, Any]],
+    dict[str, dict[str, np.ndarray]],
+]:
+    """Per-dataset bootstrap confidence intervals and paired deltas vs A1."""
     bootstrap = {}
     per_video_rows = []
     probabilities_by_dataset = {}
@@ -693,7 +710,28 @@ def run_analysis() -> dict[str, Any]:
             per_video_rows.append(
                 {"dataset": dataset, "video": key, "tp": tp, "fp": fp, "fn": fn}
             )
+    paired_delta_vs_a1 = {
+        dataset: paired_bootstrap_delta(
+            baseline_stats_by_dataset[dataset],
+            selected_stats_by_dataset[dataset],
+        )
+        for dataset in ("shot", "bbc", "clipshots")
+    }
+    return bootstrap, paired_delta_vs_a1, per_video_rows, probabilities_by_dataset
 
+
+def _calibration_sections(
+    logits_by_dataset: dict[str, dict[str, np.ndarray]],
+    ground_truth: dict[str, dict[str, np.ndarray]],
+    probabilities_by_dataset: dict[str, dict[str, np.ndarray]],
+) -> tuple[
+    dict[str, Any],
+    dict[str, Any],
+    int,
+    dict[str, Any],
+    list[dict[str, Any]],
+]:
+    """Validation/test calibration metrics and the ClipShots breakdown."""
     validation_logits, validation_labels, validation_videos = validation_logits_and_labels()
     before = calibration_metrics(validation_logits, validation_labels, temperature=1.0)
     after = calibration_metrics(
@@ -706,8 +744,6 @@ def run_analysis() -> dict[str, Any]:
         ground_truth["clipshots"],
     )
 
-    head_total = (4864 * 1024 + 1024) + 2 * (1024 + 1)
-    head_primary = (4864 * 1024 + 1024) + (1024 + 1)
     test_calibration = {}
     for dataset in ("shot", "bbc", "clipshots"):
         dataset_logits, dataset_labels, dataset_videos = logits_and_labels(
@@ -727,6 +763,40 @@ def run_analysis() -> dict[str, Any]:
                 temperature=B4_TEMPERATURE,
             ),
         }
+    return before, after, validation_videos, test_calibration, clipshots_breakdown
+
+
+def _efficiency_section(
+    logits_by_dataset: dict[str, dict[str, np.ndarray]],
+) -> dict[str, Any]:
+    """Parameter counts and the cached-logits post-processing benchmark."""
+    head_total = (4864 * 1024 + 1024) + 2 * (1024 + 1)
+    head_primary = (4864 * 1024 + 1024) + (1024 + 1)
+    return {
+        "feature_dimension": 4864,
+        "hidden_dimension": 1024,
+        "trainable_head_parameters": head_total,
+        "deployed_primary_path_parameters": head_primary,
+        "frozen_backbone_parameters": 14_299_202,
+        "training_samples": 33_174,
+        "training_videos": 400,
+        "epochs": 20,
+        "training_seed": SEED,
+        "training_elapsed_time": None,
+        "training_time_note": "Elapsed training time was not retained in the run artifact.",
+        "postprocess_benchmark": benchmark_postprocess(logits_by_dataset),
+    }
+
+
+def run_analysis() -> dict[str, Any]:
+    frozen_protocol, logits_by_dataset, ground_truth = _load_analysis_inputs()
+    selected_protocol = frozen_protocol["selected"]
+    bootstrap, paired_delta_vs_a1, per_video_rows, probabilities_by_dataset = (
+        _bootstrap_and_paired_stats(logits_by_dataset, ground_truth)
+    )
+    before, after, validation_videos, test_calibration, clipshots_breakdown = (
+        _calibration_sections(logits_by_dataset, ground_truth, probabilities_by_dataset)
+    )
     result = {
         "schema_version": 1,
         "method": "A1 BCE one-hot + B4 temperature scaling and Gaussian smoothing",
@@ -754,13 +824,7 @@ def run_analysis() -> dict[str, Any]:
             ],
         },
         "bootstrap": bootstrap,
-        "paired_delta_vs_a1": {
-            dataset: paired_bootstrap_delta(
-                baseline_stats_by_dataset[dataset],
-                selected_stats_by_dataset[dataset],
-            )
-            for dataset in ("shot", "bbc", "clipshots")
-        },
+        "paired_delta_vs_a1": paired_delta_vs_a1,
         "calibration": {
             "split": "combined validation",
             "videos": validation_videos,
@@ -776,20 +840,7 @@ def run_analysis() -> dict[str, Any]:
             "metric_note": "Type-specific precision and F1 are undefined because the detector does not predict a transition type.",
             "transition_types": clipshots_breakdown,
         },
-        "efficiency": {
-            "feature_dimension": 4864,
-            "hidden_dimension": 1024,
-            "trainable_head_parameters": head_total,
-            "deployed_primary_path_parameters": head_primary,
-            "frozen_backbone_parameters": 14_299_202,
-            "training_samples": 33_174,
-            "training_videos": 400,
-            "epochs": 20,
-            "training_seed": SEED,
-            "training_elapsed_time": None,
-            "training_time_note": "Elapsed training time was not retained in the run artifact.",
-            "postprocess_benchmark": benchmark_postprocess(logits_by_dataset),
-        },
+        "efficiency": _efficiency_section(logits_by_dataset),
     }
 
     output_json = ROOT / "reports" / "paper_analysis_results.json"
