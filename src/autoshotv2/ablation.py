@@ -44,8 +44,6 @@ class Experiment:
     loss: str = "bce"
     manyhot_weight: float = 0.0
     boundary_window: int = 0
-    use_ema: bool = False
-    ema_decay: float = 0.999
     sigma: float = 0.0
     temperature_mode: str = "off"
     control_id: str | None = "A1_phase2_bce_onehot"
@@ -60,7 +58,7 @@ EXPERIMENTS: dict[str, Experiment] = {
     ),
     "A1_phase2_bce_onehot": Experiment(
         "A1_phase2_bce_onehot",
-        "Minimal Phase2 control: BCE, one-hot only, no EMA.",
+        "Minimal Phase2 control: BCE, one-hot only.",
         "train",
         loss="bce",
         manyhot_weight=0.0,
@@ -85,15 +83,6 @@ EXPERIMENTS: dict[str, Experiment] = {
         manyhot_weight=0.3,
         boundary_window=1,
     ),
-    "A4_ema_only": Experiment(
-        "A4_ema_only",
-        "EMA effect with BCE and one-hot labels only.",
-        "train",
-        loss="bce",
-        manyhot_weight=0.0,
-        boundary_window=0,
-        use_ema=True,
-    ),
     "P1_gaussian_only": Experiment(
         "P1_gaussian_only",
         "Gaussian smoothing effect on A1 logits.",
@@ -117,24 +106,6 @@ EXPERIMENTS: dict[str, Experiment] = {
         loss="focal",
         manyhot_weight=0.3,
         boundary_window=1,
-    ),
-    "B2_focal_ema": Experiment(
-        "B2_focal_ema",
-        "Focal loss with EMA.",
-        "train",
-        loss="focal",
-        manyhot_weight=0.0,
-        boundary_window=0,
-        use_ema=True,
-    ),
-    "B3_manyhot_ema": Experiment(
-        "B3_manyhot_ema",
-        "Many-hot auxiliary target with EMA.",
-        "train",
-        loss="bce",
-        manyhot_weight=0.3,
-        boundary_window=1,
-        use_ema=True,
     ),
     "B4_temperature_gaussian": Experiment(
         "B4_temperature_gaussian",
@@ -453,8 +424,6 @@ def train_run(
         "--run-manifest": run_dir / "run_manifest.json",
     }
     extra: list[object] = []
-    if exp.use_ema:
-        extra.extend(["--use-ema", "--ema-decay", exp.ema_decay])
     if args.no_eval_cache:
         extra.append("--no-eval-cache")
     if args.skip_test_eval:

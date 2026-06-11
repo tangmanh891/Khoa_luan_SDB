@@ -21,8 +21,6 @@ autoshotv2-train = "autoshotv2.train_phase2:main"
 autoshotv2-eval = "autoshotv2.eval:main"
 autoshotv2-calibrate = "autoshotv2.postprocess_calibration:main"
 autoshotv2-ablation = "autoshotv2.ablation:main"
-autoshotv2-train-ema = "autoshotv2.train_ema:main"
-autoshotv2-ema-report = "autoshotv2.ema_report:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

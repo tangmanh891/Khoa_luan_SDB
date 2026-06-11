@@ -29,8 +29,6 @@ def flatten_metric(
         "loss": exp.loss,
         "manyhot_weight": exp.manyhot_weight,
         "boundary_window": exp.boundary_window,
-        "use_ema": exp.use_ema,
-        "ema_decay": exp.ema_decay,
         "temperature_mode": exp.temperature_mode,
         "temperature": postprocess["temperature"],
         "sigma": exp.sigma,

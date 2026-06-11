@@ -69,7 +69,7 @@ def test_build_train_phase2_command_preserves_order_and_stringifies():
 
     cmd = build_train_phase2_command(
         {"--epochs": 3, "--sigma": 2.0},
-        ["--use-ema", "--ema-decay", 0.999, "--no-resume"],
+        ["--skip-test-eval", "--stop-after-minutes", 30.5, "--no-resume"],
     )
     assert cmd == [
         sys.executable,
@@ -79,9 +79,9 @@ def test_build_train_phase2_command_preserves_order_and_stringifies():
         "3",
         "--sigma",
         "2.0",
-        "--use-ema",
-        "--ema-decay",
-        "0.999",
+        "--skip-test-eval",
+        "--stop-after-minutes",
+        "30.5",
         "--no-resume",
     ]
 

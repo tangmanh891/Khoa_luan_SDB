@@ -211,7 +211,6 @@ def train_head(
         raise ValueError(f"Unsupported loss: {args.loss}")
     optimizer = ManualAdam(head.parameters(), lr=args.lr, weight_decay=args.weight_decay)
     losses: list[float] = []
-    ema_state: dict[str, torch.Tensor] | None = None
     start_epoch = 1
     train_config = {
         "in_features": int(dataset.features.shape[1]),
@@ -223,8 +222,6 @@ def train_head(
         "alpha": args.alpha,
         "weight_decay": args.weight_decay,
         "manyhot_weight": args.manyhot_weight,
-        "use_ema": args.use_ema,
-        "ema_decay": args.ema_decay,
         "training_seed": args.seed,
     }
 
@@ -239,12 +236,7 @@ def train_head(
         optimizer.load_state_dict(state["optimizer"])
         losses = list(state.get("losses", []))
         start_epoch = int(state.get("epoch", 0)) + 1
-        if args.use_ema and state.get("ema_state") is not None:
-            ema_state = {k: v.to(device) for k, v in state["ema_state"].items()}
         print(f"Resuming training from epoch {start_epoch}/{args.epochs}")
-
-    if args.use_ema and ema_state is None:
-        ema_state = {k: v.detach().clone().to(device) for k, v in head.state_dict().items()}
 
     os.makedirs(args.checkpoint_dir, exist_ok=True)
 
@@ -252,7 +244,6 @@ def train_head(
         payload = {
             "epoch": epoch,
             "head": head.state_dict(),
-            "ema_state": {k: v.detach().cpu() for k, v in ema_state.items()} if ema_state is not None else None,
             "optimizer": optimizer.state_dict(),
             "losses": losses,
             "train_config": train_config,
@@ -264,8 +255,6 @@ def train_head(
 
     if start_epoch > args.epochs:
         print(f"Training already complete at epoch {start_epoch - 1}.")
-        if ema_state is not None:
-            head.load_state_dict({k: v.detach().cpu() for k, v in ema_state.items()})
         return head, losses
 
     for epoch in range(start_epoch, args.epochs + 1):
@@ -283,10 +272,6 @@ def train_head(
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-            if ema_state is not None:
-                with torch.no_grad():
-                    for name, value in head.state_dict().items():
-                        ema_state[name].mul_(args.ema_decay).add_(value.detach(), alpha=1.0 - args.ema_decay)
 
             total_loss += float(loss.item()) * len(feats)
             n_seen += len(feats)
@@ -305,8 +290,6 @@ def train_head(
         save_training_state(epoch)
         if deadline_expired(args):
             raise TimeBudgetExpired("Time budget reached after saving epoch checkpoint.")
-    if ema_state is not None:
-        head.load_state_dict({k: v.detach().cpu() for k, v in ema_state.items()})
     return head, losses
 
 
@@ -488,8 +471,6 @@ def main() -> None:
     parser.add_argument("--manyhot-weight", type=float, default=0.3)
     parser.add_argument("--sigma", type=float, default=2.0)
     parser.add_argument("--temperature-mode", choices=["off", "auto"], default="auto")
-    parser.add_argument("--use-ema", action="store_true")
-    parser.add_argument("--ema-decay", type=float, default=0.999)
     parser.add_argument("--boundary-window", type=int, default=1)
     parser.add_argument("--max-samples-per-video", type=int, default=160)
     parser.add_argument("--max-total-samples", type=int, default=0)
@@ -657,8 +638,6 @@ def main() -> None:
                 "threshold": deploy_threshold,
                 "manyhot_weight": args.manyhot_weight,
                 "boundary_window": args.boundary_window,
-                "use_ema": args.use_ema,
-                "ema_decay": args.ema_decay,
                 "val_f1": deploy_val["f1"],
                 "training_data": "Shot train + ClipShots train",
                 "metadata": os.path.abspath(args.meta),
