@@ -10,8 +10,69 @@ AutoShotV2, fixed deploy threshold & \textbf{0.8545} & \textbf{0.9656} & 0.7530 
 AutoShotV2, ClipShots best sweep & -- & -- & 0.7557 \\
 }
 
+\newcommand{\PaperProtocolMatchedRows}{%
+A1 -- BCE + one-hot & 0.8378 & 0.9570 & 0.6983 \\
+P1 -- A1 + Gaussian & 0.8432 & 0.9436 & 0.7519 \\
+P2 -- A1 + temperature & 0.8378 & 0.9570 & 0.6983 \\
+B4 -- A1 + temperature + Gaussian & \textbf{0.8540} & \textbf{0.9570} & \textbf{0.7441} \\
+B5 -- Focal + many-hot + B4 & 0.8542 & 0.9551 & 0.7409 \\
+}
+
+\newcommand{\PaperReportedBaselineRows}{%
+AutoShot (reported) & 0.8410 & 0.9710 & 0.7870 \\
+TransNetV2 (reported) & 0.7993 & 0.9620 & 0.7760 \\
+}
+
+\newcommand{\PaperArchivedResultRows}{%
+Deploy checkpoint, fixed threshold & 0.8545 & 0.9656 & 0.7530 \\
+Deploy checkpoint, best sweep & 0.8545 & 0.9656 & 0.7557 \\
+}
+
+\newcommand{\PaperDeployDetailRows}{%
+SHOT & 0.10 & 0.8557 & 0.8533 & \textbf{0.8545} \\
+BBC & 0.10 & 0.9750 & 0.9564 & \textbf{0.9656} \\
+ClipShots & 0.10 & 0.6662 & 0.8659 & 0.7530 \\
+}
+
+\newcommand{\PaperConfidenceRows}{%
+SHOT & 0.8540 & [0.8329, 0.8733] & 0.8617 & 0.8466 & 200 \\
+BBC & 0.9570 & [0.9310, 0.9717] & 0.9733 & 0.9412 & 11 \\
+ClipShots & 0.7441 & [0.6997, 0.7841] & 0.6498 & 0.8703 & 500 \\
+}
+
+\newcommand{\PaperCalibrationMetricRows}{%
+Before temperature scaling & 0.013006 & 0.002194 & 0.007149 & 0.007149 & 0.080506 \\
+After temperature scaling & 0.009591 & 0.001911 & 0.002214 & 0.002243 & 0.070405 \\
+}
+
+\newcommand{\PaperPairedDeltaRows}{%
+SHOT & 0.0162 & [0.0093, 0.0236] & Yes \\
+BBC & -0.0000 & [-0.0033, 0.0041] & No \\
+ClipShots & 0.0457 & [0.0267, 0.0670] & Yes \\
+}
+
+\newcommand{\PaperTestCalibrationRows}{%
+SHOT & 0.021689 & 0.004808 & 0.003014 & 0.002844 & 0.133525 \\
+BBC & 0.013305 & 0.001662 & 0.000851 & 0.001651 & 0.092471 \\
+ClipShots & 0.007654 & 0.001565 & 0.002520 & 0.002521 & 0.156939 \\
+}
+
+\newcommand{\PaperEfficiencyRows}{%
+Frozen backbone parameters & 14,299,202 \\
+Trainable Phase 2 head parameters & 4,983,810 \\
+Deployed primary-path parameters & 4,982,785 \\
+Training videos / sampled frames & 400 / 33,174 \\
+Training epochs / seed & 20 / 42 \\
+Post-process CPU cost & 21.1 ms / $10^6$ frames \\
+}
+
+\newcommand{\PaperCalibrationCVRows}{%
+A0 -- AutoShot baseline & 0.8443 & 0.9538 & \textbf{0.7881} \\
+A1 -- Phase2 control & \textbf{0.8540} & \textbf{0.9631} & 0.7575 \\
+B5 -- Phase2 full & 0.8539 & 0.9584 & 0.7555 \\
+}
+
 \newcommand{\PaperControlledAblationRows}{%
-A0 -- AutoShot baseline & 0.8405 & 0.9554 & 0.7649 \\
 A1 -- BCE + one-hot & 0.8378 & 0.9570 & 0.6983 \\
 A2 -- Focal only & 0.8378 & 0.9567 & 0.6967 \\
 A3 -- Many-hot only & 0.8375 & 0.9563 & 0.7005 \\
@@ -23,6 +84,6 @@ B5 -- Full candidate, no EMA & 0.8542 & 0.9551 & 0.7409 \\
 }
 
 \newcommand{\PaperClipBreakdownRows}{%
-Cut & 0.5826 & 0.8860 & 0.7030 \\
-Gradual & 0.6456 & 0.0442 & 0.0828 \\
+Cut & 4907 & 4412 & 495 & 0.8991 \\
+Gradual & 2302 & 1862 & 440 & 0.8089 \\
 }

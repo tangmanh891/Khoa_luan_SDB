@@ -1,0 +1,1991 @@
+{
+  "schema_version": 1,
+  "status": "frozen",
+  "selection_scope": "validation_only",
+  "selection_metric": "mean macro-F1 across validation data sources and folds",
+  "tie_break": "lower sigma, then threshold nearest 0.10",
+  "seed": 42,
+  "n_folds": 5,
+  "validation_videos": 33,
+  "validation_keys_hash": "811552a26b2f9b2e73a05d0afc6bc85787b63bf0116d86fcf7971552bdb3568b",
+  "validation_logits_sha256": "b9e22e1f26fdfbe2172d391939110c2cb76b7f23c20631446e49337d394a2156",
+  "folds": [
+    {
+      "fold": 0,
+      "keys_hash": "38f880433baa0673919a58ef69687f8de21828992d5f95580c58fd17d8781a47",
+      "keys": [
+        "shot_train:34234594601",
+        "shot_train:35455002104",
+        "shot_train:49974694347",
+        "shot_train:50226319770",
+        "shot_train:51907659300",
+        "shot_train:52030704748",
+        "shot_train:52303283018"
+      ]
+    },
+    {
+      "fold": 1,
+      "keys_hash": "5446b7792626395b3864bc2334001f430a79f37f6b658c2d7a5c58624aab2de6",
+      "keys": [
+        "shot_train:26922743731",
+        "shot_train:29810433315",
+        "shot_train:32990367452",
+        "shot_train:33756969635",
+        "shot_train:50571672955",
+        "shot_train:51618238639",
+        "shot_train:51970090159"
+      ]
+    },
+    {
+      "fold": 2,
+      "keys_hash": "7cf497b36db0b7e330116819b44bab084639ac7eafc669aaf28f6d5ef459ce7a",
+      "keys": [
+        "shot_train:25843031323",
+        "shot_train:34781314185",
+        "shot_train:34933978422",
+        "shot_train:35408203294",
+        "shot_train:43959935979",
+        "shot_train:48422312550",
+        "shot_train:52067280221"
+      ]
+    },
+    {
+      "fold": 3,
+      "keys_hash": "7737be1f5d05089fa2eb50277f7333e6ea59618074265d24d3e5e2c240d796ce",
+      "keys": [
+        "shot_train:35219009690",
+        "shot_train:47686645993",
+        "shot_train:51545595598",
+        "shot_train:52211719138",
+        "shot_train:52655310968",
+        "shot_train:52678926817"
+      ]
+    },
+    {
+      "fold": 4,
+      "keys_hash": "b3124ea8dbc97cae23fc8a5daa8bb003d76a73ff9250c99235e5693a1c8b0660",
+      "keys": [
+        "shot_train:32121372263",
+        "shot_train:34826559031",
+        "shot_train:35531061865",
+        "shot_train:43946073194",
+        "shot_train:51910832568",
+        "shot_train:52028106533"
+      ]
+    }
+  ],
+  "search_space": {
+    "sigmas": [
+      0.0,
+      1.0,
+      2.0,
+      3.0
+    ],
+    "thresholds": [
+      0.05,
+      0.1,
+      0.15000000000000002,
+      0.2,
+      0.25,
+      0.3,
+      0.35000000000000003,
+      0.4,
+      0.45,
+      0.5
+    ]
+  },
+  "selected": {
+    "temperature": 0.6324195068772487,
+    "sigma": 1.0,
+    "threshold": 0.3,
+    "cross_validated_macro_source_f1": 0.7513083834503536
+  },
+  "candidates": [
+    {
+      "sigma": 0.0,
+      "threshold": 0.05,
+      "mean_macro_source_f1": 0.47010716092742977,
+      "folds": [
+        {
+          "fold": 0,
+          "temperature": 0.665407917116942,
+          "macro_source_f1": 0.3625730994152047,
+          "source_f1": {
+            "shot": 0.3625730994152047
+          }
+        },
+        {
+          "fold": 1,
+          "temperature": 0.636890330290436,
+          "macro_source_f1": 0.536144578313253,
+          "source_f1": {
+            "shot": 0.536144578313253
+          }
+        },
+        {
+          "fold": 2,
+          "temperature": 0.5850558292496819,
+          "macro_source_f1": 0.44382022471910104,
+          "source_f1": {
+            "shot": 0.44382022471910104
+          }
+        },
+        {
+          "fold": 3,
+          "temperature": 0.6471168316179013,
+          "macro_source_f1": 0.4562737642585552,
+          "source_f1": {
+            "shot": 0.4562737642585552
+          }
+        },
+        {
+          "fold": 4,
+          "temperature": 0.6250996574812995,
+          "macro_source_f1": 0.5517241379310345,
+          "source_f1": {
+            "shot": 0.5517241379310345
+          }
+        }
+      ]
+    },
+    {
+      "sigma": 0.0,
+      "threshold": 0.1,
+      "mean_macro_source_f1": 0.5516868472085179,
+      "folds": [
+        {
+          "fold": 0,
+          "temperature": 0.665407917116942,
+          "macro_source_f1": 0.44987775061124685,
+          "source_f1": {
+            "shot": 0.44987775061124685
+          }
+        },
+        {
+          "fold": 1,
+          "temperature": 0.636890330290436,
+          "macro_source_f1": 0.6202090592334495,
+          "source_f1": {
+            "shot": 0.6202090592334495
+          }
+        },
+        {
+          "fold": 2,
+          "temperature": 0.5850558292496819,
+          "macro_source_f1": 0.5015873015873016,
+          "source_f1": {
+            "shot": 0.5015873015873016
+          }
+        },
+        {
+          "fold": 3,
+          "temperature": 0.6471168316179013,
+          "macro_source_f1": 0.5700934579439252,
+          "source_f1": {
+            "shot": 0.5700934579439252
+          }
+        },
+        {
+          "fold": 4,
+          "temperature": 0.6250996574812995,
+          "macro_source_f1": 0.6166666666666667,
+          "source_f1": {
+            "shot": 0.6166666666666667
+          }
+        }
+      ]
+    },
+    {
+      "sigma": 0.0,
+      "threshold": 0.15000000000000002,
+      "mean_macro_source_f1": 0.6019868220899917,
+      "folds": [
+        {
+          "fold": 0,
+          "temperature": 0.665407917116942,
+          "macro_source_f1": 0.5454545454545455,
+          "source_f1": {
+            "shot": 0.5454545454545455
+          }
+        },
+        {
+          "fold": 1,
+          "temperature": 0.636890330290436,
+          "macro_source_f1": 0.6496350364963505,
+          "source_f1": {
+            "shot": 0.6496350364963505
+          }
+        },
+        {
+          "fold": 2,
+          "temperature": 0.5850558292496819,
+          "macro_source_f1": 0.5360824742268041,
+          "source_f1": {
+            "shot": 0.5360824742268041
+          }
+        },
+        {
+          "fold": 3,
+          "temperature": 0.6471168316179013,
+          "macro_source_f1": 0.6373626373626374,
+          "source_f1": {
+            "shot": 0.6373626373626374
+          }
+        },
+        {
+          "fold": 4,
+          "temperature": 0.6250996574812995,
+          "macro_source_f1": 0.641399416909621,
+          "source_f1": {
+            "shot": 0.641399416909621
+          }
+        }
+      ]
+    },
+    {
+      "sigma": 0.0,
+      "threshold": 0.2,
+      "mean_macro_source_f1": 0.6402040524837831,
+      "folds": [
+        {
+          "fold": 0,
+          "temperature": 0.665407917116942,
+          "macro_source_f1": 0.5750798722044728,
+          "source_f1": {
+            "shot": 0.5750798722044728
+          }
+        },
+        {
+          "fold": 1,
+          "temperature": 0.636890330290436,
+          "macro_source_f1": 0.6742424242424242,
+          "source_f1": {
+            "shot": 0.6742424242424242
+          }
+        },
+        {
+          "fold": 2,
+          "temperature": 0.5850558292496819,
+          "macro_source_f1": 0.5611510791366906,
+          "source_f1": {
+            "shot": 0.5611510791366906
+          }
+        },
+        {
+          "fold": 3,
+          "temperature": 0.6471168316179013,
+          "macro_source_f1": 0.7073170731707317,
+          "source_f1": {
+            "shot": 0.7073170731707317
+          }
+        },
+        {
+          "fold": 4,
+          "temperature": 0.6250996574812995,
+          "macro_source_f1": 0.6832298136645962,
+          "source_f1": {
+            "shot": 0.6832298136645962
+          }
+        }
+      ]
+    },
+    {
+      "sigma": 0.0,
+      "threshold": 0.25,
+      "mean_macro_source_f1": 0.6650516405403415,
+      "folds": [
+        {
+          "fold": 0,
+          "temperature": 0.665407917116942,
+          "macro_source_f1": 0.6095890410958904,
+          "source_f1": {
+            "shot": 0.6095890410958904
+          }
+        },
+        {
+          "fold": 1,
+          "temperature": 0.636890330290436,
+          "macro_source_f1": 0.7007874015748031,
+          "source_f1": {
+            "shot": 0.7007874015748031
+          }
+        },
+        {
+          "fold": 2,
+          "temperature": 0.5850558292496819,
+          "macro_source_f1": 0.582089552238806,
+          "source_f1": {
+            "shot": 0.582089552238806
+          }
+        },
+        {
+          "fold": 3,
+          "temperature": 0.6471168316179013,
+          "macro_source_f1": 0.725,
+          "source_f1": {
+            "shot": 0.725
+          }
+        },
+        {
+          "fold": 4,
+          "temperature": 0.6250996574812995,
+          "macro_source_f1": 0.7077922077922079,
+          "source_f1": {
+            "shot": 0.7077922077922079
+          }
+        }
+      ]
+    },
+    {
+      "sigma": 0.0,
+      "threshold": 0.3,
+      "mean_macro_source_f1": 0.6763555804267225,
+      "folds": [
+        {
+          "fold": 0,
+          "temperature": 0.665407917116942,
+          "macro_source_f1": 0.6236559139784946,
+          "source_f1": {
+            "shot": 0.6236559139784946
+          }
+        },
+        {
+          "fold": 1,
+          "temperature": 0.636890330290436,
+          "macro_source_f1": 0.7154471544715447,
+          "source_f1": {
+            "shot": 0.7154471544715447
+          }
+        },
+        {
+          "fold": 2,
+          "temperature": 0.5850558292496819,
+          "macro_source_f1": 0.5923076923076923,
+          "source_f1": {
+            "shot": 0.5923076923076923
+          }
+        },
+        {
+          "fold": 3,
+          "temperature": 0.6471168316179013,
+          "macro_source_f1": 0.7261146496815287,
+          "source_f1": {
+            "shot": 0.7261146496815287
+          }
+        },
+        {
+          "fold": 4,
+          "temperature": 0.6250996574812995,
+          "macro_source_f1": 0.7242524916943522,
+          "source_f1": {
+            "shot": 0.7242524916943522
+          }
+        }
+      ]
+    },
+    {
+      "sigma": 0.0,
+      "threshold": 0.35000000000000003,
+      "mean_macro_source_f1": 0.6856810823200338,
+      "folds": [
+        {
+          "fold": 0,
+          "temperature": 0.665407917116942,
+          "macro_source_f1": 0.6641221374045801,
+          "source_f1": {
+            "shot": 0.6641221374045801
+          }
+        },
+        {
+          "fold": 1,
+          "temperature": 0.636890330290436,
+          "macro_source_f1": 0.721311475409836,
+          "source_f1": {
+            "shot": 0.721311475409836
+          }
+        },
+        {
+          "fold": 2,
+          "temperature": 0.5850558292496819,
+          "macro_source_f1": 0.5945945945945946,
+          "source_f1": {
+            "shot": 0.5945945945945946
+          }
+        },
+        {
+          "fold": 3,
+          "temperature": 0.6471168316179013,
+          "macro_source_f1": 0.7307692307692308,
+          "source_f1": {
+            "shot": 0.7307692307692308
+          }
+        },
+        {
+          "fold": 4,
+          "temperature": 0.6250996574812995,
+          "macro_source_f1": 0.717607973421927,
+          "source_f1": {
+            "shot": 0.717607973421927
+          }
+        }
+      ]
+    },
+    {
+      "sigma": 0.0,
+      "threshold": 0.4,
+      "mean_macro_source_f1": 0.6960555382785545,
+      "folds": [
+        {
+          "fold": 0,
+          "temperature": 0.665407917116942,
+          "macro_source_f1": 0.6774193548387097,
+          "source_f1": {
+            "shot": 0.6774193548387097
+          }
+        },
+        {
+          "fold": 1,
+          "temperature": 0.636890330290436,
+          "macro_source_f1": 0.7288135593220338,
+          "source_f1": {
+            "shot": 0.7288135593220338
+          }
+        },
+        {
+          "fold": 2,
+          "temperature": 0.5850558292496819,
+          "macro_source_f1": 0.6135458167330679,
+          "source_f1": {
+            "shot": 0.6135458167330679
+          }
+        },
+        {
+          "fold": 3,
+          "temperature": 0.6471168316179013,
+          "macro_source_f1": 0.7307692307692308,
+          "source_f1": {
+            "shot": 0.7307692307692308
+          }
+        },
+        {
+          "fold": 4,
+          "temperature": 0.6250996574812995,
+          "macro_source_f1": 0.7297297297297298,
+          "source_f1": {
+            "shot": 0.7297297297297298
+          }
+        }
+      ]
+    },
+    {
+      "sigma": 0.0,
+      "threshold": 0.45,
+      "mean_macro_source_f1": 0.7126531090643005,
+      "folds": [
+        {
+          "fold": 0,
+          "temperature": 0.665407917116942,
+          "macro_source_f1": 0.6887966804979253,
+          "source_f1": {
+            "shot": 0.6887966804979253
+          }
+        },
+        {
+          "fold": 1,
+          "temperature": 0.636890330290436,
+          "macro_source_f1": 0.7478260869565218,
+          "source_f1": {
+            "shot": 0.7478260869565218
+          }
+        },
+        {
+          "fold": 2,
+          "temperature": 0.5850558292496819,
+          "macro_source_f1": 0.6337448559670782,
+          "source_f1": {
+            "shot": 0.6337448559670782
+          }
+        },
+        {
+          "fold": 3,
+          "temperature": 0.6471168316179013,
+          "macro_source_f1": 0.7549668874172185,
+          "source_f1": {
+            "shot": 0.7549668874172185
+          }
+        },
+        {
+          "fold": 4,
+          "temperature": 0.6250996574812995,
+          "macro_source_f1": 0.7379310344827587,
+          "source_f1": {
+            "shot": 0.7379310344827587
+          }
+        }
+      ]
+    },
+    {
+      "sigma": 0.0,
+      "threshold": 0.5,
+      "mean_macro_source_f1": 0.717379928507655,
+      "folds": [
+        {
+          "fold": 0,
+          "temperature": 0.665407917116942,
+          "macro_source_f1": 0.6986899563318776,
+          "source_f1": {
+            "shot": 0.6986899563318776
+          }
+        },
+        {
+          "fold": 1,
+          "temperature": 0.636890330290436,
+          "macro_source_f1": 0.7510917030567685,
+          "source_f1": {
+            "shot": 0.7510917030567685
+          }
+        },
+        {
+          "fold": 2,
+          "temperature": 0.5850558292496819,
+          "macro_source_f1": 0.6416666666666667,
+          "source_f1": {
+            "shot": 0.6416666666666667
+          }
+        },
+        {
+          "fold": 3,
+          "temperature": 0.6471168316179013,
+          "macro_source_f1": 0.7549668874172185,
+          "source_f1": {
+            "shot": 0.7549668874172185
+          }
+        },
+        {
+          "fold": 4,
+          "temperature": 0.6250996574812995,
+          "macro_source_f1": 0.740484429065744,
+          "source_f1": {
+            "shot": 0.740484429065744
+          }
+        }
+      ]
+    },
+    {
+      "sigma": 1.0,
+      "threshold": 0.05,
+      "mean_macro_source_f1": 0.6033866586193619,
+      "folds": [
+        {
+          "fold": 0,
+          "temperature": 0.665407917116942,
+          "macro_source_f1": 0.5042016806722689,
+          "source_f1": {
+            "shot": 0.5042016806722689
+          }
+        },
+        {
+          "fold": 1,
+          "temperature": 0.636890330290436,
+          "macro_source_f1": 0.6818181818181818,
+          "source_f1": {
+            "shot": 0.6818181818181818
+          }
+        },
+        {
+          "fold": 2,
+          "temperature": 0.5850558292496819,
+          "macro_source_f1": 0.5611510791366906,
+          "source_f1": {
+            "shot": 0.5611510791366906
+          }
+        },
+        {
+          "fold": 3,
+          "temperature": 0.6471168316179013,
+          "macro_source_f1": 0.6051282051282051,
+          "source_f1": {
+            "shot": 0.6051282051282051
+          }
+        },
+        {
+          "fold": 4,
+          "temperature": 0.6250996574812995,
+          "macro_source_f1": 0.6646341463414634,
+          "source_f1": {
+            "shot": 0.6646341463414634
+          }
+        }
+      ]
+    },
+    {
+      "sigma": 1.0,
+      "threshold": 0.1,
+      "mean_macro_source_f1": 0.6624541676517028,
+      "folds": [
+        {
+          "fold": 0,
+          "temperature": 0.665407917116942,
+          "macro_source_f1": 0.5909090909090909,
+          "source_f1": {
+            "shot": 0.5909090909090909
+          }
+        },
+        {
+          "fold": 1,
+          "temperature": 0.636890330290436,
+          "macro_source_f1": 0.7258064516129032,
+          "source_f1": {
+            "shot": 0.7258064516129032
+          }
+        },
+        {
+          "fold": 2,
+          "temperature": 0.5850558292496819,
+          "macro_source_f1": 0.6141732283464567,
+          "source_f1": {
+            "shot": 0.6141732283464567
+          }
+        },
+        {
+          "fold": 3,
+          "temperature": 0.6471168316179013,
+          "macro_source_f1": 0.6823529411764706,
+          "source_f1": {
+            "shot": 0.6823529411764706
+          }
+        },
+        {
+          "fold": 4,
+          "temperature": 0.6250996574812995,
+          "macro_source_f1": 0.6990291262135921,
+          "source_f1": {
+            "shot": 0.6990291262135921
+          }
+        }
+      ]
+    },
+    {
+      "sigma": 1.0,
+      "threshold": 0.15000000000000002,
+      "mean_macro_source_f1": 0.7122000544403997,
+      "folds": [
+        {
+          "fold": 0,
+          "temperature": 0.665407917116942,
+          "macro_source_f1": 0.654275092936803,
+          "source_f1": {
+            "shot": 0.654275092936803
+          }
+        },
+        {
+          "fold": 1,
+          "temperature": 0.636890330290436,
+          "macro_source_f1": 0.7772925764192139,
+          "source_f1": {
+            "shot": 0.7772925764192139
+          }
+        },
+        {
+          "fold": 2,
+          "temperature": 0.5850558292496819,
+          "macro_source_f1": 0.6446280991735537,
+          "source_f1": {
+            "shot": 0.6446280991735537
+          }
+        },
+        {
+          "fold": 3,
+          "temperature": 0.6471168316179013,
+          "macro_source_f1": 0.7295597484276729,
+          "source_f1": {
+            "shot": 0.7295597484276729
+          }
+        },
+        {
+          "fold": 4,
+          "temperature": 0.6250996574812995,
+          "macro_source_f1": 0.7552447552447552,
+          "source_f1": {
+            "shot": 0.7552447552447552
+          }
+        }
+      ]
+    },
+    {
+      "sigma": 1.0,
+      "threshold": 0.2,
+      "mean_macro_source_f1": 0.7258586608313602,
+      "folds": [
+        {
+          "fold": 0,
+          "temperature": 0.665407917116942,
+          "macro_source_f1": 0.656,
+          "source_f1": {
+            "shot": 0.656
+          }
+        },
+        {
+          "fold": 1,
+          "temperature": 0.636890330290436,
+          "macro_source_f1": 0.7963800904977375,
+          "source_f1": {
+            "shot": 0.7963800904977375
+          }
+        },
+        {
+          "fold": 2,
+          "temperature": 0.5850558292496819,
+          "macro_source_f1": 0.6527196652719665,
+          "source_f1": {
+            "shot": 0.6527196652719665
+          }
+        },
+        {
+          "fold": 3,
+          "temperature": 0.6471168316179013,
+          "macro_source_f1": 0.7500000000000001,
+          "source_f1": {
+            "shot": 0.7500000000000001
+          }
+        },
+        {
+          "fold": 4,
+          "temperature": 0.6250996574812995,
+          "macro_source_f1": 0.7741935483870968,
+          "source_f1": {
+            "shot": 0.7741935483870968
+          }
+        }
+      ]
+    },
+    {
+      "sigma": 1.0,
+      "threshold": 0.25,
+      "mean_macro_source_f1": 0.7407210592574961,
+      "folds": [
+        {
+          "fold": 0,
+          "temperature": 0.665407917116942,
+          "macro_source_f1": 0.6753246753246753,
+          "source_f1": {
+            "shot": 0.6753246753246753
+          }
+        },
+        {
+          "fold": 1,
+          "temperature": 0.636890330290436,
+          "macro_source_f1": 0.8073394495412843,
+          "source_f1": {
+            "shot": 0.8073394495412843
+          }
+        },
+        {
+          "fold": 2,
+          "temperature": 0.5850558292496819,
+          "macro_source_f1": 0.6724890829694323,
+          "source_f1": {
+            "shot": 0.6724890829694323
+          }
+        },
+        {
+          "fold": 3,
+          "temperature": 0.6471168316179013,
+          "macro_source_f1": 0.7702702702702703,
+          "source_f1": {
+            "shot": 0.7702702702702703
+          }
+        },
+        {
+          "fold": 4,
+          "temperature": 0.6250996574812995,
+          "macro_source_f1": 0.7781818181818182,
+          "source_f1": {
+            "shot": 0.7781818181818182
+          }
+        }
+      ]
+    },
+    {
+      "sigma": 1.0,
+      "threshold": 0.3,
+      "mean_macro_source_f1": 0.7513083834503536,
+      "folds": [
+        {
+          "fold": 0,
+          "temperature": 0.665407917116942,
+          "macro_source_f1": 0.6851851851851851,
+          "source_f1": {
+            "shot": 0.6851851851851851
+          }
+        },
+        {
+          "fold": 1,
+          "temperature": 0.636890330290436,
+          "macro_source_f1": 0.8130841121495328,
+          "source_f1": {
+            "shot": 0.8130841121495328
+          }
+        },
+        {
+          "fold": 2,
+          "temperature": 0.5850558292496819,
+          "macro_source_f1": 0.6877828054298643,
+          "source_f1": {
+            "shot": 0.6877828054298643
+          }
+        },
+        {
+          "fold": 3,
+          "temperature": 0.6471168316179013,
+          "macro_source_f1": 0.7808219178082191,
+          "source_f1": {
+            "shot": 0.7808219178082191
+          }
+        },
+        {
+          "fold": 4,
+          "temperature": 0.6250996574812995,
+          "macro_source_f1": 0.7896678966789669,
+          "source_f1": {
+            "shot": 0.7896678966789669
+          }
+        }
+      ]
+    },
+    {
+      "sigma": 1.0,
+      "threshold": 0.35000000000000003,
+      "mean_macro_source_f1": 0.7502725256024136,
+      "folds": [
+        {
+          "fold": 0,
+          "temperature": 0.665407917116942,
+          "macro_source_f1": 0.6857142857142857,
+          "source_f1": {
+            "shot": 0.6857142857142857
+          }
+        },
+        {
+          "fold": 1,
+          "temperature": 0.636890330290436,
+          "macro_source_f1": 0.798076923076923,
+          "source_f1": {
+            "shot": 0.798076923076923
+          }
+        },
+        {
+          "fold": 2,
+          "temperature": 0.5850558292496819,
+          "macro_source_f1": 0.6944444444444444,
+          "source_f1": {
+            "shot": 0.6944444444444444
+          }
+        },
+        {
+          "fold": 3,
+          "temperature": 0.6471168316179013,
+          "macro_source_f1": 0.7746478873239436,
+          "source_f1": {
+            "shot": 0.7746478873239436
+          }
+        },
+        {
+          "fold": 4,
+          "temperature": 0.6250996574812995,
+          "macro_source_f1": 0.7984790874524715,
+          "source_f1": {
+            "shot": 0.7984790874524715
+          }
+        }
+      ]
+    },
+    {
+      "sigma": 1.0,
+      "threshold": 0.4,
+      "mean_macro_source_f1": 0.735232160980012,
+      "folds": [
+        {
+          "fold": 0,
+          "temperature": 0.665407917116942,
+          "macro_source_f1": 0.6632124352331606,
+          "source_f1": {
+            "shot": 0.6632124352331606
+          }
+        },
+        {
+          "fold": 1,
+          "temperature": 0.636890330290436,
+          "macro_source_f1": 0.7755102040816326,
+          "source_f1": {
+            "shot": 0.7755102040816326
+          }
+        },
+        {
+          "fold": 2,
+          "temperature": 0.5850558292496819,
+          "macro_source_f1": 0.6930693069306931,
+          "source_f1": {
+            "shot": 0.6930693069306931
+          }
+        },
+        {
+          "fold": 3,
+          "temperature": 0.6471168316179013,
+          "macro_source_f1": 0.7851851851851852,
+          "source_f1": {
+            "shot": 0.7851851851851852
+          }
+        },
+        {
+          "fold": 4,
+          "temperature": 0.6250996574812995,
+          "macro_source_f1": 0.7591836734693878,
+          "source_f1": {
+            "shot": 0.7591836734693878
+          }
+        }
+      ]
+    },
+    {
+      "sigma": 1.0,
+      "threshold": 0.45,
+      "mean_macro_source_f1": 0.3185287366617774,
+      "folds": [
+        {
+          "fold": 0,
+          "temperature": 0.665407917116942,
+          "macro_source_f1": 0.3582089552238806,
+          "source_f1": {
+            "shot": 0.3582089552238806
+          }
+        },
+        {
+          "fold": 1,
+          "temperature": 0.636890330290436,
+          "macro_source_f1": 0.3283582089552239,
+          "source_f1": {
+            "shot": 0.3283582089552239
+          }
+        },
+        {
+          "fold": 2,
+          "temperature": 0.5850558292496819,
+          "macro_source_f1": 0.4,
+          "source_f1": {
+            "shot": 0.4
+          }
+        },
+        {
+          "fold": 3,
+          "temperature": 0.6471168316179013,
+          "macro_source_f1": 0.20930232558139536,
+          "source_f1": {
+            "shot": 0.20930232558139536
+          }
+        },
+        {
+          "fold": 4,
+          "temperature": 0.6250996574812995,
+          "macro_source_f1": 0.2967741935483871,
+          "source_f1": {
+            "shot": 0.2967741935483871
+          }
+        }
+      ]
+    },
+    {
+      "sigma": 1.0,
+      "threshold": 0.5,
+      "mean_macro_source_f1": 0.20316968830812301,
+      "folds": [
+        {
+          "fold": 0,
+          "temperature": 0.665407917116942,
+          "macro_source_f1": 0.21666666666666667,
+          "source_f1": {
+            "shot": 0.21666666666666667
+          }
+        },
+        {
+          "fold": 1,
+          "temperature": 0.636890330290436,
+          "macro_source_f1": 0.24793388429752067,
+          "source_f1": {
+            "shot": 0.24793388429752067
+          }
+        },
+        {
+          "fold": 2,
+          "temperature": 0.5850558292496819,
+          "macro_source_f1": 0.24074074074074076,
+          "source_f1": {
+            "shot": 0.24074074074074076
+          }
+        },
+        {
+          "fold": 3,
+          "temperature": 0.6471168316179013,
+          "macro_source_f1": 0.1234567901234568,
+          "source_f1": {
+            "shot": 0.1234567901234568
+          }
+        },
+        {
+          "fold": 4,
+          "temperature": 0.6250996574812995,
+          "macro_source_f1": 0.18705035971223022,
+          "source_f1": {
+            "shot": 0.18705035971223022
+          }
+        }
+      ]
+    },
+    {
+      "sigma": 2.0,
+      "threshold": 0.05,
+      "mean_macro_source_f1": 0.6716743054658983,
+      "folds": [
+        {
+          "fold": 0,
+          "temperature": 0.665407917116942,
+          "macro_source_f1": 0.5874587458745875,
+          "source_f1": {
+            "shot": 0.5874587458745875
+          }
+        },
+        {
+          "fold": 1,
+          "temperature": 0.636890330290436,
+          "macro_source_f1": 0.7325102880658436,
+          "source_f1": {
+            "shot": 0.7325102880658436
+          }
+        },
+        {
+          "fold": 2,
+          "temperature": 0.5850558292496819,
+          "macro_source_f1": 0.6311475409836065,
+          "source_f1": {
+            "shot": 0.6311475409836065
+          }
+        },
+        {
+          "fold": 3,
+          "temperature": 0.6471168316179013,
+          "macro_source_f1": 0.6982248520710058,
+          "source_f1": {
+            "shot": 0.6982248520710058
+          }
+        },
+        {
+          "fold": 4,
+          "temperature": 0.6250996574812995,
+          "macro_source_f1": 0.7090301003344481,
+          "source_f1": {
+            "shot": 0.7090301003344481
+          }
+        }
+      ]
+    },
+    {
+      "sigma": 2.0,
+      "threshold": 0.1,
+      "mean_macro_source_f1": 0.7318933975136638,
+      "folds": [
+        {
+          "fold": 0,
+          "temperature": 0.665407917116942,
+          "macro_source_f1": 0.6880000000000001,
+          "source_f1": {
+            "shot": 0.6880000000000001
+          }
+        },
+        {
+          "fold": 1,
+          "temperature": 0.636890330290436,
+          "macro_source_f1": 0.8071748878923768,
+          "source_f1": {
+            "shot": 0.8071748878923768
+          }
+        },
+        {
+          "fold": 2,
+          "temperature": 0.5850558292496819,
+          "macro_source_f1": 0.6754385964912281,
+          "source_f1": {
+            "shot": 0.6754385964912281
+          }
+        },
+        {
+          "fold": 3,
+          "temperature": 0.6471168316179013,
+          "macro_source_f1": 0.7388535031847134,
+          "source_f1": {
+            "shot": 0.7388535031847134
+          }
+        },
+        {
+          "fold": 4,
+          "temperature": 0.6250996574812995,
+          "macro_source_f1": 0.7499999999999999,
+          "source_f1": {
+            "shot": 0.7499999999999999
+          }
+        }
+      ]
+    },
+    {
+      "sigma": 2.0,
+      "threshold": 0.15000000000000002,
+      "mean_macro_source_f1": 0.7466267001175282,
+      "folds": [
+        {
+          "fold": 0,
+          "temperature": 0.665407917116942,
+          "macro_source_f1": 0.6696035242290749,
+          "source_f1": {
+            "shot": 0.6696035242290749
+          }
+        },
+        {
+          "fold": 1,
+          "temperature": 0.636890330290436,
+          "macro_source_f1": 0.8240740740740742,
+          "source_f1": {
+            "shot": 0.8240740740740742
+          }
+        },
+        {
+          "fold": 2,
+          "temperature": 0.5850558292496819,
+          "macro_source_f1": 0.6933333333333332,
+          "source_f1": {
+            "shot": 0.6933333333333332
+          }
+        },
+        {
+          "fold": 3,
+          "temperature": 0.6471168316179013,
+          "macro_source_f1": 0.7651006711409395,
+          "source_f1": {
+            "shot": 0.7651006711409395
+          }
+        },
+        {
+          "fold": 4,
+          "temperature": 0.6250996574812995,
+          "macro_source_f1": 0.7810218978102189,
+          "source_f1": {
+            "shot": 0.7810218978102189
+          }
+        }
+      ]
+    },
+    {
+      "sigma": 2.0,
+      "threshold": 0.2,
+      "mean_macro_source_f1": 0.7486164892115255,
+      "folds": [
+        {
+          "fold": 0,
+          "temperature": 0.665407917116942,
+          "macro_source_f1": 0.6542056074766356,
+          "source_f1": {
+            "shot": 0.6542056074766356
+          }
+        },
+        {
+          "fold": 1,
+          "temperature": 0.636890330290436,
+          "macro_source_f1": 0.8058252427184465,
+          "source_f1": {
+            "shot": 0.8058252427184465
+          }
+        },
+        {
+          "fold": 2,
+          "temperature": 0.5850558292496819,
+          "macro_source_f1": 0.7169811320754718,
+          "source_f1": {
+            "shot": 0.7169811320754718
+          }
+        },
+        {
+          "fold": 3,
+          "temperature": 0.6471168316179013,
+          "macro_source_f1": 0.7913669064748201,
+          "source_f1": {
+            "shot": 0.7913669064748201
+          }
+        },
+        {
+          "fold": 4,
+          "temperature": 0.6250996574812995,
+          "macro_source_f1": 0.7747035573122532,
+          "source_f1": {
+            "shot": 0.7747035573122532
+          }
+        }
+      ]
+    },
+    {
+      "sigma": 2.0,
+      "threshold": 0.25,
+      "mean_macro_source_f1": 0.34165375681676674,
+      "folds": [
+        {
+          "fold": 0,
+          "temperature": 0.665407917116942,
+          "macro_source_f1": 0.34246575342465757,
+          "source_f1": {
+            "shot": 0.34246575342465757
+          }
+        },
+        {
+          "fold": 1,
+          "temperature": 0.636890330290436,
+          "macro_source_f1": 0.37500000000000006,
+          "source_f1": {
+            "shot": 0.37500000000000006
+          }
+        },
+        {
+          "fold": 2,
+          "temperature": 0.5850558292496819,
+          "macro_source_f1": 0.4296296296296296,
+          "source_f1": {
+            "shot": 0.4296296296296296
+          }
+        },
+        {
+          "fold": 3,
+          "temperature": 0.6471168316179013,
+          "macro_source_f1": 0.22988505747126434,
+          "source_f1": {
+            "shot": 0.22988505747126434
+          }
+        },
+        {
+          "fold": 4,
+          "temperature": 0.6250996574812995,
+          "macro_source_f1": 0.33128834355828224,
+          "source_f1": {
+            "shot": 0.33128834355828224
+          }
+        }
+      ]
+    },
+    {
+      "sigma": 2.0,
+      "threshold": 0.3,
+      "mean_macro_source_f1": 0.22292011126054373,
+      "folds": [
+        {
+          "fold": 0,
+          "temperature": 0.665407917116942,
+          "macro_source_f1": 0.19047619047619047,
+          "source_f1": {
+            "shot": 0.19047619047619047
+          }
+        },
+        {
+          "fold": 1,
+          "temperature": 0.636890330290436,
+          "macro_source_f1": 0.2258064516129032,
+          "source_f1": {
+            "shot": 0.2258064516129032
+          }
+        },
+        {
+          "fold": 2,
+          "temperature": 0.5850558292496819,
+          "macro_source_f1": 0.32758620689655177,
+          "source_f1": {
+            "shot": 0.32758620689655177
+          }
+        },
+        {
+          "fold": 3,
+          "temperature": 0.6471168316179013,
+          "macro_source_f1": 0.17073170731707318,
+          "source_f1": {
+            "shot": 0.17073170731707318
+          }
+        },
+        {
+          "fold": 4,
+          "temperature": 0.6250996574812995,
+          "macro_source_f1": 0.2,
+          "source_f1": {
+            "shot": 0.2
+          }
+        }
+      ]
+    },
+    {
+      "sigma": 2.0,
+      "threshold": 0.35000000000000003,
+      "mean_macro_source_f1": 0.14927339632145126,
+      "folds": [
+        {
+          "fold": 0,
+          "temperature": 0.665407917116942,
+          "macro_source_f1": 0.15384615384615385,
+          "source_f1": {
+            "shot": 0.15384615384615385
+          }
+        },
+        {
+          "fold": 1,
+          "temperature": 0.636890330290436,
+          "macro_source_f1": 0.1565217391304348,
+          "source_f1": {
+            "shot": 0.1565217391304348
+          }
+        },
+        {
+          "fold": 2,
+          "temperature": 0.5850558292496819,
+          "macro_source_f1": 0.20952380952380958,
+          "source_f1": {
+            "shot": 0.20952380952380958
+          }
+        },
+        {
+          "fold": 3,
+          "temperature": 0.6471168316179013,
+          "macro_source_f1": 0.10526315789473684,
+          "source_f1": {
+            "shot": 0.10526315789473684
+          }
+        },
+        {
+          "fold": 4,
+          "temperature": 0.6250996574812995,
+          "macro_source_f1": 0.12121212121212119,
+          "source_f1": {
+            "shot": 0.12121212121212119
+          }
+        }
+      ]
+    },
+    {
+      "sigma": 2.0,
+      "threshold": 0.4,
+      "mean_macro_source_f1": 0.10297837254835077,
+      "folds": [
+        {
+          "fold": 0,
+          "temperature": 0.665407917116942,
+          "macro_source_f1": 0.07407407407407407,
+          "source_f1": {
+            "shot": 0.07407407407407407
+          }
+        },
+        {
+          "fold": 1,
+          "temperature": 0.636890330290436,
+          "macro_source_f1": 0.12844036697247704,
+          "source_f1": {
+            "shot": 0.12844036697247704
+          }
+        },
+        {
+          "fold": 2,
+          "temperature": 0.5850558292496819,
+          "macro_source_f1": 0.1782178217821782,
+          "source_f1": {
+            "shot": 0.1782178217821782
+          }
+        },
+        {
+          "fold": 3,
+          "temperature": 0.6471168316179013,
+          "macro_source_f1": 0.0547945205479452,
+          "source_f1": {
+            "shot": 0.0547945205479452
+          }
+        },
+        {
+          "fold": 4,
+          "temperature": 0.6250996574812995,
+          "macro_source_f1": 0.07936507936507936,
+          "source_f1": {
+            "shot": 0.07936507936507936
+          }
+        }
+      ]
+    },
+    {
+      "sigma": 2.0,
+      "threshold": 0.45,
+      "mean_macro_source_f1": 0.05856703330974343,
+      "folds": [
+        {
+          "fold": 0,
+          "temperature": 0.665407917116942,
+          "macro_source_f1": 0.01923076923076923,
+          "source_f1": {
+            "shot": 0.01923076923076923
+          }
+        },
+        {
+          "fold": 1,
+          "temperature": 0.636890330290436,
+          "macro_source_f1": 0.1320754716981132,
+          "source_f1": {
+            "shot": 0.1320754716981132
+          }
+        },
+        {
+          "fold": 2,
+          "temperature": 0.5850558292496819,
+          "macro_source_f1": 0.125,
+          "source_f1": {
+            "shot": 0.125
+          }
+        },
+        {
+          "fold": 3,
+          "temperature": 0.6471168316179013,
+          "macro_source_f1": 0.0,
+          "source_f1": {
+            "shot": 0.0
+          }
+        },
+        {
+          "fold": 4,
+          "temperature": 0.6250996574812995,
+          "macro_source_f1": 0.01652892561983471,
+          "source_f1": {
+            "shot": 0.01652892561983471
+          }
+        }
+      ]
+    },
+    {
+      "sigma": 2.0,
+      "threshold": 0.5,
+      "mean_macro_source_f1": 0.040420631062342297,
+      "folds": [
+        {
+          "fold": 0,
+          "temperature": 0.665407917116942,
+          "macro_source_f1": 0.01923076923076923,
+          "source_f1": {
+            "shot": 0.01923076923076923
+          }
+        },
+        {
+          "fold": 1,
+          "temperature": 0.636890330290436,
+          "macro_source_f1": 0.0784313725490196,
+          "source_f1": {
+            "shot": 0.0784313725490196
+          }
+        },
+        {
+          "fold": 2,
+          "temperature": 0.5850558292496819,
+          "macro_source_f1": 0.08791208791208792,
+          "source_f1": {
+            "shot": 0.08791208791208792
+          }
+        },
+        {
+          "fold": 3,
+          "temperature": 0.6471168316179013,
+          "macro_source_f1": 0.0,
+          "source_f1": {
+            "shot": 0.0
+          }
+        },
+        {
+          "fold": 4,
+          "temperature": 0.6250996574812995,
+          "macro_source_f1": 0.01652892561983471,
+          "source_f1": {
+            "shot": 0.01652892561983471
+          }
+        }
+      ]
+    },
+    {
+      "sigma": 3.0,
+      "threshold": 0.05,
+      "mean_macro_source_f1": 0.6924540899225413,
+      "folds": [
+        {
+          "fold": 0,
+          "temperature": 0.665407917116942,
+          "macro_source_f1": 0.6022304832713755,
+          "source_f1": {
+            "shot": 0.6022304832713755
+          }
+        },
+        {
+          "fold": 1,
+          "temperature": 0.636890330290436,
+          "macro_source_f1": 0.7532467532467534,
+          "source_f1": {
+            "shot": 0.7532467532467534
+          }
+        },
+        {
+          "fold": 2,
+          "temperature": 0.5850558292496819,
+          "macro_source_f1": 0.6609442060085837,
+          "source_f1": {
+            "shot": 0.6609442060085837
+          }
+        },
+        {
+          "fold": 3,
+          "temperature": 0.6471168316179013,
+          "macro_source_f1": 0.7204968944099378,
+          "source_f1": {
+            "shot": 0.7204968944099378
+          }
+        },
+        {
+          "fold": 4,
+          "temperature": 0.6250996574812995,
+          "macro_source_f1": 0.7253521126760564,
+          "source_f1": {
+            "shot": 0.7253521126760564
+          }
+        }
+      ]
+    },
+    {
+      "sigma": 3.0,
+      "threshold": 0.1,
+      "mean_macro_source_f1": 0.7441065218666498,
+      "folds": [
+        {
+          "fold": 0,
+          "temperature": 0.665407917116942,
+          "macro_source_f1": 0.6637554585152838,
+          "source_f1": {
+            "shot": 0.6637554585152838
+          }
+        },
+        {
+          "fold": 1,
+          "temperature": 0.636890330290436,
+          "macro_source_f1": 0.8186046511627906,
+          "source_f1": {
+            "shot": 0.8186046511627906
+          }
+        },
+        {
+          "fold": 2,
+          "temperature": 0.5850558292496819,
+          "macro_source_f1": 0.7031963470319635,
+          "source_f1": {
+            "shot": 0.7031963470319635
+          }
+        },
+        {
+          "fold": 3,
+          "temperature": 0.6471168316179013,
+          "macro_source_f1": 0.7702702702702703,
+          "source_f1": {
+            "shot": 0.7702702702702703
+          }
+        },
+        {
+          "fold": 4,
+          "temperature": 0.6250996574812995,
+          "macro_source_f1": 0.7647058823529411,
+          "source_f1": {
+            "shot": 0.7647058823529411
+          }
+        }
+      ]
+    },
+    {
+      "sigma": 3.0,
+      "threshold": 0.15000000000000002,
+      "mean_macro_source_f1": 0.4925999779299749,
+      "folds": [
+        {
+          "fold": 0,
+          "temperature": 0.665407917116942,
+          "macro_source_f1": 0.5222222222222223,
+          "source_f1": {
+            "shot": 0.5222222222222223
+          }
+        },
+        {
+          "fold": 1,
+          "temperature": 0.636890330290436,
+          "macro_source_f1": 0.5487804878048781,
+          "source_f1": {
+            "shot": 0.5487804878048781
+          }
+        },
+        {
+          "fold": 2,
+          "temperature": 0.5850558292496819,
+          "macro_source_f1": 0.5548387096774193,
+          "source_f1": {
+            "shot": 0.5548387096774193
+          }
+        },
+        {
+          "fold": 3,
+          "temperature": 0.6471168316179013,
+          "macro_source_f1": 0.4,
+          "source_f1": {
+            "shot": 0.4
+          }
+        },
+        {
+          "fold": 4,
+          "temperature": 0.6250996574812995,
+          "macro_source_f1": 0.4371584699453552,
+          "source_f1": {
+            "shot": 0.4371584699453552
+          }
+        }
+      ]
+    },
+    {
+      "sigma": 3.0,
+      "threshold": 0.2,
+      "mean_macro_source_f1": 0.26339481179123475,
+      "folds": [
+        {
+          "fold": 0,
+          "temperature": 0.665407917116942,
+          "macro_source_f1": 0.23357664233576636,
+          "source_f1": {
+            "shot": 0.23357664233576636
+          }
+        },
+        {
+          "fold": 1,
+          "temperature": 0.636890330290436,
+          "macro_source_f1": 0.30534351145038163,
+          "source_f1": {
+            "shot": 0.30534351145038163
+          }
+        },
+        {
+          "fold": 2,
+          "temperature": 0.5850558292496819,
+          "macro_source_f1": 0.3577235772357724,
+          "source_f1": {
+            "shot": 0.3577235772357724
+          }
+        },
+        {
+          "fold": 3,
+          "temperature": 0.6471168316179013,
+          "macro_source_f1": 0.1686746987951807,
+          "source_f1": {
+            "shot": 0.1686746987951807
+          }
+        },
+        {
+          "fold": 4,
+          "temperature": 0.6250996574812995,
+          "macro_source_f1": 0.2516556291390728,
+          "source_f1": {
+            "shot": 0.2516556291390728
+          }
+        }
+      ]
+    },
+    {
+      "sigma": 3.0,
+      "threshold": 0.25,
+      "mean_macro_source_f1": 0.17826970654817392,
+      "folds": [
+        {
+          "fold": 0,
+          "temperature": 0.665407917116942,
+          "macro_source_f1": 0.16666666666666669,
+          "source_f1": {
+            "shot": 0.16666666666666669
+          }
+        },
+        {
+          "fold": 1,
+          "temperature": 0.636890330290436,
+          "macro_source_f1": 0.1680672268907563,
+          "source_f1": {
+            "shot": 0.1680672268907563
+          }
+        },
+        {
+          "fold": 2,
+          "temperature": 0.5850558292496819,
+          "macro_source_f1": 0.27522935779816515,
+          "source_f1": {
+            "shot": 0.27522935779816515
+          }
+        },
+        {
+          "fold": 3,
+          "temperature": 0.6471168316179013,
+          "macro_source_f1": 0.12987012987012989,
+          "source_f1": {
+            "shot": 0.12987012987012989
+          }
+        },
+        {
+          "fold": 4,
+          "temperature": 0.6250996574812995,
+          "macro_source_f1": 0.15151515151515152,
+          "source_f1": {
+            "shot": 0.15151515151515152
+          }
+        }
+      ]
+    },
+    {
+      "sigma": 3.0,
+      "threshold": 0.3,
+      "mean_macro_source_f1": 0.0955295838802688,
+      "folds": [
+        {
+          "fold": 0,
+          "temperature": 0.665407917116942,
+          "macro_source_f1": 0.07272727272727272,
+          "source_f1": {
+            "shot": 0.07272727272727272
+          }
+        },
+        {
+          "fold": 1,
+          "temperature": 0.636890330290436,
+          "macro_source_f1": 0.12612612612612611,
+          "source_f1": {
+            "shot": 0.12612612612612611
+          }
+        },
+        {
+          "fold": 2,
+          "temperature": 0.5850558292496819,
+          "macro_source_f1": 0.16,
+          "source_f1": {
+            "shot": 0.16
+          }
+        },
+        {
+          "fold": 3,
+          "temperature": 0.6471168316179013,
+          "macro_source_f1": 0.0547945205479452,
+          "source_f1": {
+            "shot": 0.0547945205479452
+          }
+        },
+        {
+          "fold": 4,
+          "temperature": 0.6250996574812995,
+          "macro_source_f1": 0.06399999999999999,
+          "source_f1": {
+            "shot": 0.06399999999999999
+          }
+        }
+      ]
+    },
+    {
+      "sigma": 3.0,
+      "threshold": 0.35000000000000003,
+      "mean_macro_source_f1": 0.05110304643355938,
+      "folds": [
+        {
+          "fold": 0,
+          "temperature": 0.665407917116942,
+          "macro_source_f1": 0.019047619047619046,
+          "source_f1": {
+            "shot": 0.019047619047619046
+          }
+        },
+        {
+          "fold": 1,
+          "temperature": 0.636890330290436,
+          "macro_source_f1": 0.09615384615384615,
+          "source_f1": {
+            "shot": 0.09615384615384615
+          }
+        },
+        {
+          "fold": 2,
+          "temperature": 0.5850558292496819,
+          "macro_source_f1": 0.10752688172043011,
+          "source_f1": {
+            "shot": 0.10752688172043011
+          }
+        },
+        {
+          "fold": 3,
+          "temperature": 0.6471168316179013,
+          "macro_source_f1": 0.0,
+          "source_f1": {
+            "shot": 0.0
+          }
+        },
+        {
+          "fold": 4,
+          "temperature": 0.6250996574812995,
+          "macro_source_f1": 0.03278688524590164,
+          "source_f1": {
+            "shot": 0.03278688524590164
+          }
+        }
+      ]
+    },
+    {
+      "sigma": 3.0,
+      "threshold": 0.4,
+      "mean_macro_source_f1": 0.03579236520649309,
+      "folds": [
+        {
+          "fold": 0,
+          "temperature": 0.665407917116942,
+          "macro_source_f1": 0.01923076923076923,
+          "source_f1": {
+            "shot": 0.01923076923076923
+          }
+        },
+        {
+          "fold": 1,
+          "temperature": 0.636890330290436,
+          "macro_source_f1": 0.0970873786407767,
+          "source_f1": {
+            "shot": 0.0970873786407767
+          }
+        },
+        {
+          "fold": 2,
+          "temperature": 0.5850558292496819,
+          "macro_source_f1": 0.04597701149425288,
+          "source_f1": {
+            "shot": 0.04597701149425288
+          }
+        },
+        {
+          "fold": 3,
+          "temperature": 0.6471168316179013,
+          "macro_source_f1": 0.0,
+          "source_f1": {
+            "shot": 0.0
+          }
+        },
+        {
+          "fold": 4,
+          "temperature": 0.6250996574812995,
+          "macro_source_f1": 0.016666666666666666,
+          "source_f1": {
+            "shot": 0.016666666666666666
+          }
+        }
+      ]
+    },
+    {
+      "sigma": 3.0,
+      "threshold": 0.45,
+      "mean_macro_source_f1": 0.016569139672587947,
+      "folds": [
+        {
+          "fold": 0,
+          "temperature": 0.665407917116942,
+          "macro_source_f1": 0.0,
+          "source_f1": {
+            "shot": 0.0
+          }
+        },
+        {
+          "fold": 1,
+          "temperature": 0.636890330290436,
+          "macro_source_f1": 0.020202020202020204,
+          "source_f1": {
+            "shot": 0.020202020202020204
+          }
+        },
+        {
+          "fold": 2,
+          "temperature": 0.5850558292496819,
+          "macro_source_f1": 0.04597701149425288,
+          "source_f1": {
+            "shot": 0.04597701149425288
+          }
+        },
+        {
+          "fold": 3,
+          "temperature": 0.6471168316179013,
+          "macro_source_f1": 0.0,
+          "source_f1": {
+            "shot": 0.0
+          }
+        },
+        {
+          "fold": 4,
+          "temperature": 0.6250996574812995,
+          "macro_source_f1": 0.016666666666666666,
+          "source_f1": {
+            "shot": 0.016666666666666666
+          }
+        }
+      ]
+    },
+    {
+      "sigma": 3.0,
+      "threshold": 0.5,
+      "mean_macro_source_f1": 0.0,
+      "folds": [
+        {
+          "fold": 0,
+          "temperature": 0.665407917116942,
+          "macro_source_f1": 0.0,
+          "source_f1": {
+            "shot": 0.0
+          }
+        },
+        {
+          "fold": 1,
+          "temperature": 0.636890330290436,
+          "macro_source_f1": 0.0,
+          "source_f1": {
+            "shot": 0.0
+          }
+        },
+        {
+          "fold": 2,
+          "temperature": 0.5850558292496819,
+          "macro_source_f1": 0.0,
+          "source_f1": {
+            "shot": 0.0
+          }
+        },
+        {
+          "fold": 3,
+          "temperature": 0.6471168316179013,
+          "macro_source_f1": 0.0,
+          "source_f1": {
+            "shot": 0.0
+          }
+        },
+        {
+          "fold": 4,
+          "temperature": 0.6250996574812995,
+          "macro_source_f1": 0.0,
+          "source_f1": {
+            "shot": 0.0
+          }
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "metadata": "D:\\Khoa luan tot nghiep\\Github AutoShot\\AutoShotV2\\AutoShotV2\\artifacts\\experiments\\ablation_full\\resolved_meta.pickle",
+    "metadata_sha256": "e5cc359ed831c526793e228689a4c42d769ec7ed6cd317e35d3b542ebd163a22",
+    "validation_logits": "D:\\Khoa luan tot nghiep\\Github AutoShot\\AutoShotV2\\AutoShotV2\\artifacts\\experiments\\journal_study\\seed_43\\eval_cache\\combined_val_logits.pkl",
+    "validation_logits_file_sha256": "5c5e699ec34573ce4c1fb21668736ca9330d2c43dde6fbc53a4c618bf5c7852c"
+  }
+}

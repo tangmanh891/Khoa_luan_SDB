@@ -1,5 +1,22 @@
 \section{Conclusion and Discussion}
 
-In this paper, we presented AutoShotV2, a compact refinement framework for short-video shot boundary detection. By freezing the AutoShot backbone and optimizing a two-branch classification head with Focal Loss and many-hot supervision, the method addresses the extreme class imbalance characteristic of short videos. Temperature scaling and Gaussian smoothing provide the calibrated decision pipeline used at deployment. AutoShotV2 raises SHOT F1 from \PaperAutoShotShotFOne{} for the reproduced AutoShot baseline to \PaperASVTwoShotFOne, the best result among the evaluated methods, without repeating the computationally expensive neural architecture search.
+We presented a reproducibility-focused study of calibration and frozen-feature
+adaptation for AutoShot. The selected configuration trains a BCE one-hot head
+on cached features and applies temperature scaling and Gaussian smoothing
+chosen by source-stratified, validation-only cross-validation. It reaches F1
+scores of \PaperASVTwoShotFOne{} on SHOT, \PaperASVTwoBBCFOne{} on BBC, and
+\PaperASVTwoClipFOne{} on ClipShots for the reported seed.
 
-Despite these advancements, several challenges remain. Cross-domain analysis revealed a noticeable performance degradation on diverse open-world datasets like ClipShots, primarily due to missed gradual transitions. This emphasizes that SBD systems should treat calibration, loss balancing, and temporal windows as domain-sensitive parameters rather than fixed constants. Fast camera motion and game-like visual effects can still trigger false positives, indicating a limit to purely visual features. In the future, we aim to explore domain-adaptive calibration techniques and multimodal SBD architectures that integrate audio cues to further improve cross-domain robustness.
+The ablation clarifies the source of the gain: Focal Loss and many-hot
+supervision do not improve the BCE control, whereas Gaussian smoothing changes
+boundary decisions and temperature scaling improves probability diagnostics.
+Paired bootstrap intervals support gains on SHOT and ClipShots but not BBC.
+Class-balanced calibration error also shows why very small aggregate ECE values
+should not be interpreted as uniformly calibrated boundary probabilities.
+
+The revised implementation records exact cache identities, split manifests,
+frozen selection decisions, and artifact checksums. Completing the scheduled
+three-seed study requires restoring the original AutoShot base checkpoint;
+until then, optimization variability remains unresolved. Further work should
+also reserve an independent calibration split and address cross-domain
+precision on ClipShots.

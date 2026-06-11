@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "sources": {
+    "SHOT JSON ground truth": "D:\\Khoa luan tot nghiep\\Github AutoShot\\AutoShotV2\\AutoShotV2\\reports\\source_results\\shot_test_ground_truth.json",
+    "BBC annotation directory": "D:\\Khoa luan tot nghiep\\Github AutoShot\\AutoShotV2\\AutoShotV2\\data\\BBCDataset\\annotations\\shots",
+    "ClipShots annotations": "D:\\Khoa luan tot nghiep\\Github AutoShot\\AutoShotV2\\AutoShotV2\\data\\ClipShots\\annotations\\test.json",
+    "ClipShots reference logits": "D:\\Khoa luan tot nghiep\\Github AutoShot\\AutoShotV2\\AutoShotV2\\artifacts\\experiments\\ablation_full\\A1_phase2_bce_onehot\\eval_cache\\clipshots_test_logits.pkl"
+  },
+  "outputs": {
+    "shot": "D:\\Khoa luan tot nghiep\\Github AutoShot\\AutoShotV2\\AutoShotV2\\artifacts\\experiments\\journal_study\\shared\\shot_test_gt.pkl",
+    "bbc": "D:\\Khoa luan tot nghiep\\Github AutoShot\\AutoShotV2\\AutoShotV2\\artifacts\\experiments\\journal_study\\shared\\bbc_test_gt.pkl",
+    "clipshots": "D:\\Khoa luan tot nghiep\\Github AutoShot\\AutoShotV2\\AutoShotV2\\artifacts\\experiments\\journal_study\\shared\\clipshots_test_gt.pkl"
+  }
+}

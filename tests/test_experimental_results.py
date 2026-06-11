@@ -58,13 +58,14 @@ def test_paper_snapshot_generated_tables_and_release_are_present():
     paper = ROOT / "publications" / "paper"
     assert (paper / "main.tex").is_file()
     assert len(list((paper / "sections").glob("*.tex"))) == 7
-    assert len(list((paper / "images").iterdir())) == 18
+    assert (paper / "images" / "reliability_diagram.png").stat().st_size > 20_000
 
     macros = (paper / "generated" / "experiment_macros.tex").read_text(encoding="utf-8")
     tables = (paper / "generated" / "experiment_tables.tex").read_text(encoding="utf-8")
-    assert r"\newcommand{\PaperASVTwoShotFOne}{0.8545}" in macros
-    assert r"\newcommand{\PaperASVTwoClipDeployFOne}{0.7530}" in macros
-    assert r"\newcommand{\PaperASVTwoClipBestFOne}{0.7557}" in macros
+    assert r"\newcommand{\PaperASVTwoShotFOne}{0.8540}" in macros
+    assert r"\newcommand{\PaperASVTwoClipFOne}{0.7441}" in macros
+    assert r"\PaperProtocolMatchedRows" in tables
+    assert r"\PaperConfidenceRows" in tables
     assert r"\PaperControlledAblationRows" in tables
     assert (paper / "releases" / "AutoShotV2_Paper.pdf").stat().st_size > 250_000
 
@@ -77,4 +78,6 @@ def test_clipshots_breakdown_has_explicit_deploy_protocol():
     )
     assert source["protocol"]["threshold"] == 0.1
     assert source["videos"] == 500
+    assert source["source_kind"] == "recomputed_from_logits_and_annotations"
     assert {item["id"] for item in source["transition_types"]} == {"cut", "gradual"}
+    assert sum(item["ground_truth"] for item in source["transition_types"]) == 7209

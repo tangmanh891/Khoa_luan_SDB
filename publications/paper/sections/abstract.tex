@@ -1,3 +1,21 @@
 \begin{abstract}
-Shot boundary detection (SBD) is a fundamental preprocessing step for video indexing, retrieval, summarization, and automated editing. However, modern short-video platforms create a difficult operating regime: videos are brief, shots are extremely short, transitions are visually complex, and boundary frames are rare compared with non-boundary frames. This paper presents AutoShotV2, a lightweight improvement over the AutoShot architecture for short-video SBD. Instead of re-searching or retraining the full backbone, AutoShotV2 freezes the AutoShot feature extractor and trains a new two-branch classification head over 4864-dimensional cached features. The head is optimized with Focal Loss and complementary one-hot and boundary-aware many-hot supervision. At inference time, the primary boundary logits are calibrated by temperature scaling and stabilized by one-dimensional Gaussian smoothing before thresholding. On the SHOT test set of 200 short videos, AutoShotV2 reaches an F1-score of \PaperASVTwoShotFOne, with precision of \PaperASVTwoShotPrecision{} and recall of \PaperASVTwoShotRecall, improving over the reproduced AutoShot baseline by \PaperASVTwoVsAutoShotPP{} F1 points and over the reported TransNetV2 baseline by \PaperASVTwoVsTransNetPP{} points. Experiments on BBC and ClipShots show that the same fixed deployment configuration transfers well to documentary footage but remains limited on open-world gradual transitions. The code is available at \url{https://github.com/DoTienManhCoder/AutoShotV2}.
+Shot boundary detection (SBD) is a threshold-sensitive preprocessing step
+whose reported accuracy depends on model training, score calibration, temporal
+filtering, and operating-point selection. We present a reproducibility-focused
+study of frozen-feature adaptation for AutoShot. The study freezes the searched
+AutoShot representation, trains a binary cross-entropy head on cached
+4864-dimensional features, and selects temperature scaling, Gaussian smoothing,
+and a decision threshold using five-fold validation only. The selected
+single-seed configuration achieves F1 scores of \PaperASVTwoShotFOne{} on SHOT,
+\PaperASVTwoBBCFOne{} on BBC, and \PaperASVTwoClipFOne{} on ClipShots.
+Paired video bootstrap estimates improvements over the unsmoothed BCE control
+of 0.0162 on SHOT and 0.0457 on ClipShots, while the BBC interval includes zero.
+Temperature scaling reduces validation NLL from 0.013006 to 0.009591 and
+equal-width ECE from 0.007149 to 0.002214. However, class-balanced ECE remains
+0.070405, showing that aggregate frame-level calibration metrics are optimistic
+under severe boundary sparsity. Controlled ablations further show that Gaussian
+smoothing changes boundary accuracy, whereas temperature scaling primarily
+improves probability quality. We release validation-selection manifests,
+per-video statistics, analysis code, and checksum-oriented artifact tooling;
+the reported training checkpoint remains limited to one seed.
 \end{abstract}

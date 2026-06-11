@@ -1,31 +1,39 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "dataset": "clipshots",
   "split": "test",
   "videos": 500,
   "protocol": {
-    "checkpoint": "ckpt_phase2_shot_clipshots_best.pth",
-    "temperature": 0.38780461844336944,
+    "temperature": 0.661785970550883,
     "sigma": 2.0,
-    "threshold": 0.1
+    "threshold": 0.1,
+    "matching_tolerance_frames": 2,
+    "seed": 42
   },
-  "source_kind": "legacy_analysis",
-  "source": "AutoShots_Report Chapter5 and AutoShotV2Paper working tree, imported 2026-06-07",
-  "note": "Per-transition-type metrics were preserved from the completed error analysis. Raw per-type prediction artifacts are not included in the repository.",
+  "source_kind": "recomputed_from_logits_and_annotations",
+  "sources": [
+    "artifacts/experiments/ablation_full/A1_phase2_bce_onehot/eval_cache",
+    "data/ClipShots/annotations/test.json"
+  ],
+  "classification": "Ground truth is Cut if transition width <= 1 frame; gradual otherwise.",
+  "matching": "Class-agnostic predictions are matched once with the canonical +/-2 frame interval matcher; recall is then grouped by ground-truth type.",
+  "metric_note": "Type-specific precision and F1 are undefined because the detector does not predict a transition type.",
   "transition_types": [
     {
       "id": "cut",
       "label": "Cut",
-      "precision": 0.5826,
-      "recall": 0.886,
-      "f1": 0.703
+      "ground_truth": 4907,
+      "matched": 4412,
+      "missed": 495,
+      "recall": 0.899123700835541
     },
     {
       "id": "gradual",
       "label": "Gradual",
-      "precision": 0.6456,
-      "recall": 0.0442,
-      "f1": 0.0828
+      "ground_truth": 2302,
+      "matched": 1862,
+      "missed": 440,
+      "recall": 0.8088618592528236
     }
   ]
 }

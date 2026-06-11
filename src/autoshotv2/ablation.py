@@ -14,12 +14,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from autoshotv2.train_phase2 import (
+    build_sample_cache_config,
     evaluate_best,
     find_temperature,
     gt_for_logits,
-    hash_keys,
     load_metadata,
     logits_to_pred_dict,
+    select_training_keys,
     sha256_file,
 )
 from autoshotv2.eval import DEFAULT_THRESHOLDS, eval_at_threshold, sigmoid_np
@@ -411,33 +412,20 @@ def sample_cache_matches(
         cached = load_pickle_payload(cache_path)
     except Exception:
         return False
-    expected = {
-        "meta_path": os.path.abspath(meta_path),
-        "keys_hash": hash_keys(train_keys),
-        "base_ckpt_hash": base_ckpt_hash,
-        "max_samples_per_video": args.max_samples_per_video,
-        "max_total_samples": args.max_total_samples,
-        "neg_per_pos": args.neg_per_pos,
-        "min_neg_per_video": args.min_neg_per_video,
-        "boundary_window": exp.boundary_window,
-        "seed": args.seed,
-    }
-    cached_config = cached.get("config", {})
-    if cached_config == expected:
-        return True
-    core_fields = [
-        "keys_hash",
-        "base_ckpt_hash",
-        "max_samples_per_video",
-        "max_total_samples",
-        "neg_per_pos",
-        "min_neg_per_video",
-        "seed",
-    ]
-    core_matches = all(cached_config.get(field) == expected[field] for field in core_fields)
-    boundary_matches = cached_config.get("boundary_window") == expected["boundary_window"]
-    boundary_unused = exp.manyhot_weight == 0.0
-    return core_matches and (boundary_matches or boundary_unused)
+    selected_keys = select_training_keys(
+        train_keys,
+        args.data_seed,
+        args.max_train_videos,
+    )
+    cache_args = argparse.Namespace(**vars(args))
+    cache_args.boundary_window = exp.boundary_window
+    expected = build_sample_cache_config(
+        str(meta_path),
+        selected_keys,
+        base_ckpt_hash,
+        cache_args,
+    )
+    return cached.get("config") == expected
 
 
 def train_run(
@@ -498,6 +486,8 @@ def train_run(
         str(args.min_neg_per_video),
         "--seed",
         str(args.seed),
+        "--data-seed",
+        str(args.data_seed),
         "--max-train-videos",
         str(args.max_train_videos),
         "--max-val-videos",
@@ -512,6 +502,10 @@ def train_run(
         str(args.log_every_batches),
         "--stop-after-minutes",
         str(args.stop_after_minutes),
+        "--data-manifest",
+        str(run_dir / "training_data_manifest.json"),
+        "--run-manifest",
+        str(run_dir / "run_manifest.json"),
     ]
     if exp.use_ema:
         cmd.extend(["--use-ema", "--ema-decay", str(exp.ema_decay)])
@@ -897,6 +891,7 @@ def main() -> None:
     parser.add_argument("--no-relocate-missing-paths", action="store_true")
     parser.add_argument("--reuse-sample-cache", default="")
     parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--data-seed", type=int, default=42)
     parser.add_argument("--epochs", type=int, default=20)
     parser.add_argument("--batch-size", type=int, default=512)
     parser.add_argument("--max-samples-per-video", type=int, default=160)
@@ -907,6 +902,8 @@ def main() -> None:
     parser.add_argument("--max-val-videos", type=int, default=200)
     parser.add_argument("--max-test-videos", type=int, default=0)
     parser.add_argument("--max-eval-videos", type=int, default=0)
+    parser.add_argument("--max-cache-video-frames", type=int, default=180000)
+    parser.add_argument("--max-cache-video-seconds", type=float, default=7200.0)
     parser.add_argument("--save-every-videos", type=int, default=25)
     parser.add_argument("--save-every-epochs", type=int, default=1)
     parser.add_argument("--log-every-batches", type=int, default=100)

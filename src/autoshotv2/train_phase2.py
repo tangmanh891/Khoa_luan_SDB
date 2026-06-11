@@ -38,6 +38,7 @@ DEFAULT_RESULTS = "./phase2_shot_clipshots_results.pkl"
 DEFAULT_EVAL_CACHE_DIR = "./eval_cache_shot_clipshots"
 DEFAULT_RESUME_STATE = "./artifacts/models/training/phase2_shot_clipshots_resume.pt"
 DEFAULT_CHECKPOINT_DIR = "./artifacts/models/training/phase2_shot_clipshots_checkpoints"
+SAMPLE_CACHE_SCHEMA_VERSION = 2
 
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -174,6 +175,105 @@ def hash_keys(keys: list[str]) -> str:
         h.update(key.encode("utf-8", errors="ignore"))
         h.update(b"\n")
     return h.hexdigest()
+
+
+def select_training_keys(
+    train_keys: list[str],
+    seed: int,
+    max_train_videos: int,
+) -> list[str]:
+    """Return the exact, deterministic video order used to build the sample cache."""
+    selected = list(train_keys)
+    random.Random(seed).shuffle(selected)
+    if max_train_videos > 0:
+        selected = selected[:max_train_videos]
+    return selected
+
+
+def build_sample_cache_config(
+    meta_path: str,
+    selected_keys: list[str],
+    base_ckpt_hash: str,
+    args: argparse.Namespace,
+) -> dict[str, Any]:
+    """Build a strict cache identity from every input that changes sampled data."""
+    return {
+        "schema_version": SAMPLE_CACHE_SCHEMA_VERSION,
+        "meta_path": os.path.abspath(meta_path),
+        "meta_sha256": sha256_file(meta_path),
+        "selected_keys_hash": hash_keys(selected_keys),
+        "selected_keys_count": len(selected_keys),
+        "base_ckpt_hash": base_ckpt_hash,
+        "max_train_videos": args.max_train_videos,
+        "max_samples_per_video": args.max_samples_per_video,
+        "max_total_samples": args.max_total_samples,
+        "neg_per_pos": args.neg_per_pos,
+        "min_neg_per_video": args.min_neg_per_video,
+        "boundary_window": args.boundary_window,
+        "max_cache_video_frames": args.max_cache_video_frames,
+        "max_cache_video_seconds": args.max_cache_video_seconds,
+        "data_seed": args.data_seed,
+    }
+
+
+def write_training_data_manifest(
+    path: str,
+    meta_path: str,
+    base_ckpt_path: str,
+    entries: dict[str, dict[str, Any]],
+    stats: dict[str, Any],
+    data_seed: int,
+) -> dict[str, Any]:
+    selected_keys = list(stats["selected_keys"])
+    completed_keys = set(stats["completed_keys"])
+    skipped_by_key = {str(key): str(reason) for key, reason in stats["skipped"]}
+    rows = []
+    dataset_counts: dict[str, int] = {}
+    for key in selected_keys:
+        entry = entries[key]
+        dataset = str(entry.get("dataset", "unknown"))
+        dataset_counts[dataset] = dataset_counts.get(dataset, 0) + 1
+        status = (
+            "completed"
+            if key in completed_keys
+            else "skipped"
+            if key in skipped_by_key
+            else "not_processed"
+        )
+        rows.append(
+            {
+                "key": key,
+                "dataset": dataset,
+                "source_split": entry.get("source_split"),
+                "source_name": entry.get("source_name"),
+                "status": status,
+                "samples": int(stats["sample_counts"].get(key, 0)),
+                "skip_reason": skipped_by_key.get(key),
+            }
+        )
+    payload = {
+        "schema_version": 1,
+        "data_seed": data_seed,
+        "metadata": {
+            "path": os.path.abspath(meta_path),
+            "sha256": sha256_file(meta_path),
+        },
+        "base_checkpoint": {
+            "path": os.path.abspath(base_ckpt_path),
+            "sha256": sha256_file(base_ckpt_path),
+        },
+        "selected_keys_hash": hash_keys(selected_keys),
+        "selected_videos": len(selected_keys),
+        "completed_videos": len(completed_keys),
+        "dataset_counts": dict(sorted(dataset_counts.items())),
+        "sampling": stats["cache_config"],
+        "videos": rows,
+    }
+    os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+    with open(path, "w", encoding="utf-8") as handle:
+        json.dump(payload, handle, indent=2)
+        handle.write("\n")
+    return payload
 
 
 def hash_head_state(head: ClassificationHead) -> str:
@@ -385,17 +485,13 @@ def build_or_load_sample_cache(
     base_ckpt_hash: str,
     args: argparse.Namespace,
 ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, dict[str, Any]]:
-    cache_config = {
-        "meta_path": os.path.abspath(meta_path),
-        "keys_hash": hash_keys(train_keys),
-        "base_ckpt_hash": base_ckpt_hash,
-        "max_samples_per_video": args.max_samples_per_video,
-        "max_total_samples": args.max_total_samples,
-        "neg_per_pos": args.neg_per_pos,
-        "min_neg_per_video": args.min_neg_per_video,
-        "boundary_window": args.boundary_window,
-        "seed": args.seed,
-    }
+    work_keys = select_training_keys(train_keys, args.data_seed, args.max_train_videos)
+    cache_config = build_sample_cache_config(
+        meta_path,
+        work_keys,
+        base_ckpt_hash,
+        args,
+    )
     parts_dir, partial_manifest_path = sample_cache_partial_paths(cache_path)
 
     if os.path.exists(cache_path) and not args.rebuild_sample_cache:
@@ -404,39 +500,14 @@ def build_or_load_sample_cache(
         if cached.get("config") == cache_config:
             print(f"Loading sample cache: {cache_path}")
             return cached["features"], cached["one_hot"], cached["boundary"], cached["stats"]
-        cached_config = cached.get("config", {})
-        core_fields = [
-            "keys_hash",
-            "base_ckpt_hash",
-            "max_samples_per_video",
-            "max_total_samples",
-            "neg_per_pos",
-            "min_neg_per_video",
-            "seed",
-        ]
-        core_matches = all(cached_config.get(field) == cache_config[field] for field in core_fields)
-        boundary_matches = cached_config.get("boundary_window") == cache_config["boundary_window"]
-        boundary_unused = float(getattr(args, "manyhot_weight", 0.0)) == 0.0
-        if core_matches and (boundary_matches or boundary_unused):
-            stats = dict(cached["stats"])
-            stats["compatible_cache_config"] = cached_config
-            stats["compatible_cache_note"] = (
-                "Loaded cache with different metadata path or boundary_window. "
-                "This is valid because keys/hash and sampling fields match, and boundary labels are unused or compatible."
-            )
-            print(f"Loading compatible sample cache: {cache_path}")
-            return cached["features"], cached["one_hot"], cached["boundary"], stats
-        print("Sample cache exists but config changed; rebuilding.")
+        print("Sample cache identity changed; rebuilding.")
 
-    rng = np.random.default_rng(args.seed)
-    work_keys = list(train_keys)
-    random.Random(args.seed).shuffle(work_keys)
-    if args.max_train_videos > 0:
-        work_keys = work_keys[: args.max_train_videos]
+    rng = np.random.default_rng(args.data_seed)
 
     done_keys: set[str] = set()
     part_files: list[str] = []
     skipped: list[tuple[str, str]] = []
+    sample_counts: dict[str, int] = {}
     total_samples = 0
 
     if os.path.exists(partial_manifest_path) and not args.rebuild_sample_cache:
@@ -446,6 +517,10 @@ def build_or_load_sample_cache(
             done_keys = set(manifest.get("done_keys", []))
             part_files = list(manifest.get("part_files", []))
             skipped = list(manifest.get("skipped", []))
+            sample_counts = {
+                str(key): int(value)
+                for key, value in manifest.get("sample_counts", {}).items()
+            }
             total_samples = int(manifest.get("samples", 0))
             print(f"Resuming partial sample cache: done_videos={len(done_keys)} samples={total_samples}")
         else:
@@ -472,6 +547,7 @@ def build_or_load_sample_cache(
                     "done_keys": sorted(done_keys),
                     "part_files": part_files,
                     "skipped": skipped,
+                    "sample_counts": sample_counts,
                     "samples": total_samples,
                 },
                 f,
@@ -537,6 +613,7 @@ def build_or_load_sample_cache(
                 chunk_boundary.append(torch.from_numpy(boundary_np[idx].astype(np.float32)))
                 chunk_keys.append(key)
                 total_samples += len(idx)
+                sample_counts[key] = len(idx)
                 done_keys.add(key)
                 if i == 1 or i % 25 == 0:
                     pct = 100.0 * i / max(len(work_keys), 1)
@@ -567,10 +644,16 @@ def build_or_load_sample_cache(
     y2 = torch.cat([part["boundary"] for part in loaded_parts], 0)
     stats = {
         "videos_seen": len(work_keys),
+        "videos_completed": len(done_keys),
         "samples": int(x.shape[0]),
         "one_hot_positive_rate": float(y1.mean().item()),
         "boundary_positive_rate": float(y2.mean().item()),
         "skipped": skipped,
+        "selected_keys": work_keys,
+        "selected_keys_hash": hash_keys(work_keys),
+        "completed_keys": sorted(done_keys),
+        "sample_counts": dict(sorted(sample_counts.items())),
+        "cache_config": cache_config,
         "partial_parts": part_files,
     }
 
@@ -608,6 +691,7 @@ def train_head(
         "manyhot_weight": args.manyhot_weight,
         "use_ema": args.use_ema,
         "ema_decay": args.ema_decay,
+        "training_seed": args.seed,
     }
 
     if os.path.exists(args.resume_state) and not args.no_resume:
@@ -864,6 +948,8 @@ def main() -> None:
     parser.add_argument("--eval-cache-dir", default=DEFAULT_EVAL_CACHE_DIR)
     parser.add_argument("--resume-state", default=DEFAULT_RESUME_STATE)
     parser.add_argument("--checkpoint-dir", default=DEFAULT_CHECKPOINT_DIR)
+    parser.add_argument("--data-manifest", default="")
+    parser.add_argument("--run-manifest", default="")
     parser.add_argument("--epochs", type=int, default=20)
     parser.add_argument("--batch-size", type=int, default=512)
     parser.add_argument("--loss", choices=["bce", "focal"], default="focal")
@@ -882,6 +968,7 @@ def main() -> None:
     parser.add_argument("--neg-per-pos", type=int, default=3)
     parser.add_argument("--min-neg-per-video", type=int, default=32)
     parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--data-seed", type=int, default=42)
     parser.add_argument("--max-train-videos", type=int, default=0)
     parser.add_argument("--max-val-videos", type=int, default=200)
     parser.add_argument("--max-test-videos", type=int, default=0)
@@ -950,6 +1037,17 @@ def main() -> None:
     print(f"  boundary positive rate: {sample_stats['boundary_positive_rate']:.6f}")
     if sample_stats["skipped"]:
         print(f"  skipped videos: {len(sample_stats['skipped'])}")
+    data_manifest = None
+    if args.data_manifest:
+        data_manifest = write_training_data_manifest(
+            args.data_manifest,
+            args.meta,
+            args.base_ckpt,
+            entries,
+            sample_stats,
+            args.data_seed,
+        )
+        print(f"Training data manifest -> {args.data_manifest}")
 
     dataset = SampleFeatureDataset(features, one_hot, boundary)
     in_features = int(features.shape[1])
@@ -958,11 +1056,13 @@ def main() -> None:
     head.cls_layer1.load_state_dict(pretrained_head_cpu["cls_layer1"])
     head.cls_layer2.load_state_dict(pretrained_head_cpu["cls_layer2"])
 
+    training_started = time.perf_counter()
     try:
         head, train_losses = train_head(head, dataset, args)
     except TimeBudgetExpired as exc:
         print(f"{exc} Resume by rerunning the same command with previous outputs restored.")
         return
+    training_elapsed_seconds = time.perf_counter() - training_started
     state_fingerprint = hash_head_state(head)
     full_state = merge_head_into_state(pretrained_head_cpu["full_state"], head)
 
@@ -1064,6 +1164,7 @@ def main() -> None:
 
     results = {
         "train_losses": train_losses,
+        "training_elapsed_seconds_this_invocation": training_elapsed_seconds,
         "sample_stats": sample_stats,
         "val_no_temp": val_no_temp,
         "val_temp": val_temp,
@@ -1079,6 +1180,51 @@ def main() -> None:
     with open(args.results, "wb") as f:
         pickle.dump(results, f, protocol=pickle.HIGHEST_PROTOCOL)
     print(f"Results saved -> {args.results}")
+
+    if args.run_manifest:
+        run_manifest = {
+            "schema_version": 1,
+            "training_seed": args.seed,
+            "data_seed": args.data_seed,
+            "selected_keys_hash": sample_stats["selected_keys_hash"],
+            "state_fingerprint": state_fingerprint,
+            "configuration": {
+                key: value
+                for key, value in vars(args).items()
+                if not key.startswith("_")
+            },
+            "artifacts": {
+                "checkpoint": {
+                    "path": os.path.abspath(args.out_ckpt),
+                    "sha256": sha256_file(args.out_ckpt),
+                },
+                "results": {
+                    "path": os.path.abspath(args.results),
+                    "sha256": sha256_file(args.results),
+                },
+                "data_manifest": (
+                    {
+                        "path": os.path.abspath(args.data_manifest),
+                        "sha256": sha256_file(args.data_manifest),
+                    }
+                    if data_manifest is not None
+                    else None
+                ),
+            },
+            "validation": {
+                "videos": len(val_logits),
+                "logits_keys_hash": hash_keys(list(val_logits)),
+                "no_temperature": val_no_temp,
+                "temperature_candidate": val_temp,
+            },
+            "training_elapsed_seconds_this_invocation": training_elapsed_seconds,
+            "test_evaluated": not args.skip_test_eval,
+        }
+        os.makedirs(os.path.dirname(args.run_manifest) or ".", exist_ok=True)
+        with open(args.run_manifest, "w", encoding="utf-8") as handle:
+            json.dump(run_manifest, handle, indent=2)
+            handle.write("\n")
+        print(f"Run manifest -> {args.run_manifest}")
 
 
 if __name__ == "__main__":

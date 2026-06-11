@@ -1,20 +1,45 @@
 \section{Introduction}
 
-Effectively parsing and understanding video content is a fundamental requirement for many downstream applications, such as video indexing, content retrieval, summarization, and automated editing. Within this pipeline, shot boundary detection (SBD) serves as a critical preliminary step. Its primary objective is to partition a video into temporally coherent shots by identifying the exact frames where camera views, scene contents, or editing states transition \cite{seridi2020survey,kar2024review}. While classical SBD methods rely on hand-crafted cues (e.g., color histograms and motion differences), these approaches have proven fragile under complex scenarios involving fast camera motion, flashes, and modern editing styles.
+Shot boundary detection (SBD) partitions a video into temporally coherent shots by identifying frames where the camera view, scene content, or editing state changes. It is a common first step for video indexing, retrieval, summarization, and automated editing \cite{seridi2020survey,kar2024review}. Classical methods based on color histograms, edge changes, or motion cues are efficient, but they are fragile under illumination changes, fast camera motion, flashes, and modern editing effects.
 
-For SBD research, deep learning models have significantly advanced the state-of-the-art. Architectures like TransNet and TransNetV2 \cite{soucek2019transnet,soucek2020transnetv2} successfully model spatial-temporal representations directly from frame sequences. Concurrently, the rise of short-video platforms (e.g., TikTok, YouTube Shorts) has introduced a new, challenging operating regime \cite{vietnamnet2023shortform}. To address this, AutoShot \cite{zhu2023autoshot} targeted short-video SBD by leveraging neural architecture search (NAS) to find an optimal 3-D convolutional backbone, demonstrating strong performance on the newly introduced SHOT dataset. However, further improving these models encounters a severe bottleneck: the NAS pipeline requires immense computational overhead for supernet training and architecture evaluation. Furthermore, short-video SBD suffers from extreme class imbalance (boundary frames are exceptionally rare) and complex visual effects that act as hard negatives.
+Deep SBD models such as TransNet and TransNetV2 \cite{soucek2019transnet,soucek2020transnetv2} learn frame-level transition patterns directly from short frame windows. AutoShot \cite{zhu2023autoshot} further targets short-video SBD by searching a specialized 3-D convolutional backbone for the SHOT dataset. This improves performance on short-form videos, but the neural architecture search (NAS) and subsequent retraining pipeline are costly to repeat. At the same time, short-video SBD remains difficult because boundaries are sparse, shots are short, and editing effects produce many hard negatives.
 
-Following the promising strategy of separating representation learning from task-specific adaptation, we aim to study a more efficient scaling and refinement property for short-video SBD. Instead of re-running the expensive NAS process, we present a simple yet effective method to scale the performance of the existing architecture, termed \textbf{AutoShotV2}. Our core technical improvement is the introduction of a dual-branch classification head applied over the frozen 4864-dimensional features extracted by the AutoShot backbone. To handle the extreme class imbalance, we optimize this head using Focal Loss \cite{lin2017focal}, focusing the learning capacity on hard negatives and ambiguous transitions. Furthermore, we devise a boundary-aware many-hot supervision strategy in the auxiliary branch to provide denser temporal gradients without compromising the precise one-hot localization of the primary branch.
+This paper asks two practical questions: how far can a searched AutoShot
+backbone be adapted without repeating NAS, and how much of the measured gain
+comes from probability calibration versus temporal filtering? We treat the
+problem as a reproducibility study rather than as a claim of a new backbone.
+The system reuses the 4864-dimensional AutoShot representation, trains only a
+binary classification head, and processes its frame scores with temperature
+scaling \cite{guo2017calibration} and Gaussian smoothing.
 
-Finally, adapting deep models to threshold-based decision tasks often suffers from overconfidence and local noise. To mitigate this, we introduce a robust post-processing paradigm. At inference time, the primary boundary logits are calibrated using temperature scaling \cite{guo2017calibration} to adjust the numerical scale of the predictions without altering their ranking. Subsequently, a one-dimensional Gaussian temporal filter is applied to smooth out isolated, false-positive peaks caused by sudden flashes or camera shakes.
+The operating point is selected without test feedback. We construct five
+validation folds stratified by source dataset, fit temperature on the four
+training folds, and choose smoothing and threshold by mean macro-F1 across
+validation sources. This procedure independently recovers
+$T=\PaperTemperature$, $\sigma=\PaperGaussianSigma$, and
+$\theta=\PaperDeployThreshold$. Test results are computed only after this
+manifest is frozen.
 
-Based on these core designs---frozen robust representations, dual-branch focal supervision, and calibrated temporal smoothing---we develop AutoShotV2. On the SHOT test set, AutoShotV2 achieves an F1-score of \PaperASVTwoShotFOne, the best result among the evaluated methods, improving over the reproduced AutoShot baseline and the reported TransNetV2 baseline by \PaperASVTwoVsAutoShotPP{} and \PaperASVTwoVsTransNetPP{} F1 points, respectively.
+The central empirical result is that the simple BCE one-hot control is
+sufficient at training time. Focal Loss \cite{lin2017focal}, many-hot
+supervision, and their combination change F1 only marginally. The selected
+post-processing configuration raises SHOT F1 from \PaperAOneShotFOne{} to
+\PaperASVTwoShotFOne{} and ClipShots F1 from \PaperAOneClipFOne{} to
+\PaperASVTwoClipFOne{}. BBC remains effectively unchanged. Paired bootstrap
+analysis confirms positive boundary-level deltas on SHOT and ClipShots but not
+on BBC.
 
-In summary, our main contributions are:
+The main contributions are:
 \begin{itemize}
-\item We propose AutoShotV2, an efficient and highly accurate SBD pipeline that significantly improves short-video boundary detection without the computational burden of retraining the NAS-searched backbone.
-\item We design a novel two-branch classification head trained with Focal Loss and boundary-aware many-hot supervision to address the extreme class imbalance inherent in short videos.
-\item We introduce a calibrated inference pipeline leveraging temperature scaling and Gaussian smoothing to ensure stable, threshold-based boundary decisions.
-\item We provide extensive experiments on SHOT, BBC, and ClipShots, demonstrating strong performance gains and identifying important cross-domain limitations for future research.
+\item We define a validation-only, source-stratified selection protocol that
+freezes temperature, smoothing, and threshold before test evaluation.
+\item We separate probability calibration from temporal filtering and show
+with protocol-matched ablations that Gaussian smoothing drives the
+boundary-level gain.
+\item We report paired video bootstrap intervals and calibration diagnostics
+that include adaptive and class-balanced ECE, exposing the effect of sparse
+positive frames.
+\item We provide strict cache identities, exact split/run manifests, a
+three-seed runner, and checksum-based artifact packaging. The currently
+reported checkpoint is explicitly identified as single-seed.
 \end{itemize}
-
