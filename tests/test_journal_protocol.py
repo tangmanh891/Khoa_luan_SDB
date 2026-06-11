@@ -53,3 +53,27 @@ def test_protocol_selection_is_validation_only_and_freezable(tmp_path):
     output = tmp_path / "protocol.json"
     write_frozen_protocol(output, protocol)
     assert load_frozen_protocol(output)["validation_keys_hash"] == protocol["validation_keys_hash"]
+
+
+def test_protocol_selection_values_are_pinned():
+    """Pin the exact selection on synthetic data.
+
+    Guards refactors of select_validation_protocol (loop hoisting, helper
+    consolidation): the selected protocol must stay float-identical.
+    """
+    entries, logits, ground_truth = synthetic_protocol_data()
+    protocol = select_validation_protocol(
+        logits,
+        ground_truth,
+        entries,
+        n_folds=5,
+        seed=42,
+        sigmas=(0.0, 1.0),
+        thresholds=(0.1, 0.5),
+    )
+
+    selected = protocol["selected"]
+    assert selected["temperature"] == 1.3587850979003135
+    assert selected["sigma"] == 0.0
+    assert selected["threshold"] == 0.1
+    assert selected["cross_validated_macro_source_f1"] == 1.0

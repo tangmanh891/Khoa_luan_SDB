@@ -1,3 +1,4 @@
+import os
 from argparse import Namespace
 
 from autoshotv2.train_phase2 import (
@@ -61,6 +62,41 @@ def test_cache_identity_changes_with_selected_videos_and_metadata(tmp_path):
         cache_args(),
     )
     assert changed_metadata["meta_sha256"] != base["meta_sha256"]
+
+
+def test_cache_config_is_pinned_exactly(tmp_path):
+    """Freeze cache identity: any key/value drift invalidates existing caches.
+
+    If this test fails, sampled training data or cache reuse semantics changed.
+    Never adapt the pinned literal casually — see SAMPLE_CACHE_SCHEMA_VERSION.
+    """
+    metadata = tmp_path / "meta.pickle"
+    metadata.write_bytes(b"metadata-v1")
+
+    config = build_sample_cache_config(
+        str(metadata),
+        ["a", "b", "c"],
+        "checkpoint-hash",
+        cache_args(),
+    )
+
+    assert config == {
+        "schema_version": 2,
+        "meta_path": os.path.abspath(str(metadata)),
+        "meta_sha256": "8c642b95858fcf252e843b44bd7feb0225b774516a83a885f6ef1e8ce1ceeb55",
+        "selected_keys_hash": "880553fca8fcea94e325ee2cfb48e5a985cc797f39a14cc6d3cedecfeb2ae4d2",
+        "selected_keys_count": 3,
+        "base_ckpt_hash": "checkpoint-hash",
+        "max_train_videos": 400,
+        "max_samples_per_video": 160,
+        "max_total_samples": 0,
+        "neg_per_pos": 3,
+        "min_neg_per_video": 32,
+        "boundary_window": 0,
+        "max_cache_video_frames": 180000,
+        "max_cache_video_seconds": 7200.0,
+        "data_seed": 42,
+    }
 
 
 def test_training_seed_does_not_change_shared_data_cache_identity(tmp_path):
