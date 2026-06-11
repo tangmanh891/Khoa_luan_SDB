@@ -1292,7 +1292,7 @@ def slide_results_cross(prs):
             f"TransNetV2 ({f1_text(comparison_f1('transnetv2_reported', 'bbc'))}) và "
             f"AutoShot tự chạy ({f1_text(comparison_f1('autoshot_reproduced_legacy', 'bbc'))}).",
         ),
-        ("Giảm trên ClipShots (−3.1%): ", "post-processing tối ưu cho SHOT chưa chuyển dịch sang miền video web đa dạng."),
+        ("Giảm trên ClipShots (−3.4%): ", "post-processing tối ưu cho SHOT chưa chuyển dịch sang miền video web đa dạng."),
     ], size=13, line_spacing=1.3)
 
 
@@ -1434,7 +1434,7 @@ def slide_limits(prs):
         ("Recall gradual còn thấp",
          "Chuyển cảnh dần khó hơn cut — cần đặc trưng dài hạn hơn."),
         ("Domain shift trên ClipShots",
-         "Cấu hình tối ưu cho SHOT giảm F1 trên ClipShots −3.1pp; recall gradual chỉ 4.4% là nút thắt chính."),
+         "Cấu hình tối ưu cho SHOT giảm F1 trên ClipShots −3.4pp; recall gradual chỉ 4.4% là nút thắt chính."),
         ("Không đầy đủ ablation đa miền",
          "Chưa chạy lại ma trận ablation trên tất cả dataset do giới hạn compute."),
     ]

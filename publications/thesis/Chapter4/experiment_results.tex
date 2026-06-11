@@ -1,0 +1,187 @@
+\section{Tổng quan các nhóm thực nghiệm}
+
+Trước khi đi vào từng bảng chi tiết, Bảng~\ref{tab:experiment_group_overview} tóm tắt các nhóm thực nghiệm chính được sử dụng trong chương này. Bảng chỉ báo cáo F1-score đại diện để người đọc nắm toàn cảnh. Các chỉ số Precision, Recall và phân tích chi tiết được trình bày ở các mục sau. Bảng đầy đủ tất cả thí nghiệm được đặt tại Bảng~\ref{tab:all_experiments_master} trong Phụ lục~\ref{app:per_video_results}.
+
+\begin{table}[H]
+\centering
+
+\small
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{L{5.2cm}C{1.8cm}C{1.8cm}C{2.1cm}L{4.2cm}}
+\toprule
+\textbf{Phiên bản thực nghiệm} & \textbf{SHOT} & \textbf{BBC} & \textbf{ClipShots}& \textbf{Ghi chú} \\
+\midrule
+\ExperimentOverviewRows
+\bottomrule
+\end{tabular}
+\caption[Tổng quan các thực nghiệm chính]{Tổng quan các nhóm thực nghiệm chính. Các giá trị là F1-score.}
+\label{tab:experiment_group_overview}
+\end{table}
+
+\section{Các cấu hình thực nghiệm được đánh giá}
+\label{sec:main_balanced_results}
+
+Bảng~\ref{tab:autoshotv2_results} là tổng hợp F1-score của AutoShot, TransNetV2 và các biến thể AutoShotV1/AutoShotV2 khi đánh giá trên ba tập dữ liệu SHOT, BBC và ClipShots. Ngoài ra các giá trị tốt nhất khi cho phép chọn ngưỡng riêng theo từng bộ dữ liệu được trình bày ở Mục~\ref{sec:extra_param_sweep}.
+
+\begin{table}[H]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.2}
+
+\begin{tabular}{L{5.5cm}C{2.4cm}C{2.4cm}C{2.4cm}}
+\toprule
+\textbf{Phương pháp} & \textbf{SHOT} & \textbf{BBC} & \textbf{ClipShots} \\
+\midrule
+\MainComparisonRows
+\bottomrule
+\end{tabular}
+\caption[So sánh F1-score các mô hình trên SHOT, BBC và ClipShots]{So sánh F1-score của các mô hình trên SHOT, BBC và ClipShots. Kết quả ``AutoShot được báo cáo'' lấy từ bài báo gốc~\cite{zhu2023autoshot}. Kết quả ``AutoShot tái thực nghiệm'' là kết quả thực hiện trên cấu hình cá nhân.}
+\label{tab:autoshotv2_results}
+\end{table}
+
+Khoảng chênh giữa ``AutoShot được báo cáo'' và ``AutoShot tái thực nghiệm'' cần được hiểu theo mức độ công khai của từng thiết lập đánh giá: trên SHOT, tác giả AutoShot công khai mã nguồn và thiết lập đánh giá nên kết quả tái thực nghiệm gần như trùng với số báo cáo ($0.8412$ so với $0.8410$, chênh $+0.02\%$); với BBC và ClipShots, bài báo gốc chỉ nêu kết quả tổng hợp mà không công bố đầy đủ cấu hình đánh giá tương ứng, nên kết quả tái lập trong khóa luận lần lượt đạt $0.9554$ và $0.7648$ thay vì $0.9710$ và $0.7870$ (chênh $-1.56\%$ và $-2.22\%$). Điều này cho thấy một phần chênh lệch có thể đến từ việc thiếu thông tin chi tiết về thiết lập đánh giá, cũng như khả năng khác biệt trong cách xử lý dữ liệu hoặc ngưỡng quyết định. Do đó, kết quả tái thực nghiệm được coi là một điểm tham chiếu đáng tin cậy hơn để so sánh với các biến thể mới như AutoShotV1 và AutoShotV2.
+
+Nhận xét từ kết quả:
+\begin{itemize}
+    \item Biến thể \textbf{AutoShotV1} cải thiện nhẹ trên SHOT ($+0.75\%$) so với AutoShot tái thực nghiệm, nhưng không có kết quả trên BBC và ClipShots, nên chưa đủ để đánh giá hiệu năng tổng quát.
+
+    \item \textbf{AutoShotV2} cho kết quả tốt nhất trên SHOT ($\ASVTwoShotFOne$) và BBC ($\ASVTwoBBCFOne$, vượt cả TransNetV2 lẫn AutoShot tái thực nghiệm) trong cấu hình chính. Trên ClipShots, AutoShotV2 đạt $\ASVTwoClipFOne$ -- thấp hơn AutoShot theo báo cáo gốc $3.4\%$ và thấp hơn AutoShot tái thực nghiệm $1.2\%$, cho thấy pipeline triển khai này chưa chuyển dịch hoàn toàn sang miền dữ liệu đa dạng hơn.
+\end{itemize}
+
+\noindent
+Bảng tổng hợp bổ sung cho SHOT và ClipShots được trình bày tại Phụ lục~\ref{app:per_video_results}.
+
+\section{Kết quả chi tiết của cấu hình AutoShotV2}
+
+Bảng~\ref{tab:autoshotv2_prf} trình bày chi tiết F1, Precision và Recall của AutoShotV2 bản cân bằng trên từng bộ dữ liệu. Cả ba bộ dữ liệu SHOT, BBC và ClipShots đều dùng ngưỡng $\theta = 0.10$ trong bảng này.
+
+\begin{table}[H]
+\centering
+\caption[Precision, Recall, F1 của AutoShotV2 trên ba bộ dữ liệu]{F1, Precision và Recall của AutoShotV2 trên ba bộ dữ liệu với ngưỡng $\theta = 0.10$.}
+\label{tab:autoshotv2_prf}
+\small
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{L{3.4cm}C{1.8cm}C{2.0cm}C{2.0cm}C{2.0cm}}
+\toprule
+\textbf{Bộ dữ liệu (Dataset)} & \textbf{Ngưỡng} & \textbf{F1} & \textbf{Precision} & \textbf{Recall} \\
+\midrule
+\DeployPRFRows
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Kết quả tốt nhất theo từng bộ dữ liệu}
+\label{sec:extra_param_sweep}
+
+Bên cạnh kết quả cân bằng ở Bảng~\ref{tab:autoshotv2_results} và Bảng~\ref{tab:autoshotv2_prf}, khóa luận báo cáo thêm giá trị tốt nhất theo từng bộ dữ liệu. Với SHOT và ClipShots, kết quả tốt nhất dùng bộ tham số best theo dataset đã nêu ở Bảng~\ref{tab:autoshotv2_final_params} và chọn ngưỡng quyết định riêng. Với BBC, bản cân bằng đã là cấu hình tốt nhất nên giữ nguyên ngưỡng $0.10$. Các kết quả trong mục này không thay thế cấu hình chính, mà chỉ cho biết giới hạn cải thiện cục bộ theo từng miền dữ liệu.
+
+\begin{table}[H]
+\centering
+\caption[Đỉnh F1 theo từng bộ dữ liệu]{Đỉnh F1 khi chọn ngưỡng quyết định tốt nhất riêng cho từng bộ dữ liệu. Cột F1 chính lấy từ cấu hình chính ở Bảng~\ref{tab:autoshotv2_prf}; cột cuối cho biết mức thay đổi khi chuyển sang kết quả tốt nhất theo từng dataset.}
+\label{tab:extra_sweep_peaks}
+\small
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{L{2.7cm}C{1.55cm}C{1.75cm}C{1.75cm}C{1.7cm}C{1.65cm}C{1.8cm}}
+\toprule
+\textbf{Dataset} & \textbf{Ngưỡng best} & \textbf{Precision} & \textbf{Recall} & \textbf{F1 tốt nhất} & \textbf{F1 chính} & \textbf{Chênh lệch} \\
+\midrule
+SHOT & 0.12 & 0.8408 & 0.8816 & \textbf{0.8607} & 0.8545 & $+0.62\%$ \\
+ClipShots & 0.19 & 0.7011 & 0.8554 & \textbf{0.7706} & 0.7530 & $+1.76\%$ \\
+BBC & 0.10 & 0.9750 & 0.9564 & \textbf{0.9656} & \textbf{0.9656} & $+0.00\%$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Bảng~\ref{tab:extra_sweep_peaks} cho thấy lựa chọn riêng theo từng dataset tạo ra đỉnh tốt hơn trên SHOT và ClipShots: SHOT tăng từ $0.8545$ lên $0.8607$ ($+0.62\%$), còn ClipShots tăng từ $0.7530$ lên $0.7706$ ($+1.76\%$). Với BBC, cấu hình cân bằng đã đạt kết quả tốt nhất ($0.9656$, chênh $+0.00\%$) tại ngưỡng $0.10$. Vì vậy, kết quả theo từng dataset cho thấy tiềm năng cải thiện cục bộ, còn kết quả chính của khóa luận vẫn là cấu hình ở Mục~\ref{sec:main_balanced_results}.
+
+\section{Kết quả bổ sung theo biến thể}
+\label{sec:ablation}
+
+Bảng~\ref{tab:ablation_controlled} và Bảng~\ref{tab:ema_study} báo cáo thêm các biến thể bổ sung để giải thích xu hướng kết quả. Các bảng này không thay thế kết quả chính ở Mục~\ref{sec:main_balanced_results}; chúng chỉ cho biết F1 thay đổi thế nào khi điều kiện thực nghiệm thay đổi.
+
+\begin{table}[H]
+\centering
+\caption[Kết quả bổ sung theo biến thể mô hình]{Kết quả bổ sung theo biến thể mô hình trên SHOT, BBC và ClipShots. $A0$ là AutoShot gốc, $A1$ là mốc kiểm soát, và các dòng còn lại là các biến thể được đo trong cùng nhóm thí nghiệm. Số đậm đánh dấu cấu hình được chọn cho kết quả chính, không nhất thiết là giá trị lớn nhất theo từng cột.}
+\label{tab:ablation_controlled}
+\small
+\begin{tabular}{lccc}
+\toprule
+\textbf{Cấu hình} & \textbf{SHOT} & \textbf{BBC} & \textbf{ClipShots} \\
+\midrule
+\AblationRows
+\bottomrule
+\end{tabular}
+\end{table}
+
+Trong nhóm kết quả này, $B4$ là biến thể cân bằng nhất: F1 tăng rõ so với mốc $A1$ trên SHOT ($+1.6\%$) và ClipShots ($+4.6\%$), trong khi BBC gần như không đổi. Một số biến thể khác tăng mạnh trên một bộ dữ liệu nhưng làm giảm bộ dữ liệu còn lại, nên không phù hợp làm kết quả chính.
+
+\begin{table}[H]
+\centering
+\caption[Kết quả bổ sung với EMA]{Kết quả bổ sung với EMA trên SHOT, BBC và ClipShots. Bảng này dùng để quan sát xu hướng F1 của một nhóm thí nghiệm riêng; số đậm là giá trị tốt nhất theo cột.}
+\label{tab:ema_study}
+\small
+\begin{tabular}{lccc}
+\toprule
+\textbf{Cấu hình} & \textbf{SHOT} & \textbf{BBC} & \textbf{ClipShots} \\
+\midrule
+\EMAStudyRows
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent
+Nhận xét từ hai bảng bổ sung:
+\begin{itemize}
+    \item \textbf{Biến thể $B4$ cho kết quả cân bằng nhất.} F1 tăng trên SHOT và ClipShots nhưng không làm BBC giảm đáng kể, nên phù hợp hơn các biến thể chỉ tốt trên một miền dữ liệu.
+    \item \textbf{EMA là kết quả bổ trợ.} So với mốc không EMA, EMA cho F1 cao hơn trên cả ba bộ ($+0.46\%$ trên SHOT, $+1.10\%$ trên BBC, $+2.22\%$ trên ClipShots) và đạt F1 cao nhất trên BBC. Tuy nhiên kết quả này thuộc một nhóm thí nghiệm riêng, nên không được dùng thay cho kết quả chính.
+    \item \textbf{ClipShots vẫn là điểm yếu chung.} Các biến thể bổ sung chưa vượt được baseline gốc một cách ổn định trên ClipShots, củng cố nhận định về hạn chế tổng quát hóa sang miền này.
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[font=\small]
+% Horizontal bar chart comparing F1 scores
+% Scale: display_x = (value - 0.70) * 20
+% [0.70, 0.95] → [0, 5] cm
+
+% Bar heights (y centers) and half-height
+\def\yA{2.4}  % AutoShotV2
+\def\yB{1.4}  % AutoShot
+\def\yC{0.4}  % TransNetV2
+\def\hh{0.35}
+
+% Bars
+% TransNetV2 F1=0.7993 → (0.7993-0.7)*20=1.986
+\fill[blue!50, opacity=0.8]        (0,\yC-\hh) rectangle (1.986,\yC+\hh);
+% AutoShot F1=0.8405 → 2.810
+\fill[green!55!black, opacity=0.75](0,\yB-\hh) rectangle (2.810,\yB+\hh);
+% AutoShotV2 F1=0.8545 → 3.090
+\fill[red!60!orange, opacity=0.85] (0,\yA-\hh) rectangle (3.090,\yA+\hh);
+
+% Value labels
+\node[anchor=west, font=\scriptsize]        at (2.036, \yC) {0.7993};
+\node[anchor=west, font=\scriptsize]        at (2.860, \yB) {0.8405};
+\node[anchor=west, font=\scriptsize\bfseries] at (3.140, \yA) {\textbf{0.8545}};
+
+% Model name labels
+\node[anchor=east, font=\scriptsize] at (-0.1, \yC) {TransNetV2};
+\node[anchor=east, font=\scriptsize] at (-0.1, \yB) {AutoShot};
+\node[anchor=east, font=\scriptsize] at (-0.1, \yA) {AutoShotV2};
+
+% X-axis and ticks
+\draw[->] (0,-0.1) -- (5.3,-0.1) node[right, font=\scriptsize] {F1};
+\draw     (0,-0.1) -- (0,3.1);
+\foreach \v/\x in {0.70/0, 0.75/1, 0.80/2, 0.85/3, 0.90/4} {
+  \draw[gray!40, thin] (\x, -0.1) -- (\x, 3.0);
+  \draw (\x,-0.1) -- (\x,-0.2);
+  \node[below, font=\scriptsize] at (\x,-0.25) {\v};
+}
+\end{tikzpicture}
+\caption[So sánh F1 trên tập SHOT]{So sánh F1 giữa các mô hình trên tập SHOT (200 video kiểm tra). AutoShotV2 đạt F1 = 0.8545, cải thiện $+1.4\%$ so với AutoShot gốc và $+5.5\%$ so với TransNetV2 mô hình cơ sở.}
+\label{fig:f1_comparison}
+\end{figure}
+\FloatBarrier
+
