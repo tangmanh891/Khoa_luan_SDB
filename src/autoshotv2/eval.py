@@ -9,8 +9,7 @@ import torch
 from autoshotv2 import runtime
 
 # Re-exported for backward compatibility; canonical home is autoshotv2.common.
-from autoshotv2.common import clean_key, load_logits, sigmoid_np
-
+from autoshotv2.common import clean_key, load_logits, sigmoid_np  # noqa: F401
 
 DEFAULT_THRESHOLDS = np.array(
     [

@@ -10,6 +10,17 @@ from pathlib import Path
 from typing import Any
 
 from autoshotv2.ablation_report import add_deltas, flatten_metric, make_figures, write_csv, write_summary  # noqa: F401
+
+# clean_key/load_logits/scores_from_cache are re-exported here for backward
+# compatibility; canonical home is autoshotv2.common.
+from autoshotv2.common import (
+    build_train_phase2_command,
+    clean_key,
+    load_logits,
+    load_pickle_payload,
+    scores_from_cache,
+)
+from autoshotv2.eval import DEFAULT_THRESHOLDS, eval_at_threshold
 from autoshotv2.train_phase2 import (
     build_sample_cache_config,
     evaluate_best,
@@ -20,18 +31,6 @@ from autoshotv2.train_phase2 import (
     select_training_keys,
     sha256_file,
 )
-# clean_key/load_logits/scores_from_cache are re-exported here for backward
-# compatibility; canonical home is autoshotv2.common.
-from autoshotv2.common import (
-    build_train_phase2_command,
-    clean_key,
-    load_logits,
-    load_pickle_payload,
-    scores_from_cache,
-    sigmoid_np,
-)
-from autoshotv2.eval import DEFAULT_THRESHOLDS, eval_at_threshold
-
 
 DATASETS = ("shot", "clipshots", "bbc")
 
@@ -246,7 +245,11 @@ def prepare_filtered_videos(videos_dir: Path, gt_path: Path, out_dir: Path) -> P
     for stem in available:
         src = source_by_stem[stem]
         gt_name = wanted_names[stem]
-        dst_name = f"{gt_name}{src.suffix}" if Path(gt_name).suffix.lower() in {".mp4", ".mov", ".mkv", ".avi", ".webm", ".m4v"} else src.name
+        dst_name = (
+            f"{gt_name}{src.suffix}"
+            if Path(gt_name).suffix.lower() in {".mp4", ".mov", ".mkv", ".avi", ".webm", ".m4v"}
+            else src.name
+        )
         dst = out_dir / dst_name
         if dst.exists():
             continue
@@ -507,21 +510,27 @@ def resource_candidates(repo_dir: Path, args: argparse.Namespace) -> dict[str, d
             "videos": Path(args.shot_videos)
             if args.shot_videos
             else repo_dir / "data" / "ShotDataset",
-            "logits": Path(args.shot_logits) if args.shot_logits else artifact_root / "eval_cache_shot_clipshots" / "shot_test_logits.pkl",
+            "logits": Path(args.shot_logits)
+            if args.shot_logits
+            else artifact_root / "eval_cache_shot_clipshots" / "shot_test_logits.pkl",
         },
         "clipshots": {
             "gt": Path(args.clipshots_gt) if args.clipshots_gt else artifact_root / "clipshots_test_gt_scenes.pickle",
             "videos": Path(args.clipshots_videos)
             if args.clipshots_videos
             else repo_dir / "data" / "ClipShots" / "videos" / "test",
-            "logits": Path(args.clipshots_logits) if args.clipshots_logits else artifact_root / "eval_cache_clipshots" / "clipshot_test_logits.pkl",
+            "logits": Path(args.clipshots_logits)
+            if args.clipshots_logits
+            else artifact_root / "eval_cache_clipshots" / "clipshot_test_logits.pkl",
         },
         "bbc": {
             "gt": Path(args.bbc_gt) if args.bbc_gt else artifact_root / "bbc_shots_gt_scenes.pickle",
             "videos": Path(args.bbc_videos)
             if args.bbc_videos
             else repo_dir / "data" / "BBCDataset",
-            "logits": Path(args.bbc_logits) if args.bbc_logits else artifact_root / "eval_cache_bbc" / "bbc_test_logits.pkl",
+            "logits": Path(args.bbc_logits)
+            if args.bbc_logits
+            else artifact_root / "eval_cache_bbc" / "bbc_test_logits.pkl",
         },
     }
 
@@ -703,7 +712,9 @@ def main() -> None:
     meta = load_metadata(str(meta_path))
     relocation_stats = None
     if not args.no_relocate_missing_paths:
-        relocated_meta_path, relocation_stats = relocate_metadata_paths(meta, repo_dir, out_dir / "resolved_meta.pickle")
+        relocated_meta_path, relocation_stats = relocate_metadata_paths(
+            meta, repo_dir, out_dir / "resolved_meta.pickle"
+        )
         meta_path = relocated_meta_path.resolve()
         meta = load_metadata(str(meta_path))
     train_keys = list(meta["train_keys"])
@@ -738,12 +749,23 @@ def main() -> None:
             ok, error = train_run(exp, run_dir, repo_dir, meta_path, base_ckpt, sample_cache, args)
             if not ok:
                 for dataset in datasets:
-                    rows.append(flatten_metric(exp, dataset, {"status": "failed", "error": error}, {"temperature": 1.0, "threshold": 0.1}))
+                    rows.append(
+                        flatten_metric(
+                            exp, dataset, {"status": "failed", "error": error}, {"temperature": 1.0, "threshold": 0.1}
+                        )
+                    )
                 continue
         elif exp.kind == "postprocess" and not (source_run_dir / "checkpoint.pth").exists():
             error = f"missing source experiment checkpoint: {source_run_dir / 'checkpoint.pth'}"
             for dataset in datasets:
-                rows.append(flatten_metric(exp, dataset, {"status": "missing_source", "error": error}, {"temperature": 1.0, "threshold": 0.1}))
+                rows.append(
+                    flatten_metric(
+                        exp,
+                        dataset,
+                        {"status": "missing_source", "error": error},
+                        {"temperature": 1.0, "threshold": 0.1},
+                    )
+                )
             continue
 
         if exp.kind == "postprocess":
@@ -751,7 +773,9 @@ def main() -> None:
         postprocess = (
             {"temperature": 1.0, "threshold": 0.1, "val_metric": None, "status": "baseline_default"}
             if exp.kind == "baseline"
-            else tune_postprocess(source_run_dir if exp.kind == "postprocess" else run_dir, meta, args.max_val_videos, exp)
+            else tune_postprocess(
+                source_run_dir if exp.kind == "postprocess" else run_dir, meta, args.max_val_videos, exp
+            )
         )
         write_json(run_dir / "postprocess_config.json", postprocess)
 

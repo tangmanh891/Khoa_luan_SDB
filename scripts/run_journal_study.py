@@ -16,7 +16,6 @@ from autoshotv2.common import build_train_phase2_command, load_logits, normalize
 from autoshotv2.journal_protocol import load_frozen_protocol
 from autoshotv2.train_phase2 import transitions_to_scenes
 
-
 ROOT = Path(__file__).resolve().parents[1]
 SHOT_GT_JSON = ROOT / "reports" / "source_results" / "shot_test_ground_truth.json"
 BBC_ANNOTATIONS = ROOT / "data" / "BBCDataset" / "annotations" / "shots"

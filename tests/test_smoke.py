@@ -38,16 +38,16 @@ def _skip(msg: str):
 
 
 def test_predictions_to_scenes_empty():
-    from autoshotv2 import utils
     from autoshotv2 import eval as rie
+    from autoshotv2 import utils
 
     assert utils.predictions_to_scenes(np.array([])).tolist() == [[0, 0]]
     assert rie.predictions_to_scenes(np.array([])).tolist() == [[0, 0]]
 
 
 def test_predictions_to_scenes_normal():
-    from autoshotv2 import utils
     from autoshotv2 import eval as rie
+    from autoshotv2 import utils
 
     pred = np.array([0, 0, 1, 1, 0, 0, 1, 1, 0, 0], dtype=np.uint8)
     expected = [[0, 2], [4, 6], [8, 9]]

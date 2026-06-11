@@ -8,7 +8,6 @@ from typing import Any
 
 import numpy as np
 
-
 DEFAULT_SHOT_ROOT = os.path.join(".", "data", "ShotDataset")
 DEFAULT_CLIPSHOTS_ROOT = os.path.join(".", "data", "ClipShots")
 DEFAULT_OUT = "./shot_clipshots_trainval.pickle"

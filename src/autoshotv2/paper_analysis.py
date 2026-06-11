@@ -34,7 +34,6 @@ from autoshotv2.eval import evaluate_scenes, predictions_to_scenes
 from autoshotv2.train_phase2 import transitions_to_scenes
 from autoshotv2.utils import scenes2zero_one_representation
 
-
 ROOT = Path(__file__).resolve().parents[2]
 ABLATION_ROOT = ROOT / "artifacts" / "experiments" / "ablation_full"
 A1_CACHE = ABLATION_ROOT / "A1_phase2_bce_onehot" / "eval_cache"
@@ -836,8 +835,10 @@ def run_analysis() -> dict[str, Any]:
         "test_calibration": test_calibration,
         "clipshots_transition_breakdown": {
             "classification": "Ground truth is Cut if transition width <= 1 frame; gradual otherwise.",
-            "matching": "Class-agnostic predictions are matched once with the canonical +/-2 frame interval matcher; recall is then grouped by ground-truth type.",
-            "metric_note": "Type-specific precision and F1 are undefined because the detector does not predict a transition type.",
+            "matching": "Class-agnostic predictions are matched once with the canonical +/-2 frame interval matcher; "
+            "recall is then grouped by ground-truth type.",
+            "metric_note": "Type-specific precision and F1 are undefined "
+            "because the detector does not predict a transition type.",
             "transition_types": clipshots_breakdown,
         },
         "efficiency": _efficiency_section(logits_by_dataset),

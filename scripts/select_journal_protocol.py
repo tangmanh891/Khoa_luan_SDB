@@ -2,6 +2,5 @@
 
 from autoshotv2.journal_protocol import main
 
-
 if __name__ == "__main__":
     main()

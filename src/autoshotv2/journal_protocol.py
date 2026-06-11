@@ -21,7 +21,6 @@ from autoshotv2.train_phase2 import (
     logits_to_pred_dict,
 )
 
-
 DEFAULT_SIGMAS = (0.0, 1.0, 2.0, 3.0)
 DEFAULT_THRESHOLDS = tuple(float(value) for value in np.arange(0.05, 0.51, 0.05))
 

@@ -10,7 +10,6 @@ import numpy as np
 from app.core.config import get_settings
 from app.services.storage_service import job_dir, publish_asset
 
-
 THRESHOLDS = {
     "low": 0.55,
     "medium": 0.42,

@@ -11,8 +11,8 @@ import json
 import sys
 from pathlib import Path
 
-from autoshotv2.results_manifest import ABLATION_ORDER  # noqa: F401
 from autoshotv2.results_manifest import (
+    ABLATION_ORDER,  # noqa: F401
     PAPER_GENERATED,
     REPORTS,
     ROOT,

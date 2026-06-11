@@ -630,9 +630,15 @@ def main() -> None:
         deploy_val = val_no_temp
 
     print("\nValidation:")
-    print(f"  no temp: F1={val_no_temp['f1']:.6f} P={val_no_temp['precision']:.6f} R={val_no_temp['recall']:.6f} thr={val_no_temp['threshold']:.4f}")
+    print(
+        f"  no temp: F1={val_no_temp['f1']:.6f} P={val_no_temp['precision']:.6f} "
+        f"R={val_no_temp['recall']:.6f} thr={val_no_temp['threshold']:.4f}"
+    )
     if val_temp is not None:
-        print(f"  temp T={temperature:.4f}: F1={val_temp['f1']:.6f} P={val_temp['precision']:.6f} R={val_temp['recall']:.6f} thr={val_temp['threshold']:.4f}")
+        print(
+            f"  temp T={temperature:.4f}: F1={val_temp['f1']:.6f} P={val_temp['precision']:.6f} "
+            f"R={val_temp['recall']:.6f} thr={val_temp['threshold']:.4f}"
+        )
     else:
         print("  temp: disabled")
     print(f"  deploy: T={deploy_temperature:.4f} thr={deploy_threshold:.4f}")
@@ -685,8 +691,15 @@ def main() -> None:
         shot_test_best = evaluate_best(test_pred, test_gt)
         shot_test_deploy = evaluate_fixed(test_pred, test_gt, deploy_threshold)
         print("\nShot test (200-video AutoShot test split):")
-        print(f"  best sweep: F1={shot_test_best['f1']:.6f} P={shot_test_best['precision']:.6f} R={shot_test_best['recall']:.6f} thr={shot_test_best['threshold']:.4f}")
-        print(f"  deploy thr={deploy_threshold:.4f}: F1={shot_test_deploy['f1']:.6f} P={shot_test_deploy['precision']:.6f} R={shot_test_deploy['recall']:.6f} TP={shot_test_deploy['tp']} FP={shot_test_deploy['fp']} FN={shot_test_deploy['fn']}")
+        print(
+            f"  best sweep: F1={shot_test_best['f1']:.6f} P={shot_test_best['precision']:.6f} "
+            f"R={shot_test_best['recall']:.6f} thr={shot_test_best['threshold']:.4f}"
+        )
+        print(
+            f"  deploy thr={deploy_threshold:.4f}: F1={shot_test_deploy['f1']:.6f} "
+            f"P={shot_test_deploy['precision']:.6f} R={shot_test_deploy['recall']:.6f} "
+            f"TP={shot_test_deploy['tp']} FP={shot_test_deploy['fp']} FN={shot_test_deploy['fn']}"
+        )
 
     results = {
         "train_losses": train_losses,

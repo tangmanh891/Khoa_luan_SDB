@@ -223,7 +223,7 @@ def probe_video_info(video_path: str) -> dict[str, float | int | None]:
         video_path,
     ]
     try:
-        proc = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True)
+        proc = subprocess.run(cmd, capture_output=True, text=True, check=True)
         payload = json.loads(proc.stdout or "{}")
     except Exception as exc:
         return {"probe_error": str(exc), "duration": None, "fps": None, "frames": None, "size": None}
@@ -303,7 +303,9 @@ def select_sample_indices(
         pos_cap = max(1, max_samples_per_video // max(neg_per_pos + 1, 1))
         if len(pos_idx) > pos_cap:
             pos_idx = rng.choice(pos_idx, size=pos_cap, replace=False)
-        n_neg = min(len(neg_idx), max_samples_per_video - len(pos_idx), max(min_neg_per_video, len(pos_idx) * neg_per_pos))
+        n_neg = min(
+            len(neg_idx), max_samples_per_video - len(pos_idx), max(min_neg_per_video, len(pos_idx) * neg_per_pos)
+        )
     else:
         n_neg = min(len(neg_idx), max_samples_per_video, min_neg_per_video)
 
@@ -499,7 +501,10 @@ def build_or_load_sample_cache(
                 done_keys.add(key)
                 if i == 1 or i % 25 == 0:
                     pct = 100.0 * i / max(len(work_keys), 1)
-                    print(f"  sample cache {pct:6.2f}% [{i}/{len(work_keys)}] samples={total_samples} key={key}", flush=True)
+                    print(
+                        f"  sample cache {pct:6.2f}% [{i}/{len(work_keys)}] samples={total_samples} key={key}",
+                        flush=True,
+                    )
                 if args.save_every_videos > 0 and len(chunk_keys) >= args.save_every_videos:
                     flush_chunk()
                 if deadline_expired(args):
@@ -511,7 +516,7 @@ def build_or_load_sample_cache(
                 done_keys.add(key)
                 if deadline_expired(args):
                     flush_chunk()
-                    raise TimeBudgetExpired("Time budget reached while building sample cache.")
+                    raise TimeBudgetExpired("Time budget reached while building sample cache.") from exc
     finally:
         handle.remove()
 
@@ -537,6 +542,10 @@ def build_or_load_sample_cache(
     }
 
     with open(cache_path, "wb") as f:
-        pickle.dump({"config": cache_config, "features": x, "one_hot": y1, "boundary": y2, "stats": stats}, f, protocol=pickle.HIGHEST_PROTOCOL)
+        pickle.dump(
+            {"config": cache_config, "features": x, "one_hot": y1, "boundary": y2, "stats": stats},
+            f,
+            protocol=pickle.HIGHEST_PROTOCOL,
+        )
     print(f"Sample cache saved -> {cache_path}")
     return x, y1, y2, stats
