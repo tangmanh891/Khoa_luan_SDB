@@ -21,11 +21,26 @@ def sha256(path: Path) -> str:
 
 def collect_files(study_dir: Path) -> list[Path]:
     files = [path for path in study_dir.rglob("*") if path.is_file()]
+    deploy_regen_dir = ROOT / "artifacts" / "experiments" / "deploy_regen"
     supplemental = (
+        ROOT / "artifacts" / "experiments" / "deploy_regen" / "shot_test_logits.pkl",
+        ROOT / "artifacts" / "experiments" / "deploy_regen" / "bbc_test_logits.pkl",
+        ROOT / "artifacts" / "experiments" / "deploy_regen" / "clipshots_test_logits.pkl",
+        ROOT / "artifacts" / "experiments" / "deploy_regen" / "results_shot.json",
+        ROOT / "artifacts" / "experiments" / "deploy_regen" / "results_bbc.json",
+        ROOT / "artifacts" / "experiments" / "deploy_regen" / "results_clipshots.json",
         ROOT / "reports" / "paper_analysis_results.json",
         ROOT / "reports" / "paper_analysis_per_video.csv",
+        ROOT / "reports" / "deploy_regen_coverage_report.json",
+        ROOT / "reports" / "deploy_regen_coverage_report.md",
+        ROOT / "reports" / "deploy_regen_analysis_results.json",
+        ROOT / "reports" / "deploy_regen_analysis_summary.md",
+        ROOT / "reports" / "deploy_regen_per_video.csv",
+        ROOT / "reports" / "deploy_regen_clipshots_top_errors.csv",
         ROOT / "reports" / "source_results" / "shot_test_ground_truth.json",
     )
+    if deploy_regen_dir.is_dir():
+        files.extend(path for path in deploy_regen_dir.rglob("*") if path.is_file())
     files.extend(path for path in supplemental if path.is_file())
     return sorted(set(files))
 

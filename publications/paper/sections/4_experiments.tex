@@ -15,7 +15,7 @@ summarizes their characteristics.
 \centering
 \scriptsize
 \renewcommand{\arraystretch}{1.08}
-\setlength{\tabcolsep}{3pt}
+\setlength{\tabcolsep}{2.5pt}
 \begin{tabular}{L{0.95in}C{0.78in}C{0.85in}C{0.62in}}
 \toprule
 \textbf{Property} & \textbf{BBC} & \textbf{ClipShots} & \textbf{SHOT} \\
@@ -65,41 +65,42 @@ Deploy temperature $T^{*}$ & \PaperDeployTemperature{} & Validation BCE \\
 \subsection{Evaluation Tracks and Reproducibility Tiers}
 \label{sec:tracks}
 
-The paper reports two evaluation tracks with different reproducibility
-tiers. \emph{Track 1 (deployed checkpoint)} provides the headline numbers:
-the head trained for deployment with the fixed configuration
-$T^{*}=\PaperDeployTemperature$, $\sigma=\PaperGaussianSigma$,
-$\theta=\PaperDeployThreshold$. Its per-dataset result JSON files are
-tracked and checksummed, but its test logits were not retained, so
-logit-level analyses cannot be re-run for this checkpoint. \emph{Track 2
-(controlled replication)} retrains the head under the frozen validation-only
-protocol of Section~\ref{sec:protocol} (configuration B4) with full logit
-caches; every paired bootstrap, calibration diagnostic, ablation, and seed
-study in this paper is anchored on this track. Because the replication was
-trained in a separate environment with its own validation pool, its absolute
-scores differ slightly from the deployed checkpoint; to keep a single
-consistent set of absolute numbers, all replication results are therefore
-reported as \emph{differences} against its internal BCE control (A1), which
-are invariant to that environment offset, while absolute F1 values in this
-paper always refer to the deployed checkpoint.
+The paper separates headline reporting from controlled component analysis.
+\emph{Track 1 (deployed checkpoint)} provides the headline numbers: the head
+trained for deployment with the fixed configuration
+$T^{*}=\PaperDeployTemperature$, $\sigma=\PaperGaussianSigma$, and
+$\theta=\PaperDeployThreshold$. We regenerated its test logits from the local
+video splits with full coverage (200/200 SHOT, 11/11 BBC, and 500/500
+ClipShots videos) and checksum the resulting logits and result JSON files.
+\emph{Track 2 (controlled replication)} retrains the head under the frozen
+validation-only protocol of Section~\ref{sec:protocol} (configuration B4) with
+full logit caches. Paired bootstrap intervals, calibration diagnostics,
+ablations, and the seed study are anchored on this controlled track. Because
+the replication was trained in a separate environment with its own validation
+pool, its absolute scores differ slightly from the deployed checkpoint. To
+avoid mixing absolute scales, replication analyses are reported as
+\emph{differences} against the internal BCE control (A1), while absolute F1
+values in the paper refer to the deployed checkpoint.
 
 \subsection{Main Results}
 
 Table~\ref{tab:overall} reports F1 across SHOT, BBC, and ClipShots. With the
 fixed deployment configuration, AutoShotV2 reaches
 \PaperDeployShotFOne{} on SHOT and \PaperDeployBBCFOne{} on BBC, improving
-over the reproduced AutoShot baseline by \PaperDeployVsAutoShotPP\% and
-over the reported TransNetV2 baseline by \PaperDeployVsTransNetPP\% in
-absolute F1 on SHOT (Fig.~\ref{fig:bars}). On
+over the reproduced AutoShot baseline by \PaperDeployVsAutoShotPP{}
+percentage points and over the reported TransNetV2 baseline by
+\PaperDeployVsTransNetPP{} percentage points in F1 on SHOT
+(Fig.~\ref{fig:bars}). On
 ClipShots the fixed configuration reaches \PaperDeployClipFOne{}; a separate
 test-set threshold sweep reaches \PaperDeployClipBestFOne{} at
 $\theta=0.15$, reported for transparency but not treated as the fixed
-deployment result. Reported baselines use their authors' protocols, whereas
-reproduced baselines use our evaluation pipeline; the TransNetV2
-reproduction was not evaluated on SHOT.
+deployment result. Baseline labels distinguish protocol sources: reported
+baselines follow their authors' protocols, whereas reproduced baselines use
+our evaluation pipeline. The TransNetV2 reproduction was not evaluated on
+SHOT.
 
 \begin{table}[!t]
-\caption{F1-Score Comparison Across Evaluation Datasets}
+\caption{F1 Score Comparison Across Evaluation Datasets}
 \label{tab:overall}
 \centering
 \small
@@ -136,9 +137,10 @@ reproduction was not evaluated on SHOT.
 }
 \draw (0,0) -- (0,2.7);
 \end{tikzpicture}
-\caption{F1-score comparison on SHOT. AutoShotV2 improves the reproduced
-AutoShot baseline by \PaperDeployVsAutoShotPP\% and the reported
-TransNetV2 baseline by \PaperDeployVsTransNetPP\% in absolute F1.}
+\caption{F1 score comparison on SHOT. AutoShotV2 improves the reproduced
+AutoShot baseline by \PaperDeployVsAutoShotPP{} percentage points and the
+reported TransNetV2 baseline by \PaperDeployVsTransNetPP{} percentage
+points in F1.}
 \label{fig:bars}
 \end{figure}
 
@@ -174,15 +176,15 @@ Bootstrap & 10,000 video resamples, seed 42 \\
 \end{table}
 
 Relative to the A1 control, the selected B4 configuration improves SHOT by
-\PaperBFourVsAOneShotPP\% and ClipShots by
-\PaperBFourVsAOneClipPP\% in absolute F1, while BBC is unchanged after
+\PaperBFourVsAOneShotPP{} percentage points and ClipShots by
+\PaperBFourVsAOneClipPP{} percentage points in F1, while BBC is unchanged after
 rounding.
 Temperature scaling alone preserves the validation-selected operating point;
 Gaussian smoothing is the component that changes boundary decisions.
 
 Table~\ref{tab:paired_delta} bootstraps the per-video difference between A1
 at its validation-selected threshold and B4 at its frozen operating point
-(10,000 paired video resamples). The intervals support a positive B4 delta
+(10,000 paired video resamples). The intervals support positive B4 deltas
 on SHOT and ClipShots. The BBC interval contains zero, so we make no
 improvement claim for that dataset; BBC also has only 11 sampling units, so
 its interval should be interpreted cautiously.
@@ -196,7 +198,7 @@ its interval should be interpreted cautiously.
 \resizebox{\columnwidth}{!}{%
 \begin{tabular}{L{0.8in}C{0.6in}C{1.25in}C{0.65in}}
 \toprule
-\textbf{Dataset} & \textbf{$\Delta$F1} & \textbf{95\% CI} & \textbf{Excl. 0} \\
+\textbf{Dataset} & \textbf{$\Delta$F1 (pp)} & \textbf{95\% CI (pp)} & \textbf{Excl. 0} \\
 \midrule
 \PaperPairedDeltaRows
 \bottomrule
@@ -210,9 +212,10 @@ We evaluate frame probabilities on the combined 200-video validation split
 using negative log-likelihood (NLL), Brier score, expected calibration error
 with 15 equal-width bins (ECE), equal-mass adaptive ECE (AECE), and
 class-balanced ECE (B-ECE). Table~\ref{tab:calibration_metrics} shows that
-temperature scaling improves all diagnostics. The much larger B-ECE reveals
-that aggregate frame metrics are dominated by negative frames. Validation
-values remain diagnostic because the same split fits temperature.
+temperature scaling improves all diagnostics on this split. The much larger
+B-ECE reveals that aggregate frame metrics are dominated by negative frames.
+Because the same validation split fits temperature, these values are used as
+diagnostics rather than as untouched calibration estimates.
 
 \begin{table}[!t]
 \caption{Frame-Level Validation Calibration Diagnostics}
@@ -239,9 +242,9 @@ confidence regions.}
 \label{fig:reliability}
 \end{figure}
 
-Table~\ref{tab:test_calibration} reports untouched-test calibration using the
-temperature selected on validation. ClipShots has the largest B-ECE despite a
-small aggregate ECE, consistent with domain-shifted false positives.
+Table~\ref{tab:test_calibration} reports test-set calibration using the
+temperature selected on validation. ClipShots has the largest B-ECE despite
+a small aggregate ECE, consistent with domain-shifted false positives.
 
 \begin{table}[!t]
 \caption{Test Calibration at the Validation-Selected Temperature}
@@ -267,12 +270,12 @@ Section~\ref{sec:objectives} as F1 differences against the A1 control. A2,
 A3, and B1 show that Focal Loss and many-hot supervision do not improve the
 control. B5 combines these training changes with B4 post-processing and is
 numerically similar on SHOT but slightly weaker on BBC and ClipShots. The
-gain therefore comes from calibrated post-processing rather than the more
-complex training objective. A0 is omitted because its per-dataset
+observed gain therefore comes from calibrated post-processing rather than
+from the more complex training objective. A0 is omitted because its per-dataset
 best-threshold protocol is not a direct controlled comparison.
 
 \begin{table}[!t]
-\caption{Controlled Phase 2 Ablation: $\Delta$F1 Against the A1 BCE Control (Absolute Percentage Points)}
+\caption{Controlled Phase 2 Ablation: $\Delta$F1 Against the A1 BCE Control (Percentage Points)}
 \label{tab:ablation}
 \centering
 \scriptsize
@@ -340,9 +343,8 @@ model does not predict a transition type.
 
 The gradual-transition recall of 0.8089 is lower than the cut recall of
 0.8991, but it is not the dominant source of the overall ClipShots gap.
-The aggregate ClipShots precision is only \PaperDeployClipPrecision{},
-indicating that open-world effects and domain shift create many
-false-positive peaks.
+The remaining gap is instead associated with false-positive peaks under
+open-world effects and domain shift.
 
 \subsection{Training-Seed Robustness}
 \label{sec:seed_robustness}
@@ -355,26 +357,25 @@ five-fold validation-only protocol of Section~\ref{sec:protocol} before any
 test evaluation. Consistent with the delta-only reporting of
 Section~\ref{sec:tracks}, we summarize this study by its dispersion: the
 sample standard deviation of test F1 across seeds is
-\PaperSeedShotFOneStd\% on SHOT, \PaperSeedBBCFOneStd\% on BBC, and
-\PaperSeedClipFOneStd\% on ClipShots --- below 0.5\% on every dataset and an
+\PaperSeedShotFOneStd{} percentage points on SHOT,
+\PaperSeedBBCFOneStd{} percentage points on BBC, and
+\PaperSeedClipFOneStd{} percentage points on ClipShots --- below
+0.5 percentage points on every dataset and an
 order of magnitude smaller than the paired bootstrap interval widths of
-Table~\ref{tab:paired_delta}. The pipeline is therefore stable with respect
-to head-training randomness; this study isolates training-seed sensitivity
-end to end, complementing the component analysis of
+Table~\ref{tab:paired_delta}. In these runs, head-training randomness is a
+smaller source of variation than video sampling. This study isolates
+training-seed sensitivity end to end, complementing the component analysis of
 Table~\ref{tab:ablation}.
 
 \subsection{Limitations}
 
-The study has four important limitations. First, the headline numbers come
-from the deployed checkpoint, whose result JSON files are tracked and
-checksummed but whose test logits were not retained
-(Section~\ref{sec:tracks}); the controlled track therefore carries every
-logit-level claim, and the three-seed study of
-Section~\ref{sec:seed_robustness} bounds optimization variability (F1 sample
-standard deviation at or below 0.5\% on every dataset) without reproducing
-either checkpoint bit for bit. Second, the historical sample cache recorded
-400 videos and 33,174 frames but not the exact selected IDs; strict
-manifests fix this for future runs but cannot retroactively prove the old
-cache contents. Third, validation calibration diagnostics reuse the
-temperature-selection data. Fourth, the frozen representation does not fully
-control cross-domain false positives on ClipShots.
+The study has four important limitations. First, although the headline
+checkpoint logits have been regenerated from complete local video splits, the
+three-seed study of Section~\ref{sec:seed_robustness} measures optimization
+variability for the controlled pipeline and does not reproduce either
+checkpoint bit for bit. Second, the historical sample cache recorded 400
+videos and 33,174 frames but not the selected IDs; the current manifests fix
+this for future runs but cannot reconstruct the old cache contents. Third,
+validation calibration diagnostics reuse the temperature-selection data.
+Fourth, the frozen representation does not fully control cross-domain false
+positives on ClipShots.

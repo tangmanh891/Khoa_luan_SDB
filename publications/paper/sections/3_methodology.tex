@@ -1,9 +1,9 @@
 \section{Methodology}
 \label{sec:method}
 
-This section formulates the shot boundary detection problem, reviews the
-TransNetV2 and AutoShot components that provide the frozen backbone, and
-presents the proposed AutoShotV2 pipeline built on top of it.
+This section formulates the shot boundary detection problem, summarizes the
+TransNetV2 and AutoShot components needed to define the frozen backbone, and
+presents the AutoShotV2 decision-stage pipeline built on top of it.
 
 \subsection{Problem Formulation}
 \label{sec:problem}
@@ -25,8 +25,8 @@ positive predictions are grouped into one transition.
 
 \subsection{Spatial-Temporal Factorized Convolution}
 
-Processing raw frame sequences with full 3-D convolutional kernels of size
-$k\times k\times k$ is expensive. The TransNetV2 family therefore factorizes
+Full 3-D convolutional kernels of size $k\times k\times k$ are expensive on
+frame sequences. The TransNetV2 family therefore factorizes
 each 3-D convolution into a 2-D spatial convolution ($1\times k\times k$,
 learning edges, textures, and color regions per frame) followed by a 1-D
 temporal convolution ($k\times 1\times 1$, capturing motion patterns along
@@ -103,7 +103,7 @@ Fig.~\ref{fig:pipeline} shows the deployed inference pipeline.
 \node[block, fill=blue!10] (in) {Video frames\\$48\times27$ RGB};
 \node[block, fill=green!12, right=of in] (backbone) {Frozen AutoShot\\backbone};
 \node[block, fill=green!8, right=of backbone] (feat) {Cached features\\4864-D};
-\node[block, fill=orange!15, right=of feat] (head) {Calibrated\\classification head};
+\node[block, fill=orange!15, right=of feat] (head) {Classification\\head};
 \node[block, fill=purple!12, right=of head] (temp) {Temperature scaling\\$T^{*}=\PaperDeployTemperature$};
 \node[block, fill=pink!14, right=of temp] (smooth) {Gaussian smoothing\\$\sigma=\PaperGaussianSigma$};
 \node[block, fill=blue!8, right=of smooth] (out) {Threshold\\$\theta=\PaperDeployThreshold$};
@@ -118,8 +118,8 @@ Fig.~\ref{fig:pipeline} shows the deployed inference pipeline.
 \end{tikzpicture}
 }
 \caption{AutoShotV2 inference pipeline. The searched AutoShot backbone is
-frozen; AutoShotV2 retrains the decision stage and adds calibration and
-temporal smoothing before thresholding. The controlled replication of
+frozen; AutoShotV2 trains the classification head and applies calibration
+and temporal smoothing before thresholding. The controlled replication of
 Section~\ref{sec:protocol} re-fits its own temperature on its validation
 pool under the frozen validation-only protocol.}
 \label{fig:pipeline}
@@ -139,8 +139,8 @@ parallel linear branches then produce logits
     z^{(1)}_t = W_1 u_t + c_1, \qquad z^{(2)}_t = W_2 u_t + c_2.
     \label{eq:branches}
 \end{equation}
-The primary branch $z^{(1)}_t$ is trained against the exact one-hot boundary
-labels and is the only branch used at inference. The auxiliary branch
+The primary branch $z^{(1)}_t$ is trained against one-hot boundary labels
+and is the only branch used at inference. The auxiliary branch
 $z^{(2)}_t$ can be supervised with boundary-aware many-hot targets to supply
 denser gradients around each transition. Fig.~\ref{fig:head} illustrates
 the head.
@@ -203,8 +203,8 @@ to its $\pm1$ frame neighborhood,
 and supervises the auxiliary branch with weight 0.3:
 $\mathcal{L}_{\mathrm{total}}=\mathcal{L}(\hat y^{(1)}, y_{\mathrm{oh}})
 +0.3\,\mathcal{L}(\hat y^{(2)}, y_{\mathrm{mh}})$. The small auxiliary
-weight prevents the dense targets from blurring the primary branch's
-localization.
+weight limits the influence of dense targets on the primary branch's
+frame-level localization.
 
 These objectives are evaluated as a design space rather than assumed
 beneficial: the controlled ablation of Section~\ref{sec:ablation} shows that
@@ -257,10 +257,10 @@ resulting BCE plus temperature plus Gaussian configuration B4.
 
 The revised pipeline separates a fixed data seed from the training seed.
 Before feature extraction, it deterministically selects the training-video
-list and hashes that exact list. A sample cache is reusable only when its schema
+list and hashes that selected list. A sample cache is reusable only when its schema
 version, metadata hash, base-checkpoint hash, selected-key hash, video budget,
 sampling parameters, boundary width, and data seed all match. Each run writes
 the selected video IDs, per-video sample counts, skipped inputs, configuration,
-checkpoint hash, and logit-key hash. This strict identity replaces the earlier
-path-tolerant cache check that could not prove which 400 videos produced the
-historical cache.
+checkpoint hash, and logit-key hash. These identity checks replace the earlier
+path-tolerant cache check, which recorded the cache size but not the selected
+video IDs that produced the historical cache.

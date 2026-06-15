@@ -59,23 +59,23 @@
     {
       "id": "autoshotv2_deploy",
       "name": "AutoShotV2",
-      "source_kind": "result_json",
-      "source": "reports/deploy_results/*.json",
+      "source_kind": "logits",
+      "source": "artifacts/experiments/deploy_regen/*.json",
       "metrics": {
-        "shot": 0.8545273631840797,
+        "shot": 0.8545852397055899,
         "bbc": 0.9656106711129636,
-        "clipshots": 0.7556540441895327
+        "clipshots": 0.7556047966631907
       }
     }
   ],
   "deploy": {
     "shot": {
-      "f1": 0.8545273631840797,
-      "precision": 0.8557194101235552,
-      "recall": 0.8533386327503975,
-      "tp": 2147,
-      "fp": 362,
-      "fn": 369,
+      "f1": 0.8545852397055899,
+      "precision": 0.8554360812425329,
+      "recall": 0.8537360890302067,
+      "tp": 2148,
+      "fp": 363,
+      "fn": 368,
       "threshold": 0.10000000149011612,
       "videos": 200
     },
@@ -90,11 +90,11 @@
       "videos": 11
     },
     "clipshots": {
-      "f1": 0.7556540441895327,
-      "precision": 0.7126874846324072,
+      "f1": 0.7556047966631907,
+      "precision": 0.71259987707437,
       "recall": 0.804133721736718,
       "tp": 5797,
-      "fp": 2337,
+      "fp": 2338,
       "fn": 1412,
       "threshold": 0.15000000596046448,
       "videos": 500
@@ -400,10 +400,10 @@
     }
   ],
   "summary": {
-    "shot_f1": 0.8545273631840797,
+    "shot_f1": 0.8545852397055899,
     "bbc_f1": 0.9656106711129636,
-    "clipshots_f1": 0.7556540441895327,
-    "shot_delta_vs_transnet_pp": 5.522736318407972,
-    "shot_delta_vs_autoshot_pp": 1.398249138920793
+    "clipshots_f1": 0.7556047966631907,
+    "shot_delta_vs_transnet_pp": 5.528523970558985,
+    "shot_delta_vs_autoshot_pp": 1.4040367910718055
   }
 }

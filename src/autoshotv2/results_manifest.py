@@ -61,6 +61,18 @@ CALIBRATION_LABELS = {
     "B5_phase2_full": "B5 -- Phase2 đầy đủ",
 }
 
+LEGACY_DEPLOY_RESULT_PATHS = {
+    "shot": REPORTS / "deploy_results" / "inference_results.json",
+    "bbc": REPORTS / "deploy_results" / "bbc_shot_inference_results.json",
+    "clipshots": REPORTS / "deploy_results" / "clipshot_test_inference_results.json",
+}
+
+REGENERATED_DEPLOY_RESULT_PATHS = {
+    "shot": ROOT / "artifacts" / "experiments" / "deploy_regen" / "results_shot.json",
+    "bbc": ROOT / "artifacts" / "experiments" / "deploy_regen" / "results_bbc.json",
+    "clipshots": ROOT / "artifacts" / "experiments" / "deploy_regen" / "results_clipshots.json",
+}
+
 
 def load_json(path: Path) -> Any:
     with path.open("r", encoding="utf-8") as handle:
@@ -78,12 +90,18 @@ def metric_block(block: dict[str, Any], videos: int | None = None) -> dict[str, 
     return result
 
 
+def deploy_result_sources() -> tuple[dict[str, Path], str, str]:
+    if all(path.is_file() for path in REGENERATED_DEPLOY_RESULT_PATHS.values()):
+        return (
+            REGENERATED_DEPLOY_RESULT_PATHS,
+            "logits",
+            "Regenerated deploy-checkpoint logits; T=0.3878, sigma=2.0, threshold=0.10.",
+        )
+    return LEGACY_DEPLOY_RESULT_PATHS, "result_json", "T=0.3878, sigma=2.0, threshold=0.10."
+
+
 def build_deploy_experiments() -> list[dict[str, Any]]:
-    paths = {
-        "shot": REPORTS / "deploy_results" / "inference_results.json",
-        "bbc": REPORTS / "deploy_results" / "bbc_shot_inference_results.json",
-        "clipshots": REPORTS / "deploy_results" / "clipshot_test_inference_results.json",
-    }
+    paths, reproducibility, deploy_note = deploy_result_sources()
     payloads = {dataset: load_json(path) for dataset, path in paths.items()}
     experiments = []
     for mode, identifier, label, note in (
@@ -91,7 +109,7 @@ def build_deploy_experiments() -> list[dict[str, Any]]:
             "deploy",
             "phase2_deploy_threshold",
             "Phase2 deploy checkpoint, deploy threshold",
-            "T=0.3878, sigma=2.0, threshold=0.10.",
+            deploy_note,
         ),
         (
             "best_sweep",
@@ -110,7 +128,7 @@ def build_deploy_experiments() -> list[dict[str, Any]]:
                 "group": "Deploy checkpoint",
                 "label": label,
                 "protocol": mode,
-                "reproducibility": "result_json",
+                "reproducibility": reproducibility,
                 "sources": [str(path.relative_to(ROOT)).replace("\\", "/") for path in paths.values()],
                 "metrics": metrics,
                 "note": note,
@@ -223,9 +241,8 @@ def build_journal_seed_study() -> dict[str, Any]:
 def build_manifest() -> dict[str, Any]:
     literature_path = REPORTS / "literature_results.json"
     literature = load_json(literature_path)["comparison_models"]
-    deployment_config = load_json(
-        REPORTS / "deploy_results" / "inference_results.json"
-    )["postprocess"]
+    deploy_paths, deploy_reproducibility, _ = deploy_result_sources()
+    deployment_config = load_json(deploy_paths["shot"])["postprocess"]
     clipshots_breakdown = load_json(
         REPORTS / "source_results" / "clipshots_transition_breakdown.json"
     )
@@ -240,8 +257,8 @@ def build_manifest() -> dict[str, Any]:
         {
             "id": "autoshotv2_deploy",
             "name": "AutoShotV2",
-            "source_kind": "result_json",
-            "source": "reports/deploy_results/*.json",
+            "source_kind": deploy_reproducibility,
+            "source": str(deploy_paths["shot"].parent.relative_to(ROOT)).replace("\\", "/") + "/*.json",
             "metrics": {
                 dataset: deploy_best["metrics"][dataset]["f1"]
                 for dataset in DATASET_ORDER

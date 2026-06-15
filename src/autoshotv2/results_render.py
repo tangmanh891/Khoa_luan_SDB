@@ -299,9 +299,8 @@ def render_paper_tex_macros(manifest: dict[str, Any]) -> str:
     analysis = manifest["supplemental_results"]["paper_analysis"]
     protocol = analysis["protocol"]
     definitions = {
-        # Two operating points coexist: the deployed checkpoint (result-JSON
-        # tier, headline) and the controlled B4 replication (logits tier,
-        # anchors every CI/calibration/seed analysis).
+        # Two operating points coexist: the deployed checkpoint (headline)
+        # and the controlled B4 replication (ablation/seed-study track).
         "PaperDeployTemperature": f"{deployment['temperature']:.4f}",
         "PaperBFourTemperature": f"{protocol['temperature']:.4f}",
         "PaperGaussianSigma": f"{protocol['sigma']:.1f}",
@@ -393,12 +392,12 @@ def render_paper_tex_tables(manifest: dict[str, Any]) -> str:
     ]
 
     paired_rows = []
-    # Increase/decrease quantities are rendered as absolute percentage points.
+    # Increase/decrease quantities are rendered as percentage points (pp).
     for dataset in DATASET_ORDER:
         metric = analysis["paired_delta_vs_a1"][dataset]
         paired_rows.append(
-            f"{DATASET_LABELS[dataset]} & {metric['delta'] * 100:+.2f}\\% & "
-            f"[{metric['ci95_low'] * 100:+.2f}\\%, {metric['ci95_high'] * 100:+.2f}\\%] & "
+            f"{DATASET_LABELS[dataset]} & {metric['delta'] * 100:+.2f} & "
+            f"[{metric['ci95_low'] * 100:+.2f}, {metric['ci95_high'] * 100:+.2f}] & "
             f"{'Yes' if metric['excludes_zero'] else 'No'} \\\\"
         )
     lines += [r"\newcommand{\PaperPairedDeltaRows}{%", *paired_rows, "}", ""]
@@ -460,7 +459,7 @@ def render_paper_tex_tables(manifest: dict[str, Any]) -> str:
         cells = []
         for dataset in DATASET_ORDER:
             delta = metrics[dataset]["f1"] - a1_metrics[dataset]["f1"]
-            rendered = f"{delta * 100:+.2f}\\%"
+            rendered = f"{delta * 100:+.2f}"
             cells.append(rf"\textbf{{{rendered}}}" if selected else rendered)
         delta_rows.append(f"{tex_escape(label)} & {cells[0]} & {cells[1]} & {cells[2]} \\\\")
     lines += [r"\newcommand{\PaperAblationDeltaRows}{%", *delta_rows, "}", ""]

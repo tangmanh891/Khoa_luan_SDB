@@ -28,9 +28,11 @@ def test_experiment_manifest_is_complete_and_current():
         assert set(experiments[experiment_id]["metrics"]) == {"shot", "bbc", "clipshots"}
 
     deploy = experiments["phase2_best_sweep"]["metrics"]
-    assert round(deploy["shot"]["f1"], 4) == 0.8545
+    assert experiments["phase2_deploy_threshold"]["reproducibility"] == "logits"
+    assert "artifacts/experiments/deploy_regen/results_shot.json" in experiments["phase2_deploy_threshold"]["sources"]
+    assert round(deploy["shot"]["f1"], 4) == 0.8546
     assert round(deploy["bbc"]["f1"], 4) == 0.9656
-    assert round(deploy["clipshots"]["f1"], 4) == 0.7557
+    assert round(deploy["clipshots"]["f1"], 4) == 0.7556
 
 
 def test_thesis_snapshot_and_releases_are_present():
@@ -61,16 +63,16 @@ def test_paper_snapshot_generated_tables_and_release_are_present():
 
     macros = (paper / "generated" / "experiment_macros.tex").read_text(encoding="utf-8")
     tables = (paper / "generated" / "experiment_tables.tex").read_text(encoding="utf-8")
-    assert r"\newcommand{\PaperDeployShotFOne}{0.8545}" in macros
+    assert r"\newcommand{\PaperDeployShotFOne}{0.8546}" in macros
     assert r"\newcommand{\PaperDeployBBCFOne}{0.9656}" in macros
-    assert r"\newcommand{\PaperDeployClipFOne}{0.7530}" in macros
-    assert r"\newcommand{\PaperDeployClipBestFOne}{0.7557}" in macros
+    assert r"\newcommand{\PaperDeployClipFOne}{0.7529}" in macros
+    assert r"\newcommand{\PaperDeployClipBestFOne}{0.7556}" in macros
     assert r"\newcommand{\PaperDeployTemperature}{0.3878}" in macros
     assert r"\newcommand{\PaperBFourVsAOneShotPP}{1.62}" in macros
     assert r"\newcommand{\PaperBFourVsAOneClipPP}{4.57}" in macros
     assert r"\PaperMainResultRows" in tables
     assert r"\PaperAblationDeltaRows" in tables
-    assert r"\textbf{+1.62\%}" in tables
+    assert r"\textbf{+1.62}" in tables
     assert "no EMA" not in tables
     # The replication's absolute scores must not appear anywhere in the paper
     # outputs: replication results are delta-only by design.

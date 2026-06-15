@@ -75,12 +75,12 @@
     {
       "id": "autoshotv2_deploy",
       "name": "AutoShotV2",
-      "source_kind": "result_json",
-      "source": "reports/deploy_results/*.json",
+      "source_kind": "logits",
+      "source": "artifacts/experiments/deploy_regen/*.json",
       "metrics": {
-        "shot": 0.8545273631840797,
+        "shot": 0.8545852397055899,
         "bbc": 0.9656106711129636,
-        "clipshots": 0.7556540441895327
+        "clipshots": 0.7556047966631907
       }
     }
   ],
@@ -90,20 +90,20 @@
       "group": "Deploy checkpoint",
       "label": "Phase2 deploy checkpoint, deploy threshold",
       "protocol": "deploy",
-      "reproducibility": "result_json",
+      "reproducibility": "logits",
       "sources": [
-        "reports/deploy_results/inference_results.json",
-        "reports/deploy_results/bbc_shot_inference_results.json",
-        "reports/deploy_results/clipshot_test_inference_results.json"
+        "artifacts/experiments/deploy_regen/results_shot.json",
+        "artifacts/experiments/deploy_regen/results_bbc.json",
+        "artifacts/experiments/deploy_regen/results_clipshots.json"
       ],
       "metrics": {
         "shot": {
-          "f1": 0.8545273631840797,
-          "precision": 0.8557194101235552,
-          "recall": 0.8533386327503975,
-          "tp": 2147,
-          "fp": 362,
-          "fn": 369,
+          "f1": 0.8545852397055899,
+          "precision": 0.8554360812425329,
+          "recall": 0.8537360890302067,
+          "tp": 2148,
+          "fp": 363,
+          "fn": 368,
           "threshold": 0.1,
           "videos": 200
         },
@@ -118,37 +118,37 @@
           "videos": 11
         },
         "clipshots": {
-          "f1": 0.7530007841244948,
-          "precision": 0.6661686232657418,
-          "recall": 0.8658621167984464,
-          "tp": 6242,
-          "fp": 3128,
-          "fn": 967,
+          "f1": 0.7528801495868266,
+          "precision": 0.6660618996798292,
+          "recall": 0.8657234013039257,
+          "tp": 6241,
+          "fp": 3129,
+          "fn": 968,
           "threshold": 0.1,
           "videos": 500
         }
       },
-      "note": "T=0.3878, sigma=2.0, threshold=0.10."
+      "note": "Regenerated deploy-checkpoint logits; T=0.3878, sigma=2.0, threshold=0.10."
     },
     {
       "id": "phase2_best_sweep",
       "group": "Deploy checkpoint",
       "label": "Phase2 deploy checkpoint, best sweep",
       "protocol": "best_sweep",
-      "reproducibility": "result_json",
+      "reproducibility": "logits",
       "sources": [
-        "reports/deploy_results/inference_results.json",
-        "reports/deploy_results/bbc_shot_inference_results.json",
-        "reports/deploy_results/clipshot_test_inference_results.json"
+        "artifacts/experiments/deploy_regen/results_shot.json",
+        "artifacts/experiments/deploy_regen/results_bbc.json",
+        "artifacts/experiments/deploy_regen/results_clipshots.json"
       ],
       "metrics": {
         "shot": {
-          "f1": 0.8545273631840797,
-          "precision": 0.8557194101235552,
-          "recall": 0.8533386327503975,
-          "tp": 2147,
-          "fp": 362,
-          "fn": 369,
+          "f1": 0.8545852397055899,
+          "precision": 0.8554360812425329,
+          "recall": 0.8537360890302067,
+          "tp": 2148,
+          "fp": 363,
+          "fn": 368,
           "threshold": 0.10000000149011612,
           "videos": 200
         },
@@ -163,11 +163,11 @@
           "videos": 11
         },
         "clipshots": {
-          "f1": 0.7556540441895327,
-          "precision": 0.7126874846324072,
+          "f1": 0.7556047966631907,
+          "precision": 0.71259987707437,
           "recall": 0.804133721736718,
           "tp": 5797,
-          "fp": 2337,
+          "fp": 2338,
           "fn": 1412,
           "threshold": 0.15000000596046448,
           "videos": 500

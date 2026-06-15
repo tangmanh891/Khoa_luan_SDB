@@ -1,12 +1,71 @@
 \section{Related Work}
 
-\textbf{Shot boundary detection.} Shot boundary detection has long been an active research area in video processing. Early systems primarily measured frame-to-frame discontinuities using hand-crafted visual features. Methods relying on histogram differences, edge-change ratios, motion compensation, and thresholding-based heuristics are computationally simple. However, they are prone to mistaking lighting changes, camera motion, or object movement for actual shot boundaries \cite{abdulhussain2018review}. Comprehensive survey studies categorize the major challenges in this domain into abrupt cuts, gradual transitions, illumination changes, object/camera motion, and dataset-dependent evaluation protocols \cite{seridi2020survey,kar2024review}.
+\textbf{Shot boundary detection.} Shot boundary detection has long been a
+central task in video processing. Early systems detect frame-to-frame
+discontinuities with hand-crafted cues such as color histograms,
+edge-change ratios, motion compensation, and thresholding heuristics. These
+methods are computationally simple, but they often confuse lighting changes,
+camera motion, or object movement with actual boundaries
+\cite{abdulhussain2018review}. Survey studies group the main challenges
+around abrupt cuts, gradual transitions, illumination changes, object and
+camera motion, and dataset-dependent evaluation protocols
+\cite{seridi2020survey,kar2024review}. These failure modes are amplified in
+short videos, where edits are dense and effects can be visually similar to
+true transitions.
 
-\textbf{Deep SBD models.} Following the success of deep learning in vision tasks, deep models were introduced to learn temporal patterns that are difficult to encode manually \cite{tran2015c3d,esteve2023shot}, from hierarchical clustering for broadcast re-use \cite{baraldi2015shot} to large-scale spatio-temporal CNNs \cite{hassanien2017deepsbd}. TransNet models SBD as a dense frame-level prediction task over a sequence of low-resolution frames \cite{soucek2019transnet}. TransNetV2 further improves this concept by incorporating dilated 3-D convolutions, frame-similarity features, color histograms, and dual prediction heads for both single-frame and all-transition labels \cite{soucek2020transnetv2}. These models offer a fast and accurate inference pipeline, establishing them as strong baselines for practical SBD applications.
+\textbf{Deep SBD models.} Deep SBD models learn temporal patterns that are
+difficult to encode manually \cite{tran2015c3d,esteve2023shot}, ranging
+from hierarchical clustering for broadcast reuse \cite{baraldi2015shot} to
+large-scale spatiotemporal CNNs \cite{hassanien2017deepsbd}. TransNet
+casts SBD as dense frame-level prediction over low-resolution frame
+sequences \cite{soucek2019transnet}. TransNetV2 extends this design with
+dilated 3-D convolutions, frame-similarity features, color histograms, and
+dual prediction heads for single-frame and all-transition labels
+\cite{soucek2020transnetv2}. These models provide fast and accurate
+baselines, but their decision quality still depends on thresholded
+frame-level scores, making calibration and temporal stability important for
+deployment.
 
-\textbf{AutoShot and short-video SBD.} Most existing datasets, such as BBC, RAI, and ClipShots, mainly represent documentaries, broadcast content, or longer user-generated videos. Recognizing this gap, AutoShot introduces the SHOT dataset specifically to capture short-video characteristics: brief duration, dense editing, vertical layouts, complex gradual transitions, and heavy special effects \cite{zhu2023autoshot}. AutoShot leverages NAS \cite{white2023_nas1000,ren2020_nas_survey,elsken2019nas} to search over approximately 83.9 million candidate architectures composed of 3-D separable convolution blocks and temporal Transformer blocks \cite{vaswani2017attention}, training a single-path one-shot supernet \cite{guo2020spos} explored with Bayesian optimization rather than differentiable relaxation \cite{liu2019darts}. While the searched backbone yields notable F1 improvements on SHOT, the computational cost of the search and retraining phases remains prohibitively high.
+\textbf{AutoShot and short-video SBD.} Most established SBD datasets, such
+as BBC, RAI, and ClipShots, emphasize documentaries, broadcast footage, or
+longer user-generated videos. AutoShot addresses the short-video setting by
+introducing SHOT, a dataset with brief clips, dense editing, vertical
+layouts, complex gradual transitions, and heavy visual effects
+\cite{zhu2023autoshot}. AutoShot uses NAS
+\cite{white2023_nas1000,ren2020_nas_survey,elsken2019nas} to search over
+approximately 83.9 million candidate architectures composed of 3-D
+separable convolution blocks and temporal Transformer blocks
+\cite{vaswani2017attention}. The search trains a single-path one-shot
+supernet \cite{guo2020spos} and explores architectures with Bayesian
+optimization rather than differentiable relaxation \cite{liu2019darts}.
+Although the searched backbone improves SHOT performance, repeating the
+search and retraining pipeline is computationally costly. AutoShotV2
+therefore asks how much can be gained by keeping this representation frozen
+and refining only the decision stage.
 
-\textbf{Imbalance, calibration, and temporal smoothing.} Frame-level SBD is severely imbalanced because boundary frames are rare. Focal Loss reduces the contribution of easy examples and is therefore a plausible alternative to BCE \cite{lin2017focal}, while soft and neighborhood-expanded targets such as label smoothing \cite{muller2019label} motivate the boundary-aware many-hot supervision we explore. SBD decisions are also threshold-sensitive, making score calibration and temporal stability important. Temperature scaling rescales logits without changing their ranking \cite{guo2017calibration}; classical alternatives include Platt scaling \cite{platt1999probabilistic} and isotonic regression \cite{zadrozny2002transforming}, which fit richer mappings at the cost of more calibration data --- a poor fit for our small validation pool. Measurement itself is subtle: equal-width ECE can be dominated by the majority class, motivating adaptive and class-conditional estimators \cite{nixon2019measuring}, which is why we report equal-mass and class-balanced variants alongside ECE. Temporal smoothing suppresses isolated peaks. We evaluate these mechanisms separately rather than assuming that a more complex training loss is necessary.
+\textbf{Imbalance, calibration, and temporal smoothing.} Frame-level SBD is
+severely imbalanced because boundary frames are rare. Focal Loss reduces
+the contribution of easy examples and is a natural alternative to BCE
+\cite{lin2017focal}, while soft and neighborhood-expanded targets such as
+label smoothing \cite{muller2019label} motivate the boundary-aware many-hot
+supervision explored in this paper. SBD is also threshold-sensitive:
+temperature scaling rescales logits without changing their ranking
+\cite{guo2017calibration}, while richer alternatives such as Platt scaling
+\cite{platt1999probabilistic} and isotonic regression
+\cite{zadrozny2002transforming} require more calibration data. Measuring
+calibration is itself nontrivial under sparse positives, because
+equal-width ECE can be dominated by the majority class; this motivates
+adaptive and class-conditional estimators \cite{nixon2019measuring}.
+AutoShotV2 evaluates these mechanisms separately so that improvements from
+training losses and post-processing are not conflated.
 
-\textbf{Efficient adaptation of frozen representations.} Reusing a pretrained backbone without updating it is a long-standing strategy, from linear probing of frozen features to parameter-efficient modules such as adapters \cite{houlsby2019parameter} and low-rank updates \cite{hu2022lora}. Our setting is an extreme point on this spectrum: the searched AutoShot representation is fully frozen, a small classification head is retrained on cached features, and all remaining adaptation happens in calibrated post-processing. This keeps the adaptation cost at CPU scale and makes every downstream decision auditable, at the price of forgoing representation-level domain adaptation --- a trade-off our ClipShots results make explicit.
-
+\textbf{Efficient adaptation of frozen representations.} Reusing a
+pretrained backbone without updating it is a common strategy, from linear
+probing of frozen features to parameter-efficient modules such as adapters
+\cite{houlsby2019parameter} and low-rank updates \cite{hu2022lora}. Our
+setting is deliberately conservative: the searched AutoShot representation
+is fully frozen, a small classification head is trained on cached features,
+and the final adaptation happens through validation-selected calibration
+and smoothing. This keeps adaptation inexpensive and auditable, while also
+exposing the limits of a frozen representation under the ClipShots domain
+shift.

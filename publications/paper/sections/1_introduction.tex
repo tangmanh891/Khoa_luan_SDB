@@ -4,7 +4,7 @@ Effectively parsing video content is a fundamental requirement for many
 downstream applications such as video indexing, content retrieval,
 summarization, and automated editing. Within this pipeline, shot boundary
 detection (SBD) serves as a critical preliminary step: it partitions a video
-into temporally coherent shots by identifying the exact frames where camera
+into temporally coherent shots by identifying frames where camera
 views, scene contents, or editing states transition
 \cite{seridi2020survey,kar2024review}. Classical methods based on
 hand-crafted cues such as color histograms and motion differences are
@@ -12,69 +12,68 @@ efficient but fragile under fast camera motion, flashes, and modern editing
 styles \cite{abdulhussain2018review}.
 
 Deep architectures such as TransNet and TransNetV2
-\cite{soucek2019transnet,soucek2020transnetv2} learn spatial-temporal
-representations directly from frame sequences and have significantly
-advanced the state-of-the-art. Concurrently, the rise of short-video
+\cite{soucek2019transnet,soucek2020transnetv2} learn spatiotemporal
+representations directly from frame sequences and have advanced modern SBD
+systems. Concurrently, the rise of short-video
 platforms (e.g., TikTok, YouTube Shorts) has introduced a new, challenging
 operating regime: brief videos, dense editing, and heavy special effects. To
 address it, AutoShot \cite{zhu2023autoshot} leverages neural architecture
-search (NAS) to find an optimal 3-D convolutional backbone, demonstrating
-strong performance on the newly introduced SHOT dataset. Further improving
-these models, however, encounters a severe bottleneck: the NAS pipeline
-requires immense computational overhead for supernet training and
-architecture evaluation. Moreover, short-video SBD suffers from extreme
+search (NAS) to select a 3-D convolutional backbone, demonstrating notable
+performance on the newly introduced SHOT dataset. Further improving these
+models, however, encounters a practical bottleneck: the NAS pipeline requires
+substantial computation for supernet training and architecture evaluation.
+Moreover, short-video SBD suffers from extreme
 class imbalance --- boundary frames are exceptionally rare --- and complex
 visual effects that act as hard negatives.
 
-Following the strategy of separating representation learning from
-task-specific adaptation, we study a more efficient refinement path for
-short-video SBD. Instead of re-running the expensive NAS process, we freeze
-the searched AutoShot backbone and improve only the decision stage, a method
-we term AutoShotV2. Its core component is a dual-branch classification head
-applied over the frozen 4864-dimensional cached features. To handle the
-class imbalance, we explore Focal Loss \cite{lin2017focal} on the primary
-branch and a boundary-aware many-hot supervision strategy on the auxiliary
-branch, providing denser temporal gradients without compromising the precise
-one-hot localization of the primary branch. Finally, because SBD decisions
-rely directly on thresholding model scores, we introduce a calibrated
-post-processing stage: temperature scaling \cite{guo2017calibration}
-adjusts the numerical scale of the predictions without altering their
-ranking, and a one-dimensional Gaussian filter smooths out isolated
-false-positive peaks caused by sudden flashes or camera shakes.
+We study an alternative refinement path that separates the frozen
+representation from the decision stage. Instead of re-running the NAS process
+or updating the searched AutoShot backbone, AutoShotV2 trains a compact
+classification head on cached 4864-dimensional features. This frozen-feature
+setting isolates a decision-stage design space: binary cross-entropy, Focal
+Loss \cite{lin2017focal}, and boundary-aware many-hot supervision can be
+compared without changing the representation. Because SBD decisions are made
+by thresholding scores, the decision stage also includes probability
+calibration and temporal smoothing. Temperature scaling
+\cite{guo2017calibration} rescales logits without changing their ranking,
+and a one-dimensional Gaussian filter suppresses isolated peaks caused by
+flashes, camera motion, or short-lived visual effects.
 
-With the fixed deployment configuration, AutoShotV2 achieves an F1-score of
+With a fixed deployment configuration, AutoShotV2 achieves an F1 score of
 \PaperDeployShotFOne{} on the SHOT test set, improving over the reproduced
 AutoShot baseline and the reported TransNetV2 baseline by
-\PaperDeployVsAutoShotPP\% and \PaperDeployVsTransNetPP\% in absolute F1,
-respectively. A controlled replication under a frozen, validation-only
-five-fold protocol disentangles the sources of this gain: the training-loss
-alternatives change F1 only marginally, whereas calibrated post-processing
-adds \PaperBFourVsAOneShotPP\% on SHOT and
-\PaperBFourVsAOneClipPP\% on ClipShots in absolute F1 over the BCE control, with
-paired bootstrap intervals confirming the deltas on SHOT and ClipShots but
-not BBC.
+\PaperDeployVsAutoShotPP{} and \PaperDeployVsTransNetPP{} percentage
+points in F1, respectively. A controlled replication under a frozen,
+validation-only
+five-fold protocol separates training choices from post-processing choices:
+the training-loss alternatives change F1 only marginally, whereas calibrated
+post-processing adds \PaperBFourVsAOneShotPP{} percentage points on SHOT
+and \PaperBFourVsAOneClipPP{} percentage points on ClipShots in F1 over the
+BCE control.
+Paired bootstrap intervals support the positive deltas on SHOT and
+ClipShots, but not on BBC.
 
 In summary, our main contributions are:
 \begin{itemize}
 \item We propose AutoShotV2, an efficient SBD pipeline that improves
 short-video boundary detection without the computational burden of
-retraining the NAS-searched backbone, reaching \PaperDeployShotFOne{} F1 on
-SHOT with a fixed deployment configuration.
-\item We design a two-branch classification head and systematically explore
-Focal Loss and boundary-aware many-hot supervision as a training design
-space, showing through a controlled ablation that calibrated post-processing
---- not the more complex losses --- drives the measured gain.
+updating the NAS-searched backbone, reaching an F1 score of
+\PaperDeployShotFOne{} on SHOT with a fixed deployment configuration.
+\item We evaluate compact head variants and a loss-design space, including
+Focal Loss and boundary-aware many-hot supervision, and show that the
+measured gain is driven by calibrated post-processing rather than by more
+complex training objectives.
 \item We define a validation-only, source-stratified selection protocol that
-freezes temperature, smoothing, and threshold before any test evaluation,
-and quantify uncertainty with paired video bootstrap intervals and
-calibration diagnostics including adaptive and class-balanced ECE.
-\item We provide extensive experiments on SHOT, BBC, and ClipShots with
-strict cache identities, exact split/run manifests, a three-seed robustness
-study, and checksum-based artifact packaging.
+fixes temperature, smoothing, and threshold before test evaluation, and we
+quantify uncertainty with paired video bootstrap intervals and calibration
+diagnostics including adaptive and class-balanced ECE.
+\item We report experiments on SHOT, BBC, and ClipShots with cache identity
+checks, split/run manifests, a three-seed robustness study, and
+checksum-based artifact packaging.
 \end{itemize}
 
-The paper reports results on two tracks by design: the deployed checkpoint
-supplies the headline numbers and is preserved as tracked, checksummed
-result files, while a controlled replication with full logit caches anchors
-every confidence interval, calibration diagnostic, and ablation
-(Section~\ref{sec:tracks}).
+The paper uses two complementary evaluation tracks. The deployed checkpoint
+supplies the headline numbers and is preserved through tracked,
+checksummed result files. A controlled replication with full logit caches
+anchors the logit-level confidence intervals, calibration diagnostics,
+ablations, and seed study (Section~\ref{sec:tracks}).

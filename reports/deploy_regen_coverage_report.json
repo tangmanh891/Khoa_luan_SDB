@@ -1,0 +1,108 @@
+{
+  "schema_version": 1,
+  "method": "Deploy regeneration prerequisite coverage audit",
+  "datasets": {
+    "shot": {
+      "label": "SHOT",
+      "ground_truth": "artifacts/experiments/journal_study/shared/shot_test_gt.pkl",
+      "video_source": {
+        "path": "data/ShotData",
+        "exists": true,
+        "video_files": 854,
+        "gt_videos": 200,
+        "matched_videos": 200,
+        "missing_count": 0,
+        "extra_count": 654,
+        "missing_sample": [],
+        "extra_sample": [
+          "12580139534",
+          "13306838459",
+          "21752568485",
+          "25104158143",
+          "25843031323",
+          "26760770402",
+          "27158734094",
+          "27201556521",
+          "27683571059",
+          "28180930978",
+          "28618861546",
+          "29479812490",
+          "29485022257",
+          "29810433315",
+          "29814491978",
+          "30281817898",
+          "30287673412",
+          "30324481655",
+          "30467539465",
+          "30703362207"
+        ]
+      },
+      "out_dir_logits": {
+        "path": "artifacts/experiments/deploy_regen/shot_test_logits.pkl",
+        "exists": true,
+        "predicted_videos": 200,
+        "gt_videos": 200,
+        "matched_videos": 200,
+        "missing_count": 0,
+        "extra_count": 0,
+        "missing_sample": [],
+        "extra_sample": []
+      },
+      "override_logits": null
+    },
+    "bbc": {
+      "label": "BBC",
+      "ground_truth": "artifacts/experiments/journal_study/shared/bbc_test_gt.pkl",
+      "video_source": {
+        "path": "data/BBCDataset",
+        "exists": true,
+        "video_files": 11,
+        "gt_videos": 11,
+        "matched_videos": 11,
+        "missing_count": 0,
+        "extra_count": 0,
+        "missing_sample": [],
+        "extra_sample": []
+      },
+      "out_dir_logits": {
+        "path": "artifacts/experiments/deploy_regen/bbc_test_logits.pkl",
+        "exists": true,
+        "predicted_videos": 11,
+        "gt_videos": 11,
+        "matched_videos": 11,
+        "missing_count": 0,
+        "extra_count": 0,
+        "missing_sample": [],
+        "extra_sample": []
+      },
+      "override_logits": null
+    },
+    "clipshots": {
+      "label": "ClipShots",
+      "ground_truth": "artifacts/experiments/journal_study/shared/clipshots_test_gt.pkl",
+      "video_source": {
+        "path": "data/ClipShots/videos/test",
+        "exists": true,
+        "video_files": 500,
+        "gt_videos": 500,
+        "matched_videos": 500,
+        "missing_count": 0,
+        "extra_count": 0,
+        "missing_sample": [],
+        "extra_sample": []
+      },
+      "out_dir_logits": {
+        "path": "artifacts/experiments/deploy_regen/clipshots_test_logits.pkl",
+        "exists": true,
+        "predicted_videos": 500,
+        "gt_videos": 500,
+        "matched_videos": 500,
+        "missing_count": 0,
+        "extra_count": 0,
+        "missing_sample": [],
+        "extra_sample": []
+      },
+      "override_logits": null
+    }
+  }
+}
