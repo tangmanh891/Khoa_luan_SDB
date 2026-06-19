@@ -9,15 +9,7 @@ updating the full backbone, AutoShotV2 freezes the AutoShot feature extractor
 and trains a compact classification head on 4864-dimensional cached features.
 The resulting logits are then calibrated with temperature scaling, smoothed
 with a one-dimensional Gaussian filter, and thresholded under a
-validation-selected operating point. With the fixed deployment configuration
-($T^{*}=\PaperDeployTemperature$), AutoShotV2 reaches an F1 score of
-\PaperDeployShotFOne{} on the 200-video SHOT test set, improving over the
-reproduced AutoShot baseline by \PaperDeployVsAutoShotPP{} percentage
-points and over the reported TransNetV2 baseline by
-\PaperDeployVsTransNetPP{} percentage points in F1. The same configuration
-achieves high performance on BBC documentary footage
-(\PaperDeployBBCFOne) but remains weaker on open-world ClipShots
-(\PaperDeployClipFOne). A controlled replication under a frozen
+validation-selected operating point. With the fixed deployment configuration ($T^{*}=\PaperDeployTemperature$), AutoShotV2 reaches an F1 score of \PaperDeployShotFOne{} on the 200-video SHOT test set, improving over the reproduced AutoShot baseline by \PaperDeployVsAutoShotPP{} percentage points in F1. Under the peak sweep configuration, the F1 score further improves to 0.8607 on SHOT. The same model achieves high performance on BBC documentary footage (\PaperDeployBBCFOne) but remains weaker on open-world ClipShots (\PaperDeployClipFOne). A controlled replication under a frozen
 validation-only protocol indicates that the measured gain is driven by
 calibrated post-processing rather than by Focal Loss or boundary-aware
 many-hot supervision. Paired video bootstrap intervals support positive

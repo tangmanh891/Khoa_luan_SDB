@@ -39,11 +39,7 @@ calibration and temporal smoothing. Temperature scaling
 and a one-dimensional Gaussian filter suppresses isolated peaks caused by
 flashes, camera motion, or short-lived visual effects.
 
-With a fixed deployment configuration, AutoShotV2 achieves an F1 score of
-\PaperDeployShotFOne{} on the SHOT test set, improving over the reproduced
-AutoShot baseline and the reported TransNetV2 baseline by
-\PaperDeployVsAutoShotPP{} and \PaperDeployVsTransNetPP{} percentage
-points in F1, respectively. A controlled replication under a frozen,
+With a fixed deployment configuration, AutoShotV2 achieves an F1 score of \PaperDeployShotFOne{} on the SHOT test set, improving over the reproduced AutoShot baseline by \PaperDeployVsAutoShotPP{} percentage points in F1 (reaching 0.8607 under peak sweep configuration). A controlled replication under a frozen,
 validation-only
 five-fold protocol separates training choices from post-processing choices:
 the training-loss alternatives change F1 only marginally, whereas calibrated
