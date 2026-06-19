@@ -79,3 +79,9 @@ publications/paper/**/*.synctex.gz
 
 # Notebook/runtime noise
 .ipynb_checkpoints/
+
+# Local datasets and artifacts
+data/
+artifacts/
+.claude
+
