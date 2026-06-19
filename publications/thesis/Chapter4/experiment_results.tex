@@ -59,18 +59,19 @@ Bảng~\ref{tab:autoshotv2_prf} trình bày chi tiết F1, Precision và Recall 
 
 \begin{table}[H]
 \centering
-\caption[Precision, Recall, F1 của AutoShotV2 trên ba bộ dữ liệu]{F1, Precision và Recall của AutoShotV2 trên ba bộ dữ liệu với ngưỡng $\theta = 0.10$.}
+\caption[Precision, Recall, F1 của AutoShotV2 trên ba bộ dữ liệu]{Precision, Recall, F1 của AutoShotV2 trên ba bộ dữ liệu với ngưỡng $\theta = 0.10$.}
 \label{tab:autoshotv2_prf}
 \small
 \setlength{\tabcolsep}{3pt}
-\begin{tabular}{L{3.4cm}C{1.8cm}C{2.0cm}C{2.0cm}C{2.0cm}}
+\begin{tabular}{L{3.0cm}C{1.8cm}C{2.0cm}C{1.9cm}C{1.55cm}C{3.0cm}}
 \toprule
-\textbf{Bộ dữ liệu (Dataset)} & \textbf{Ngưỡng} & \textbf{F1} & \textbf{Precision} & \textbf{Recall} \\
+\textbf{Bộ dữ liệu (Dataset)} & \textbf{Ngưỡng} & \textbf{Precision} & \textbf{Recall} & \textbf{F1} & \textbf{TP / FP / FN} \\
 \midrule
 \DeployPRFRows
 \bottomrule
 \end{tabular}
 \end{table}
+
 
 \subsection{Kết quả tốt nhất theo từng bộ dữ liệu}
 \label{sec:extra_param_sweep}
@@ -100,7 +101,7 @@ Bảng~\ref{tab:extra_sweep_peaks} cho thấy lựa chọn riêng theo từng da
 \section{Kết quả bổ sung theo biến thể}
 \label{sec:ablation}
 
-Bảng~\ref{tab:ablation_controlled} và Bảng~\ref{tab:ema_study} báo cáo thêm các biến thể bổ sung để giải thích xu hướng kết quả. Các bảng này không thay thế kết quả chính ở Mục~\ref{sec:main_balanced_results}; chúng chỉ cho biết F1 thay đổi thế nào khi điều kiện thực nghiệm thay đổi.
+Bảng~\ref{tab:ablation_controlled} báo cáo thêm các biến thể bổ sung để giải thích xu hướng kết quả. Các bảng này không thay thế kết quả chính ở Mục~\ref{sec:main_balanced_results}; chúng chỉ cho biết F1 thay đổi thế nào khi điều kiện thực nghiệm thay đổi.
 
 \begin{table}[H]
 \centering
@@ -118,25 +119,10 @@ Bảng~\ref{tab:ablation_controlled} và Bảng~\ref{tab:ema_study} báo cáo th
 
 Trong nhóm kết quả này, $B4$ là biến thể cân bằng nhất: F1 tăng rõ so với mốc $A1$ trên SHOT ($+1.6\%$) và ClipShots ($+4.6\%$), trong khi BBC gần như không đổi. Một số biến thể khác tăng mạnh trên một bộ dữ liệu nhưng làm giảm bộ dữ liệu còn lại, nên không phù hợp làm kết quả chính.
 
-\begin{table}[H]
-\centering
-\caption[Kết quả bổ sung với EMA]{Kết quả bổ sung với EMA trên SHOT, BBC và ClipShots. Bảng này dùng để quan sát xu hướng F1 của một nhóm thí nghiệm riêng; số đậm là giá trị tốt nhất theo cột.}
-\label{tab:ema_study}
-\small
-\begin{tabular}{lccc}
-\toprule
-\textbf{Cấu hình} & \textbf{SHOT} & \textbf{BBC} & \textbf{ClipShots} \\
-\midrule
-\EMAStudyRows
-\bottomrule
-\end{tabular}
-\end{table}
-
 \noindent
-Nhận xét từ hai bảng bổ sung:
+Nhận xét từ bảng bổ sung:
 \begin{itemize}
     \item \textbf{Biến thể $B4$ cho kết quả cân bằng nhất.} F1 tăng trên SHOT và ClipShots nhưng không làm BBC giảm đáng kể, nên phù hợp hơn các biến thể chỉ tốt trên một miền dữ liệu.
-    \item \textbf{EMA là kết quả bổ trợ.} So với mốc không EMA, EMA cho F1 cao hơn trên cả ba bộ ($+0.46\%$ trên SHOT, $+1.10\%$ trên BBC, $+2.22\%$ trên ClipShots) và đạt F1 cao nhất trên BBC. Tuy nhiên kết quả này thuộc một nhóm thí nghiệm riêng, nên không được dùng thay cho kết quả chính.
     \item \textbf{ClipShots vẫn là điểm yếu chung.} Các biến thể bổ sung chưa vượt được baseline gốc một cách ổn định trên ClipShots, củng cố nhận định về hạn chế tổng quát hóa sang miền này.
 \end{itemize}
 
