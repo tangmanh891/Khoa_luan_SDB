@@ -50,11 +50,11 @@ Bảng~\ref{tab:per_video_clipshots} tổng hợp kết quả F1 trên ClipShots
 \end{table}
 
 \noindent\textbf{Quan sát đáng chú ý.}
-Mức suy giảm khoảng $3.4\%$ của AutoShotV2 so với AutoShot theo báo cáo gốc trên ClipShots cho thấy cấu hình tối ưu cho SHOT chưa chuyển dịch ổn định sang miền dữ liệu đa dạng hơn. Phân tích sâu hơn (xem Chương~\ref{ch:ket_luan}, Mục~\ref{sec:limitations}) chỉ ra ba giả thuyết kỹ thuật chính:
+Mức suy giảm khoảng $3.4\%$ của AutoShotV2 so với AutoShot theo báo cáo gốc trên ClipShots cho thấy cấu hình tối ưu cho SHOT chưa chuyển dịch ổn định sang miền dữ liệu đa dạng hơn. Phân tích sâu hơn (xem Chương~\ref{ch:ket_luan}, Mục~\ref{sec:limitations}) chỉ ra một số hướng giải thích cần kiểm chứng:
 \begin{enumerate}
-    \item Nhãn many-hot $\pm 1$ frame chưa phù hợp với chuyển cảnh hard-cut sắc nét đặc trưng của ClipShots.
-    \item Hệ số temperature scaling $T^*$ được tối ưu trên validation SHOT bị lệch khi áp dụng sang ClipShots.
-    \item Cấu hình Focal Loss ($\gamma = 1.0, \alpha = 0.5$) thiên về phân phối nhãn của SHOT.
+    \item Hệ số temperature scaling $T^*$ và ngưỡng quyết định được tối ưu trên SHOT có thể bị lệch phân phối khi áp dụng sang ClipShots.
+    \item Nhãn many-hot cố định chưa mô tả tốt các chuyển cảnh có độ dài khác nhau, đặc biệt là nhóm chuyển cảnh dần.
+    \item Cấu hình Focal Loss chưa thể hiện lợi ích rõ ràng trong ma trận đối chứng hiện tại, nên cần được kiểm chứng thêm trên từng miền dữ liệu.
 \end{enumerate}
 
 Các bảng ở hai mục đầu của phụ lục này chỉ đóng vai trò tổng hợp lại số liệu đã dùng trong phần thực nghiệm chính trên SHOT và ClipShots. Việc kiểm chứng định lượng sâu hơn theo từng video cần được thực hiện khi có đầy đủ \textit{log} hoặc CSV chi tiết cho từng mẫu kiểm tra.

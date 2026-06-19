@@ -157,11 +157,12 @@ def render_tex_tables(manifest: dict[str, Any]) -> str:
     lines += [r"\newcommand{\ExperimentOverviewRows}{%", *overview_rows, "}", ""]
 
     comparison_order = (
-        "autoshot_reported",
-        "autoshot_reproduced_legacy",
+        "dsm_reported",
+        "transnet_reported",
         "transnetv2_reported",
         "transnetv2_reproduced",
-        "autoshot_v1_gaussian",
+        "autoshot_reported",
+        "autoshot_reproduced_legacy",
         "autoshotv2_deploy",
     )
     rows = []
@@ -347,11 +348,12 @@ def render_paper_tex_tables(manifest: dict[str, Any]) -> str:
 
     comparison_rows = []
     comparison_definitions = (
-        ("autoshot_reported", "AutoShot, reported in original paper"),
-        ("autoshot_reproduced_legacy", "AutoShot, reproduced"),
+        ("dsm_reported", "Deep Structured Models (DSM)"),
+        ("transnet_reported", "TransNet (V1)"),
         ("transnetv2_reported", "TransNetV2, reported baseline"),
         ("transnetv2_reproduced", "TransNetV2, reproduced"),
-        ("autoshot_v1_gaussian", "AutoShot reproduced + Gaussian smoothing"),
+        ("autoshot_reported", "AutoShot, reported in original paper"),
+        ("autoshot_reproduced_legacy", "AutoShot, reproduced"),
     )
     for identifier, label in comparison_definitions:
         metrics = comparisons[identifier]["metrics"]

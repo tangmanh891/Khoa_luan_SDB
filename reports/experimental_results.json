@@ -18,25 +18,25 @@
   },
   "comparison_models": [
     {
-      "id": "autoshot_reported",
-      "name": "AutoShot theo báo cáo",
+      "id": "dsm_reported",
+      "name": "Deep Structured Models (DSM)",
       "source_kind": "literature",
-      "source": "AutoShot CVPRW 2023",
+      "source": "ClipShots paper 2018",
       "metrics": {
-        "shot": 0.841,
-        "bbc": 0.971,
-        "clipshots": 0.787
+        "shot": null,
+        "bbc": 0.892,
+        "clipshots": 0.703
       }
     },
     {
-      "id": "autoshot_reproduced_legacy",
-      "name": "AutoShot tự chạy lại",
-      "source_kind": "legacy_result",
-      "source": "AutoShots_Report working tree, 2026-06-06",
+      "id": "transnet_reported",
+      "name": "TransNet (V1)",
+      "source_kind": "literature",
+      "source": "TransNetV2 paper 2020",
       "metrics": {
-        "shot": 0.8405,
-        "bbc": 0.9554,
-        "clipshots": 0.7753
+        "shot": null,
+        "bbc": 0.929,
+        "clipshots": 0.735
       }
     },
     {
@@ -62,14 +62,25 @@
       }
     },
     {
-      "id": "autoshot_v1_gaussian",
-      "name": "AutoShotV1",
+      "id": "autoshot_reported",
+      "name": "AutoShot theo báo cáo",
+      "source_kind": "literature",
+      "source": "AutoShot CVPRW 2023",
+      "metrics": {
+        "shot": 0.841,
+        "bbc": 0.971,
+        "clipshots": 0.787
+      }
+    },
+    {
+      "id": "autoshot_reproduced_legacy",
+      "name": "AutoShot tự chạy lại",
       "source_kind": "legacy_result",
       "source": "AutoShots_Report working tree, 2026-06-06",
       "metrics": {
-        "shot": 0.848,
-        "bbc": 0.951,
-        "clipshots": 0.7987
+        "shot": 0.8405,
+        "bbc": 0.9554,
+        "clipshots": 0.7753
       }
     },
     {

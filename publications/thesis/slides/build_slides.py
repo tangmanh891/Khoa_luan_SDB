@@ -1112,11 +1112,6 @@ def slide_results_main(prs):
     rows = [
         ("TransNetV2", f1_text(comparison_f1("transnetv2_reported", "shot")), False),
         ("AutoShot", f1_text(comparison_f1("autoshot_reported", "shot")), False),
-        (
-            "AutoShotV1 (+Gaussian)",
-            f1_text(comparison_f1("autoshot_v1_gaussian", "shot")),
-            False,
-        ),
         ("AutoShotV2 (3 kỹ thuật)", f1_text(RESULTS["summary"]["shot_f1"]), True),
     ]
     col_widths = [Inches(4.7), Inches(1.8)]
@@ -1233,11 +1228,6 @@ def slide_results_cross(prs):
         tuple(
             ["AutoShot tự chạy"]
             + [f1_text(comparison_f1("autoshot_reproduced_legacy", dataset)) for dataset in ("shot", "bbc", "clipshots")]
-            + [False]
-        ),
-        tuple(
-            ["AutoShotV1 (Gaussian)"]
-            + [f1_text(comparison_f1("autoshot_v1_gaussian", dataset)) for dataset in ("shot", "bbc", "clipshots")]
             + [False]
         ),
         tuple(

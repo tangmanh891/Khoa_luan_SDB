@@ -1,6 +1,6 @@
 \section{Tổng quan các nhóm thực nghiệm}
 
-Trước khi đi vào từng bảng chi tiết, Bảng~\ref{tab:experiment_group_overview} tóm tắt các nhóm thực nghiệm chính được sử dụng trong chương này. Bảng chỉ báo cáo F1-score đại diện để người đọc nắm toàn cảnh; các chỉ số Precision, Recall, TP/FP/FN và phân tích chi tiết được trình bày ở các mục sau. Bảng đầy đủ tất cả thí nghiệm được đặt tại Bảng~\ref{tab:all_experiments_master} trong Phụ lục~\ref{app:per_video_results}.
+Trước khi đi vào từng bảng chi tiết, Bảng~\ref{tab:experiment_group_overview} tóm tắt các nhóm thực nghiệm chính được sử dụng trong chương này. Bảng chỉ báo cáo F1-score đại diện để người đọc nắm toàn cảnh; các chỉ số Precision, Recall, TP/FP/FN và phân tích chi tiết được trình bày ở các mục sau. Bảng đầy đủ tất cả thí nghiệm được đặt tại Bảng~\ref{tab:all_experiments_master} trong Phụ lục~\ref{app:per_video_results}. Do các dòng trong chương có thể dùng protocol khác nhau, các kết luận chính luôn được rút ra trong phạm vi từng bảng: kết quả triển khai dùng một ngưỡng cố định, kết quả quét ngưỡng chỉ dùng để phân tích tiềm năng, còn kiểm định chéo dùng để đánh giá hiệu chỉnh hậu xử lý theo miền dữ liệu.
 
 \begin{table}[H]
 \centering
@@ -20,7 +20,7 @@ Trước khi đi vào từng bảng chi tiết, Bảng~\ref{tab:experiment_group
 
 \section{Kết quả chính trên SHOT và các bộ dữ liệu bổ sung}
 
-Bảng~\ref{tab:autoshotv2_results} tổng hợp F1-score của AutoShot, TransNetV2 và các biến thể AutoShotV1/AutoShotV2 khi đánh giá trên ba tập dữ liệu SHOT, BBC và ClipShots.
+Bảng~\ref{tab:autoshotv2_results} tổng hợp F1-score của AutoShot, TransNetV2 và biến thể AutoShotV2 khi đánh giá trên ba tập dữ liệu SHOT, BBC và ClipShots.
 
 \begin{table}[H]
 \centering
@@ -35,16 +35,16 @@ Bảng~\ref{tab:autoshotv2_results} tổng hợp F1-score của AutoShot, TransN
 \MainComparisonRows
 \bottomrule
 \end{tabular}
-\caption[So sánh F1-score các mô hình trên SHOT, BBC và ClipShots]{So sánh F1-score của các mô hình trên SHOT, BBC và ClipShots. Hàng ``AutoShot theo báo cáo'' lấy từ bài báo gốc~\cite{zhu2023autoshot}; các hàng ``tự chạy lại'' là kết quả tái lập trong khóa luận với điểm lưu trọng số công khai và quy trình đánh giá thống nhất. AutoShotV1 là cấu hình trung gian chỉ áp dụng Gaussian smoothing ($\sigma=2$) lên AutoShot gốc, chưa bao gồm Focal Loss, many-hot labels hay hiệu chỉnh nhiệt độ. AutoShot dùng ngưỡng $\theta = 0.296$; AutoShotV2 dùng ngưỡng triển khai $\theta = 0.10$ (SHOT/BBC) và $\theta = 0.15$ (ClipShots) sau hiệu chỉnh nhiệt độ và Gaussian smoothing --- ngưỡng triển khai khác với ngưỡng của tập xác thực tối ưu $\theta = 0.02$ nhằm cân bằng Precision--Recall trên tập kiểm tra (test). Số đậm là kết quả tốt nhất theo cột.}
+\caption[So sánh F1-score các mô hình trên SHOT, BBC và ClipShots]{So sánh F1-score của các mô hình trên SHOT, BBC và ClipShots. Hàng ``theo báo cáo'' lấy từ bài báo gốc~\cite{zhu2023autoshot}; các hàng ``tự chạy lại'' là kết quả tái lập trong khóa luận với điểm lưu trọng số công khai và quy trình đánh giá thống nhất. AutoShotV2 là kết quả triển khai chính sau hiệu chỉnh nhiệt độ và Gaussian smoothing, dùng ngưỡng cố định $\theta = 0.10$ cho cả SHOT, BBC và ClipShots. Các giá trị quét ngưỡng tốt nhất theo từng bộ dữ liệu chỉ được dùng ở các bảng phân tích bổ sung, không thay thế kết quả triển khai chính trong bảng này. Dấu ``--'' nghĩa là khóa luận không đánh giá lại cấu hình đó trên tập tương ứng. Số đậm là kết quả tốt nhất theo cột.}
 \label{tab:autoshotv2_results}
 \end{table}
 
-Sai lệch giữa ``AutoShot theo báo cáo'' và ``tự chạy lại'' (lên đến 1.56 điểm trên BBC) phản ánh biến động môi trường thường gặp khi tái lập kết quả (phiên bản thư viện, giá trị hạt giống, điểm lưu trọng số và ngưỡng quyết định - ngưỡng quyết định).
+Sai lệch giữa ``theo báo cáo'' và ``tự chạy lại'' phản ánh biến động môi trường thường gặp khi tái lập kết quả, bao gồm phiên bản thư viện, giá trị hạt giống, điểm lưu trọng số và ngưỡng quyết định. Vì vậy, các dòng literature/legacy trong Bảng~\ref{tab:autoshotv2_results} đóng vai trò mốc tham chiếu, còn nhận định về AutoShotV2 dựa trên kết quả triển khai và các thí nghiệm đối chứng được trình bày ở các mục tiếp theo.
 
 Nhận xét từ kết quả:
 \begin{itemize}
-    \item Biến thể \textbf{AutoShotV1} cải thiện nhẹ trên SHOT ($+0.75$ điểm phần trăm) và tăng trên ClipShots so với cả AutoShot theo báo cáo gốc ($+1.17$ điểm phần trăm) lẫn AutoShot tự chạy lại ($+2.34$ điểm phần trăm), nhưng giảm nhẹ trên BBC. Theo ghi chú thực nghiệm, nếu loại ảnh hưởng từ một video bất thường thì F1 trên BBC có thể đạt khoảng $0.961$.
-    \item Biến thể \textbf{AutoShotV2 với các kỹ thuật cải tiến} cho kết quả tốt nhất trên SHOT ($\ASVTwoShotFOne$) and BBC ($\ASVTwoBBCFOne$, vượt cả TransNetV2 lẫn AutoShot tự chạy lại). Trên ClipShots, AutoShotV2 đạt $\ASVTwoClipFOne$ -- thấp hơn AutoShot theo báo cáo gốc $3.4$ điểm phần trăm và thấp hơn AutoShot tự chạy lại $2.2$ điểm phần trăm, cho thấy cấu hình tối ưu cho SHOT chưa chuyển dịch hoàn toàn sang miền dữ liệu đa dạng hơn.
+    \item \textbf{So sánh với các công trình kinh điển:} Các mô hình thế hệ đầu như Deep Structured Models (DSM -- F1 đạt $0.7030$ trên ClipShots, $0.8920$ trên BBC) và TransNet (V1) (F1 đạt $0.7350$ trên ClipShots, $0.9290$ trên BBC) cho hiệu năng thấp hơn đáng kể so với các kiến trúc thế hệ sau. Điều này minh chứng cho sự phát triển mạnh mẽ của các mô hình học sâu không-thời gian trong giai đoạn từ sau năm 2020.
+    \item Biến thể \textbf{AutoShotV2 với các kỹ thuật cải tiến} cho kết quả tốt nhất trên SHOT ($\ASVTwoShotFOne$) và BBC ($\ASVTwoBBCFOne$, vượt cả TransNetV2 lẫn AutoShot tự chạy lại). Trên ClipShots, AutoShotV2 đạt $\ASVTwoClipFOne$ -- tuy thấp hơn AutoShot theo báo cáo gốc $3.4$ điểm phần trăm nhưng vẫn vượt trội đáng kể so với các mô hình kinh điển DSM ($+4.99$ điểm phần trăm) và TransNet (V1) ($+1.79$ điểm phần trăm), đồng thời tiệm cận sát baseline mạnh TransNetV2.
 \end{itemize}
 
 \noindent
@@ -52,7 +52,7 @@ Bảng tổng hợp bổ sung cho SHOT và ClipShots được trình bày tại 
 
 \section{So sánh Precision, Recall và F1-score}
 
-Bảng~\ref{tab:autoshotv2_prf} trình bày chi tiết Precision, Recall và F1 của AutoShotV2 tại ngưỡng triển khai trên từng bộ dữ liệu, kèm theo số liệu TP/FP/FN tuyệt đối để làm rõ hành vi của mô hình. Trong đó, ngưỡng 0.02 là ngưỡng tối ưu trên tập xác thực của SHOT sau hiệu chỉnh nhiệt độ; bảng dưới dùng ngưỡng triển khai cố định 0.10 cho cả ba bộ dữ liệu để báo cáo kết quả triển khai đồng bộ.
+Bảng~\ref{tab:autoshotv2_prf} trình bày chi tiết Precision, Recall và F1 của AutoShotV2 tại ngưỡng triển khai trên từng bộ dữ liệu, kèm theo số liệu TP/FP/FN tuyệt đối để làm rõ hành vi của mô hình. Bảng dưới dùng ngưỡng triển khai cố định 0.10 cho cả ba bộ dữ liệu để báo cáo kết quả đồng bộ; các ngưỡng tốt nhất theo từng tập dữ liệu được tách riêng khỏi headline triển khai nhằm tránh hiện tượng tinh chỉnh trên tập kiểm tra.
 
 \begin{table}[H]
 \centering
@@ -69,6 +69,8 @@ Bảng~\ref{tab:autoshotv2_prf} trình bày chi tiết Precision, Recall và F1 
 \end{tabular}
 \end{table}
 
+Ở ngưỡng triển khai chung, AutoShotV2 giữ cân bằng Precision--Recall tốt trên SHOT và BBC, nhưng ClipShots có Precision thấp hơn rõ rệt ($0.6661$) dù Recall vẫn cao ($0.8657$). Điều này cho thấy vấn đề chính trên ClipShots không chỉ là bỏ sót chuyển cảnh mà còn là số lượng dự đoán dư thừa lớn, thể hiện qua $3129$ false positives.
+
 \section{Thí nghiệm quét tham số (sweep) bổ sung}
 \label{sec:extra_param_sweep}
 
@@ -76,7 +78,7 @@ Sau cấu hình AutoShotV2 chính, khóa luận thử thêm một lượt quét 
 
 \begin{table}[H]
 \centering
-\caption[Đỉnh F1 của cấu hình quét tham số bổ sung]{Đỉnh F1 của cấu hình quét tham số (sweep) bổ sung khi chọn ngưỡng (ngưỡng quyết định) tốt nhất riêng cho từng bộ dữ liệu. Cột cuối so sánh với cấu hình AutoShotV2 chính ở Bảng~\ref{tab:autoshotv2_prf}.}
+\caption[Đỉnh F1 của cấu hình quét tham số bổ sung]{Đỉnh F1 của cấu hình quét tham số bổ sung khi chọn ngưỡng quyết định tốt nhất riêng cho từng bộ dữ liệu. Cột cuối so sánh với cấu hình AutoShotV2 chính ở Bảng~\ref{tab:autoshotv2_prf}.}
 \label{tab:extra_sweep_peaks}
 \small
 \setlength{\tabcolsep}{3pt}
@@ -91,12 +93,12 @@ BBC & 0.12 & 0.9668 & 0.9628 & 0.9648 & $-0.0008$ \\
 \end{tabular}
 \end{table}
 
-Bảng~\ref{tab:extra_sweep_peaks} cho thấy cấu hình mới tạo ra các đỉnh tốt hơn trên SHOT và ClipShots khi mỗi bộ dữ liệu được chọn ngưỡng riêng. Tuy nhiên, khi xét một chính sách triển khai chung cho cả ba bộ dữ liệu, cấu hình mới không ổn định bằng cấu hình chính. Trong các ngưỡng đã thử, ngưỡng chung tốt nhất của cấu hình mới nằm quanh $0.17$, với F1 lần lượt là $0.8518$ trên SHOT, $0.7581$ trên ClipShots và $0.9598$ trên BBC, trung bình khoảng $0.8566$. Giá trị này thấp hơn trung bình của cấu hình AutoShotV2 chính trên ba bộ dữ liệu ($0.8586$). Vì vậy, cấu hình quét mới được xem là kết quả bổ sung giúp nhận diện tiềm năng cải thiện theo từng miền dữ liệu, nhưng chưa được chọn làm cấu hình chính của khóa luận.
+Bảng~\ref{tab:extra_sweep_peaks} cho thấy cấu hình mới tạo ra các đỉnh tốt hơn trên SHOT và ClipShots khi mỗi bộ dữ liệu được chọn ngưỡng riêng. Tuy nhiên, đây là kết quả oracle theo tập kiểm tra, nên chỉ dùng để ước lượng tiềm năng của từng miền dữ liệu. Khi xét một chính sách triển khai chung cho cả ba bộ dữ liệu, cấu hình mới không ổn định bằng cấu hình chính. Trong các ngưỡng đã thử, ngưỡng chung tốt nhất của cấu hình mới nằm quanh $0.17$, với F1 lần lượt là $0.8518$ trên SHOT, $0.7581$ trên ClipShots và $0.9598$ trên BBC, trung bình khoảng $0.8566$. Giá trị này thấp hơn trung bình của cấu hình AutoShotV2 chính trên ba bộ dữ liệu ($0.8586$). Vì vậy, cấu hình quét mới được xem là kết quả bổ sung giúp nhận diện tiềm năng cải thiện theo từng miền dữ liệu, nhưng chưa được chọn làm cấu hình chính của khóa luận.
 
-\section{Thực nghiệm phân rã (phân rã study)}
+\section{Thực nghiệm phân rã thành phần}
 \label{sec:ablation}
 
-Bảng~\ref{tab:ablation_controlled} phân tách đóng góp của từng thành phần trên pipeline triển khai Pha 2 --- chỉ huấn luyện lại tầng phân loại trên đặc trưng đã trích sẵn (đóng băng mạng xương sống) --- theo một matrix phân rã có kiểm soát. Lưu ý hệ số nhiệt độ ở matrix này khác cấu hình triển khai chính (do chạy trên tập con metadata) nên F1 không so trực tiếp được; điểm nhất quán là SHOT gần như bằng nhau ($\BFourShotFOne$ ở $B4$ so với $\ASVTwoShotFOne$ của cấu hình triển khai chính).
+Bảng~\ref{tab:ablation_controlled} phân tách đóng góp của từng thành phần trên pipeline triển khai Pha 2 --- chỉ huấn luyện lại tầng phân loại trên đặc trưng đã trích sẵn (đóng băng mạng xương sống) --- theo một ma trận đối chứng có kiểm soát. Lưu ý hệ số nhiệt độ ở ma trận này khác cấu hình triển khai chính (do chạy trên tập con metadata) nên F1 không so trực tiếp được; điểm nhất quán là SHOT gần như bằng nhau ($\BFourShotFOne$ ở $B4$ so với $\ASVTwoShotFOne$ của cấu hình triển khai chính).
 
 \begin{table}[H]
 \centering
@@ -112,13 +114,13 @@ Bảng~\ref{tab:ablation_controlled} phân tách đóng góp của từng thành
 \end{tabular}
 \end{table}
 
-Trong matrix có kiểm soát này, hậu xử lý là đòn bẩy lớn nhất: $B4$ (Temperature + Gaussian) nâng F1 rõ rệt so với control $A1$ trên SHOT ($+1.6$ điểm phần trăm) và ClipShots ($+4.6$ điểm phần trăm), trong khi Focal Loss hay many-hot riêng lẻ gần như không thay đổi. Cấu hình $P1$ (chỉ Gaussian) tuy tăng mạnh ClipShots nhưng làm giảm BBC xuống dưới ngưỡng guardrail, nên không được chọn; $B4$ giữ BBC gần như không đổi nên là cấu hình triển khai.
+Trong ma trận có kiểm soát này, hậu xử lý là đòn bẩy lớn nhất: $B4$ (Temperature + Gaussian) nâng F1 rõ rệt so với control $A1$ trên SHOT ($+1.6$ điểm phần trăm) và ClipShots ($+4.6$ điểm phần trăm), trong khi Focal Loss hay many-hot riêng lẻ gần như không thay đổi. Cấu hình $P1$ (chỉ Gaussian) tuy tăng mạnh ClipShots nhưng làm giảm BBC xuống dưới ngưỡng guardrail, nên không được chọn; $B4$ giữ BBC gần như không đổi nên là cấu hình triển khai.
 
 \noindent
 Nhận xét từ bảng phân rã:
 \begin{itemize}
-    \item \textbf{Hậu xử lý là thành phần tác động lớn nhất.} Gaussian smoothing (và kết hợp với temperature ở $B4$) cải thiện rõ trên ClipShots và SHOT; các thành phần huấn luyện như Focal Loss hay many-hot chỉ tạo thay đổi nhỏ hoặc không ổn định.
-    \item \textbf{ClipShots vẫn là điểm yếu chung.} Fine-tune chưa vượt được baseline gốc một cách ổn định trên ClipShots, củng cố nhận định về hạn chế tổng quát hóa sang miền này (phân tích định lượng thêm ở Mục~\ref{sec:calibration} và phần phân tích lỗi).
+    \item \textbf{Hậu xử lý là thành phần tác động lớn nhất.} Gaussian smoothing, đặc biệt khi kết hợp với temperature ở $B4$, cải thiện rõ trên ClipShots và SHOT; các thành phần huấn luyện như Focal Loss hay many-hot chỉ tạo thay đổi nhỏ hoặc không ổn định.
+    \item \textbf{ClipShots vẫn là điểm yếu chung.} Fine-tune chưa vượt được baseline gốc một cách ổn định trên ClipShots, củng cố nhận định rằng miền dữ liệu thế giới mở cần cơ chế hiệu chỉnh hoặc thích nghi riêng (phân tích định lượng thêm ở Mục~\ref{sec:calibration} và phần phân tích lỗi).
 \end{itemize}
 
 \begin{figure}[H]
@@ -189,7 +191,7 @@ Nhận xét từ bảng phân rã:
 Ba kết luận có kiểm chứng:
 \begin{itemize}
     \item \textbf{Hiệu chỉnh là một cải thiện rẻ.} Ngay cả baseline $A0$ cũng tăng đáng kể nhờ hiệu chỉnh theo từng bộ dữ liệu (ClipShots $0.7649 \rightarrow 0.7881$); tham số được chọn ổn định qua các phần ($\sigma=2$ gần như luôn được chọn), khớp với kết luận ablation rằng Gaussian smoothing là thành phần tác động lớn nhất.
-    \item \textbf{Pha 2 giúp SHOT và BBC nhưng kém $A0$ trên ClipShots.} Sau hiệu chỉnh, Pha 2 vượt $A0$ trên SHOT ($0.854$ so với $0.844$) và BBC ($0.963$ so với $0.954$, nhưng vẫn thua trên ClipShots ($0.757$ so với $0.788$); hiệu chỉnh không bù được khoảng cách này. Đây là bằng chứng định lượng cho nhận định khả năng tổng quát hóa sang ClipShots chưa được giải quyết bằng fine-tune hiện tại.
+    \item \textbf{Pha 2 giúp SHOT và BBC nhưng kém $A0$ trên ClipShots.} Sau hiệu chỉnh, Pha 2 vượt $A0$ trên SHOT ($0.854$ so với $0.844$) và BBC ($0.963$ so với $0.954$), nhưng vẫn thua trên ClipShots ($0.757$ so với $0.788$); hiệu chỉnh không bù được khoảng cách này. Đây là bằng chứng định lượng cho nhận định khả năng tổng quát hóa sang ClipShots chưa được giải quyết bằng fine-tune hiện tại.
     \item \textbf{Khoảng chênh lạc quan nhỏ.} Mức trần khi tinh chỉnh trực tiếp trên tập kiểm tra rất sát với số kiểm định chéo (ví dụ ClipShots $A0$: $0.7896$ so với $0.7881$), cho thấy quá trình hiệu chỉnh ổn định và không bị overfit.
 \end{itemize}
 
@@ -213,3 +215,4 @@ Gradual (chuyển cảnh dần) & 2302 & 1862 & 440 & 0.8089 \\
 \end{tabular}
 \end{table}
 
+Kết quả phân tách cho thấy AutoShotV2 vẫn phát hiện được phần lớn chuyển cảnh dần, nhưng recall của nhóm này thấp hơn cut khoảng $9.0$ điểm phần trăm. Kết hợp với Bảng~\ref{tab:autoshotv2_prf}, hạn chế trên ClipShots gồm hai mặt: mô hình bỏ sót nhiều hơn ở chuyển cảnh dần và đồng thời sinh nhiều false positives ở ngưỡng triển khai chung.

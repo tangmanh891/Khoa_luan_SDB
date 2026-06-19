@@ -84,14 +84,15 @@ values in the paper refer to the deployed checkpoint.
 
 \subsection{Main Results}
 
-Table~\ref{tab:overall} reports F1 across SHOT, BBC, and ClipShots. With the
-fixed deployment configuration, AutoShotV2 reaches
+Table~\ref{tab:overall} reports F1 across SHOT, BBC, and ClipShots. Early deep SBD methods, such as Deep Structured Models (DSM) \cite{tang2018clipshots} (F1 of 0.8920 on BBC and 0.7030 on ClipShots) and TransNet (V1) \cite{soucek2019transnet} (F1 of 0.9290 on BBC and 0.7350 on ClipShots), lag significantly behind newer architectures, illustrating the steady progress in spatiotemporal SBD representations.
+
+With the fixed deployment configuration, AutoShotV2 reaches
 \PaperDeployShotFOne{} on SHOT and \PaperDeployBBCFOne{} on BBC, improving
 over the reproduced AutoShot baseline by \PaperDeployVsAutoShotPP{}
 percentage points and over the reported TransNetV2 baseline by
 \PaperDeployVsTransNetPP{} percentage points in F1 on SHOT
 (Fig.~\ref{fig:bars}). On
-ClipShots the fixed configuration reaches \PaperDeployClipFOne{}; a separate
+ClipShots the fixed configuration reaches \PaperDeployClipFOne{}, outperforming DSM by +4.99 percentage points and TransNet (V1) by +1.79 percentage points. A separate
 test-set threshold sweep reaches \PaperDeployClipBestFOne{} at
 $\theta=0.15$, reported for transparency but not treated as the fixed
 deployment result. Baseline labels distinguish protocol sources: reported

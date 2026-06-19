@@ -30,7 +30,7 @@ Các kết quả thực nghiệm đạt được trong khóa luận cho phép tr
     \textit{Trả lời:} Một phần. 
     \begin{itemize}
         \item Đối với miền video tài liệu dài (\textbf{BBC Planet Earth}), AutoShotV2 thể hiện khả năng tổng quát hóa rất tốt khi đạt F1 = \textbf{\ASVTwoBBCFOne{}}, vượt qua cả TransNetV2 tự chạy lại ($0.9593$) và AutoShot gốc ($0.9554$).
-        \item Tuy nhiên, trên tập dữ liệu thế giới mở đa dạng (\textbf{ClipShots}), hiệu năng của AutoShotV2 bị suy giảm xuống còn \textbf{\ASVTwoClipFOne{}}, thấp hơn AutoShot báo cáo gốc khoảng $3.4$ điểm phần trăm. Thử nghiệm này cho thấy các tham số hậu xử lý và tầng phân loại được tối ưu hóa cho phân phối của SHOT chưa thể chuyển dịch hoàn hảo sang các miền dữ liệu phức tạp hơn của ClipShots.
+        \item Tuy nhiên, trên tập dữ liệu thế giới mở đa dạng (\textbf{ClipShots}), hiệu năng triển khai của AutoShotV2 chỉ đạt \textbf{\ASVTwoClipFOne{}} ở ngưỡng cố định $0.10$, thấp hơn AutoShot báo cáo gốc khoảng $3.4$ điểm phần trăm. Kết quả quét ngưỡng và kiểm định chéo cho thấy hậu xử lý theo miền có thể cải thiện ClipShots, nhưng không thay đổi kết luận chính: cấu hình được tối ưu cho SHOT/BBC chưa chuyển dịch hoàn hảo sang miền dữ liệu đa dạng hơn.
     \end{itemize}
 \end{itemize}
 
@@ -38,7 +38,7 @@ Các kết quả thực nghiệm đạt được trong khóa luận cho phép tr
 Bên cạnh ba câu trả lời cho RQ ở trên, khóa luận còn ghi nhận một số phát hiện thực nghiệm quan trọng:
 \begin{itemize}
     \item \textbf{Mạng xương sống NAS có khả năng tái sử dụng cao:} Quá trình tìm kiếm kiến trúc (NAS) ban đầu rất tốn kém tài nguyên, tuy nhiên kết quả AutoShotV2 cho thấy mạng xương sống thu được có tính tổng quát hóa cao và có thể tái sử dụng cho nhiều cải tiến tầng trên với chi phí tính toán phụ trội cực kỳ nhỏ.
-    \item \textbf{Ngưỡng quyết định là một tham số ứng dụng:} Việc điều chỉnh ngưỡng suy luận xác suất ($\theta$) thực tế là sự đánh đổi giữa Precision và Recall. Lựa chọn ngưỡng tối ưu nên căn cứ vào bài toán nghiệp vụ thực tế (ví dụ: ưu tiên không bỏ sót cảnh quay hay ưu tiên giảm báo động giả).
+    \item \textbf{Ngưỡng quyết định là một tham số ứng dụng:} Việc điều chỉnh ngưỡng suy luận xác suất ($\theta$) thực tế là sự đánh đổi giữa Precision và Recall. Lựa chọn ngưỡng tối ưu nên căn cứ vào bài toán nghiệp vụ thực tế (ví dụ: ưu tiên không bỏ sót cảnh quay hay ưu tiên giảm báo động giả), đồng thời cần tách rõ giữa ngưỡng triển khai cố định và ngưỡng oracle chỉ dùng để phân tích.
 \end{itemize}
 
 \section{Hạn chế của đề tài và thảo luận}
@@ -49,8 +49,11 @@ Mặc dù đạt được những kết quả cải tiến khả quan, đề tà
 \subsection{Hiệu năng suy giảm trên nhóm chuyển cảnh dần (Gradual Transition)}
 Kết quả phân tách Recall của AutoShotV2 trên ClipShots theo loại chuyển cảnh ở Bảng~\ref{tab:clipshots_breakdown} chỉ ra rằng nhóm chuyển cảnh dần (\textit{gradual transition}) có Recall đạt \textbf{80.89\%}, thấp hơn so với ranh giới cắt cảnh đột ngột (\textit{cut}) vốn đạt \textbf{89.91\%}. Mặc dù mô hình đã nhận diện thành công phần lớn các chuyển cảnh mềm, việc bỏ sót khoảng \textbf{19.11\%} số lượng chuyển cảnh dần (so với chỉ \textbf{10.09\%} của ranh giới đột ngột) cho thấy các hiệu ứng chuyển cảnh dần (như dissolve, fade, wipe) trên ClipShots vẫn là một thách thức lớn hơn. Điều này là do phân phối chuyển cảnh dần trên ClipShots đa dạng và kéo dài hơn nhiều so với SHOT, khiến mô hình khó nhận diện một cách trọn vẹn so với các ranh giới cắt cảnh đột ngột sắc nét.
 
+\subsection{Precision thấp trên ClipShots ở ngưỡng triển khai}
+Ngoài vấn đề chuyển cảnh dần, kết quả Precision--Recall ở Chương~\ref{ch:ket_qua_thuc_nghiem} cho thấy ClipShots có Precision thấp hơn đáng kể so với SHOT và BBC tại cùng ngưỡng triển khai $0.10$. Cụ thể, AutoShotV2 đạt Recall $0.8657$ nhưng Precision chỉ $0.6661$, tương ứng $3129$ false positives. Điều này cho thấy mô hình vẫn phát hiện được nhiều ranh giới thật, nhưng phân phối video thế giới mở của ClipShots làm tăng số dự đoán dư thừa. Đây là lý do hiệu chỉnh hậu xử lý theo miền có thể cải thiện kết quả, nhưng bản deploy cố định vẫn chưa đạt mức ổn định như trên SHOT/BBC.
+
 \subsection{Các giả thuyết kỹ thuật chưa được kiểm chứng đầy đủ}
-Từ kết quả thực nghiệm, khóa luận đưa ra ba giả thuyết về sự suy giảm trên ClipShots bao gồm: nhãn many-hot có thể làm mất độ sắc bén của biên cảnh đột ngột; tham số hiệu chỉnh nhiệt độ $T^*$ tối ưu trên SHOT bị lệch phân phối khi sang ClipShots; và cấu hình Focal Loss bị thiên lệch. Do giới hạn về thời gian và tài nguyên tính toán, khóa luận chưa thể thực hiện đầy đủ các thí nghiệm đối chứng tách biệt từng yếu tố (ablation study độc lập) trên ClipShots để chứng minh các giả thuyết này một cách tuyệt đối.
+Từ kết quả thực nghiệm, khóa luận đưa ra một số giả thuyết về sự suy giảm trên ClipShots: tham số hiệu chỉnh nhiệt độ $T^*$ và ngưỡng quyết định tối ưu trên SHOT có thể bị lệch phân phối khi sang ClipShots; nhãn many-hot cố định chưa mô tả tốt các chuyển cảnh có độ dài khác nhau; và Focal Loss chưa tạo được lợi ích rõ ràng trong ma trận đối chứng hiện tại. Tuy nhiên, bằng chứng mạnh nhất của khóa luận đang nghiêng về vai trò của hậu xử lý và domain shift: Gaussian smoothing/temperature là thành phần tạo cải thiện lớn nhất, còn Focal Loss và many-hot riêng lẻ chỉ tạo thay đổi nhỏ hoặc không ổn định. Do giới hạn về thời gian và tài nguyên tính toán, khóa luận chưa thể thực hiện đầy đủ các thí nghiệm đối chứng độc lập trên từng miền dữ liệu để chứng minh các giả thuyết này một cách tuyệt đối.
 
 \section{Hướng phát triển tương lai}
 \label{sec:future_work}
@@ -66,9 +69,11 @@ Từ kết quả thực nghiệm, khóa luận đưa ra ba giả thuyết về s
 \subsection{Tối ưu hóa hiệu chỉnh nhiệt độ đa miền (Multi-domain Calibration)}
 \begin{itemize}
     \item Nghiên cứu áp dụng các phương pháp hiệu chỉnh nhiệt độ thích ứng theo miền dữ liệu (Domain-specific Temperature Scaling) hoặc huấn luyện mạng hiệu chỉnh xác suất phụ thuộc vào đặc trưng video đầu vào, thay vì cố định một hệ số $T^*$ chung.
+    \item Thiết kế chính sách chọn ngưỡng theo mục tiêu ứng dụng, ví dụ một cấu hình ưu tiên Recall cho bài toán gợi ý biên cảnh và một cấu hình ưu tiên Precision cho quy trình hậu kiểm thủ công.
 \end{itemize}
 
 \subsection{Mở rộng ma trận thực nghiệm đối chứng}
 \begin{itemize}
     \item Thực hiện huấn luyện lại toàn bộ ma trận ablation study trên cả ClipShots và BBC để đánh giá độc lập tác động của từng thành phần (Focal Loss, Many-hot, Gaussian, Temperature) trên từng miền dữ liệu riêng biệt.
+    \item Bổ sung phân tích lỗi theo video và theo nhóm nội dung để tách riêng false positives do chuyển động máy quay, thay đổi ánh sáng, hiệu ứng biên tập và chuyển cảnh thật kéo dài.
 \end{itemize}
