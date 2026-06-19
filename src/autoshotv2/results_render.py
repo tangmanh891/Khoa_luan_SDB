@@ -104,7 +104,7 @@ def tex_value(value: float | None, bold: bool = False) -> str:
 def render_tex_macros(manifest: dict[str, Any]) -> str:
     experiments = experiment_map(manifest)
     comparisons = comparison_map(manifest)
-    deploy = experiments["phase2_best_sweep"]["metrics"]
+    deploy = experiments["phase2_deploy_threshold"]["metrics"]
     deploy_threshold = experiments["phase2_deploy_threshold"]["metrics"]
     a0 = experiments["A0_autoshot_original"]["metrics"]
     b4 = experiments["B4_temperature_gaussian"]["metrics"]
@@ -139,10 +139,10 @@ def render_tex_tables(manifest: dict[str, Any]) -> str:
 
     overview_rows = [
         "Checkpoint triển khai chính & "
-        rf"\textbf{{{f4(experiments['phase2_best_sweep']['metrics']['shot']['f1'])}}} & "
-        rf"\textbf{{{f4(experiments['phase2_best_sweep']['metrics']['bbc']['f1'])}}} & "
-        f"{f4(experiments['phase2_best_sweep']['metrics']['clipshots']['f1'])} & "
-        "AutoShotV2 deploy; ClipShots dùng best sweep. \\\\",
+        rf"\textbf{{{f4(experiments['phase2_deploy_threshold']['metrics']['shot']['f1'])}}} & "
+        rf"\textbf{{{f4(experiments['phase2_deploy_threshold']['metrics']['bbc']['f1'])}}} & "
+        f"{f4(experiments['phase2_deploy_threshold']['metrics']['clipshots']['f1'])} & "
+        "AutoShotV2 deploy ở ngưỡng cố định. \\\\",
         "Ablation Pha 2 tốt nhất (B4) & "
         f"{f4(experiments['B4_temperature_gaussian']['metrics']['shot']['f1'])} & "
         f"{f4(experiments['B4_temperature_gaussian']['metrics']['bbc']['f1'])} & "
@@ -176,7 +176,7 @@ def render_tex_tables(manifest: dict[str, Any]) -> str:
         )
     lines += [r"\newcommand{\MainComparisonRows}{%", *rows, "}", ""]
 
-    deploy = experiments["phase2_best_sweep"]["metrics"]
+    deploy = experiments["phase2_deploy_threshold"]["metrics"]
     rows = []
     for dataset in ("shot", "clipshots", "bbc"):
         metric = deploy[dataset]

@@ -252,7 +252,7 @@ def build_manifest() -> dict[str, Any]:
         + build_ablation_experiments()
         + build_calibration_experiments()
     )
-    deploy_best = next(item for item in experiments if item["id"] == "phase2_best_sweep")
+    deploy_real = next(item for item in experiments if item["id"] == "phase2_deploy_threshold")
     comparison_models = literature + [
         {
             "id": "autoshotv2_deploy",
@@ -260,7 +260,7 @@ def build_manifest() -> dict[str, Any]:
             "source_kind": deploy_reproducibility,
             "source": str(deploy_paths["shot"].parent.relative_to(ROOT)).replace("\\", "/") + "/*.json",
             "metrics": {
-                dataset: deploy_best["metrics"][dataset]["f1"]
+                dataset: deploy_real["metrics"][dataset]["f1"]
                 for dataset in DATASET_ORDER
             },
         }

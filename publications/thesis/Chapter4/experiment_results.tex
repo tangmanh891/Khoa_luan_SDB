@@ -44,7 +44,7 @@ Sai lệch giữa ``AutoShot theo báo cáo'' và ``tự chạy lại'' (lên đ
 Nhận xét từ kết quả:
 \begin{itemize}
     \item Biến thể \textbf{AutoShotV1} cải thiện nhẹ trên SHOT ($+0.75$ điểm phần trăm) và tăng trên ClipShots so với cả AutoShot theo báo cáo gốc ($+1.17$ điểm phần trăm) lẫn AutoShot tự chạy lại ($+2.34$ điểm phần trăm), nhưng giảm nhẹ trên BBC. Theo ghi chú thực nghiệm, nếu loại ảnh hưởng từ một video bất thường thì F1 trên BBC có thể đạt khoảng $0.961$.
-    \item Biến thể \textbf{AutoShotV2 với các kỹ thuật cải tiến} cho kết quả tốt nhất trên SHOT ($\ASVTwoShotFOne$) and BBC ($\ASVTwoBBCFOne$, vượt cả TransNetV2 lẫn AutoShot tự chạy lại). Trên ClipShots, AutoShotV2 đạt $\ASVTwoClipFOne$ -- thấp hơn AutoShot theo báo cáo gốc $3.1$ điểm phần trăm và thấp hơn AutoShot tự chạy lại $2.0$ điểm phần trăm, cho thấy cấu hình tối ưu cho SHOT chưa chuyển dịch hoàn toàn sang miền dữ liệu đa dạng hơn.
+    \item Biến thể \textbf{AutoShotV2 với các kỹ thuật cải tiến} cho kết quả tốt nhất trên SHOT ($\ASVTwoShotFOne$) and BBC ($\ASVTwoBBCFOne$, vượt cả TransNetV2 lẫn AutoShot tự chạy lại). Trên ClipShots, AutoShotV2 đạt $\ASVTwoClipFOne$ -- thấp hơn AutoShot theo báo cáo gốc $3.4$ điểm phần trăm và thấp hơn AutoShot tự chạy lại $2.2$ điểm phần trăm, cho thấy cấu hình tối ưu cho SHOT chưa chuyển dịch hoàn toàn sang miền dữ liệu đa dạng hơn.
 \end{itemize}
 
 \noindent
@@ -52,7 +52,7 @@ Bảng tổng hợp bổ sung cho SHOT và ClipShots được trình bày tại 
 
 \section{So sánh Precision, Recall và F1-score}
 
-Bảng~\ref{tab:autoshotv2_prf} trình bày chi tiết Precision, Recall và F1 của AutoShotV2 tại ngưỡng triển khai trên từng bộ dữ liệu, kèm theo số liệu TP/FP/FN tuyệt đối để làm rõ hành vi của mô hình. Trong đó, ngưỡng 0.02 là ngưỡng tối ưu trên tập xác thực của SHOT sau hiệu chỉnh nhiệt độ; bảng dưới dùng ngưỡng triển khai 0.10 cho SHOT/BBC và ngưỡng quét (sweep) 0.15 cho ClipShots để báo cáo tốt nhất trên miền đó.
+Bảng~\ref{tab:autoshotv2_prf} trình bày chi tiết Precision, Recall và F1 của AutoShotV2 tại ngưỡng triển khai trên từng bộ dữ liệu, kèm theo số liệu TP/FP/FN tuyệt đối để làm rõ hành vi của mô hình. Trong đó, ngưỡng 0.02 là ngưỡng tối ưu trên tập xác thực của SHOT sau hiệu chỉnh nhiệt độ; bảng dưới dùng ngưỡng triển khai cố định 0.10 cho cả ba bộ dữ liệu để báo cáo kết quả triển khai đồng bộ.
 
 \begin{table}[H]
 \centering
