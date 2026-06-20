@@ -1,6 +1,6 @@
 param(
-    [ValidateSet("pdf", "slides", "all")]
-    [string]$Target = "all",
+    [ValidateSet("pdf")]
+    [string]$Target = "pdf",
     [switch]$Release
 )
 
@@ -17,7 +17,7 @@ if ($LASTEXITCODE -ne 0) {
     throw "Experimental result outputs are stale. Run sync_experimental_results.py --write."
 }
 
-if ($Target -in @("pdf", "all")) {
+if ($Target -eq "pdf") {
     Push-Location $Thesis
     try {
         & pdflatex -interaction=nonstopmode -halt-on-error -output-directory=build main.tex
@@ -39,17 +39,6 @@ if ($Target -in @("pdf", "all")) {
     if ($Release) {
         Copy-Item -Force -LiteralPath (Join-Path $Build "main.pdf") `
             -Destination (Join-Path $Releases "AutoShotV2_Thesis.pdf")
-    }
-}
-
-if ($Target -in @("slides", "all")) {
-    & python (Join-Path $Thesis "slides\build_slides.py") `
-        --output (Join-Path $Build "AutoShotV2_Defense.pptx")
-    if ($LASTEXITCODE -ne 0) { throw "Slide build failed." }
-
-    if ($Release) {
-        Copy-Item -Force -LiteralPath (Join-Path $Build "AutoShotV2_Defense.pptx") `
-            -Destination (Join-Path $Releases "AutoShotV2_Defense.pptx")
     }
 }
 

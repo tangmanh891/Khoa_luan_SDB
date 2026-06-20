@@ -37,7 +37,6 @@ def expected_outputs() -> dict[Path, str]:
         REPORTS / "experimental_results_summary.md": render_markdown(manifest),
         THESIS_GENERATED / "experiment_macros.tex": render_tex_macros(manifest),
         THESIS_GENERATED / "experiment_tables.tex": render_tex_tables(manifest),
-        THESIS_GENERATED / "slide_results.json": render_slide_data(manifest),
         PAPER_GENERATED / "experiment_macros.tex": render_paper_tex_macros(manifest),
         PAPER_GENERATED / "experiment_tables.tex": render_paper_tex_tables(manifest),
     }
