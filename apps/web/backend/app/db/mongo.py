@@ -18,7 +18,6 @@ async def connect_to_mongo() -> None:
             _client = AsyncIOMotorClient(settings.mongodb_uri, serverSelectionTimeoutMS=5000)
             _db = _client[settings.mongodb_db]
             await _db.command("ping")
-            await _db.jobs.create_index("expires_at", expireAfterSeconds=0)
             await _db.jobs.create_index("created_at")
             return
         except Exception as exc:

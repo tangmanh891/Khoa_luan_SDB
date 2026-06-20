@@ -30,8 +30,12 @@ class Settings(BaseSettings):
     default_min_scene_duration_sec: float = 0.5
 
     autoshot_model_path: Path = Field(
-        default=Path("/app/models/deploy.pth"),
+        default=Path("/app/models/ckpt_phase2_shot_f1_sweep_best.pth"),
         validation_alias=AliasChoices("AUTOSHOT_MODEL_PATH", "AUTOSHOT_CKPT"),
+    )
+    autoshot_models_dir: Path = Field(
+        default=Path("/app/models"),
+        validation_alias=AliasChoices("AUTOSHOT_MODELS_DIR"),
     )
     autoshot_device: str = "auto"
     autoshot_default_temperature: float | None = None
