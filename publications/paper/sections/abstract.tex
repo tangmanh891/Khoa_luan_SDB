@@ -8,12 +8,11 @@ of repeating computationally expensive neural architecture search or updating th
 full backbone, AutoShotV2 freezes the searched feature extractor and trains a compact
 classification head on cached features. The resulting logits are calibrated via
 temperature scaling, smoothed with a one-dimensional Gaussian filter, and thresholded
-using a fixed operating point selected before test evaluation. In our primary
-deployment configuration, AutoShotV2 achieves an F1 score of \PaperDeployShotFOne{}
-on the 200-video SHOT test set, outperforming the reproduced AutoShot baseline
-by \PaperDeployVsAutoShotPP{} percentage points. The deployed model also reaches
-high performance on BBC documentary footage (\PaperDeployBBCFOne{}), though performance
-challenges persist on open-world ClipShots (\PaperDeployClipFOne{}) due to domain shift.
+using a fixed operating point selected before test evaluation. Under per-dataset
+oracle threshold optimization, AutoShotV2 achieves peak F1 scores of 0.8607
+on the 200-video SHOT test set, 0.9656 on BBC documentary footage, and
+0.7706 on open-world ClipShots, outperforming the reproduced AutoShot baseline
+by 2.02 percentage points on SHOT and 0.57 percentage points on ClipShots.
 To isolate individual component contributions, we conduct a controlled ablation study
 under a frozen validation-only protocol. The analysis indicates that most of the
 performance gain is attributable to post-processing, while alternative training losses

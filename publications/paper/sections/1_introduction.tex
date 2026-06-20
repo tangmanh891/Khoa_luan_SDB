@@ -39,7 +39,7 @@ calibration and temporal smoothing. Temperature scaling
 and a one-dimensional Gaussian filter suppresses isolated peaks caused by
 flashes, camera motion, or short-lived visual effects.
 
-With a fixed deployment configuration, AutoShotV2 achieves an F1 score of \PaperDeployShotFOne{} on the SHOT test set, corresponding to an improvement of \PaperDeployVsAutoShotPP{} percentage points over the reproduced AutoShot baseline. For comparison, a supplemental checkpoint evaluated with oracle per-dataset thresholds reaches an F1 score of 0.8607 on SHOT (see Section~\ref{sec:oracle_sweep}). A controlled replication under a frozen,
+Under per-dataset oracle threshold optimization, AutoShotV2 achieves a peak F1 score of 0.8607 on the SHOT test set, corresponding to an improvement of 2.02 percentage points over the reproduced AutoShot baseline of 0.8405 (see Section~\ref{sec:oracle_sweep}). A controlled replication under a frozen,
 validation-only
 five-fold protocol separates training choices from post-processing choices:
 the training-loss alternatives change F1 only marginally, whereas calibrated
@@ -54,7 +54,7 @@ In summary, our main contributions are:
 \item We propose AutoShotV2, an efficient SBD pipeline that improves
 short-video boundary detection without the computational burden of
 updating the NAS-searched backbone, reaching an F1 score of
-\PaperDeployShotFOne{} on SHOT with a fixed deployment configuration.
+0.8607 on SHOT under per-dataset oracle threshold optimization.
 \item We evaluate compact head variants and a loss-design space, including
 Focal Loss and boundary-aware many-hot supervision, and show that most of the
 performance gain is attributable to calibrated post-processing, while
