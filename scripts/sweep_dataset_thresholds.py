@@ -184,7 +184,7 @@ def write_markdown(path: Path, payload: dict[str, Any]) -> None:
         "| Dataset | Sweep | Best threshold | F1 | Precision | Recall | TP | FP | FN |",
         "|---|---|---:|---:|---:|---:|---:|---:|---:|",
     ]
-    for dataset, result in payload["datasets"].items():
+    for result in payload["datasets"].values():
         label = result["label"]
         for sweep_name in ("coarse", "fine"):
             best = result[sweep_name]["best"]

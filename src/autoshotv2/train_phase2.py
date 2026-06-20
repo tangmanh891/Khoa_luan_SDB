@@ -3,6 +3,7 @@ import hashlib
 import json
 import os
 import pickle
+import random
 import time
 import warnings
 from typing import Any
@@ -61,6 +62,15 @@ DEFAULT_RESULTS = "./phase2_shot_clipshots_results.pkl"
 DEFAULT_EVAL_CACHE_DIR = "./eval_cache_shot_clipshots"
 DEFAULT_RESUME_STATE = "./artifacts/models/training/phase2_shot_clipshots_resume.pt"
 DEFAULT_CHECKPOINT_DIR = "./artifacts/models/training/phase2_shot_clipshots_checkpoints"
+
+FINETUNE_SCOPE_CHOICES = ("head_only", "fc1_0", "layer5", "layer4_layer5")
+HEAD_MODULE_NAMES = ("fc1_0", "cls_layer1", "cls_layer2")
+BACKBONE_FINETUNE_MODULES = {
+    "head_only": (),
+    "fc1_0": (),
+    "layer5": ("Layer_5_12",),
+    "layer4_layer5": ("Layer_4_13", "Layer_5_12"),
+}
 
 
 class FocalLoss(nn.Module):
@@ -293,6 +303,309 @@ def train_head(
     return head, losses
 
 
+def hash_state_dict(state: dict[str, torch.Tensor]) -> str:
+    h = hashlib.sha256()
+    for name, tensor in sorted(state.items()):
+        h.update(name.encode("utf-8"))
+        h.update(tensor.detach().cpu().contiguous().numpy().tobytes())
+    return h.hexdigest()
+
+
+def module_names_for_finetune_scope(scope: str) -> tuple[str, ...]:
+    if scope not in FINETUNE_SCOPE_CHOICES:
+        raise ValueError(f"Unsupported finetune scope: {scope}")
+    if scope == "head_only":
+        return ()
+    return BACKBONE_FINETUNE_MODULES[scope] + HEAD_MODULE_NAMES
+
+
+def configure_finetune_modules(model: nn.Module, scope: str) -> dict[str, Any]:
+    trainable_modules = module_names_for_finetune_scope(scope)
+    for parameter in model.parameters():
+        parameter.requires_grad = False
+
+    module_by_name = dict(model.named_modules())
+    missing = [name for name in trainable_modules if name not in module_by_name]
+    if missing:
+        raise ValueError(f"Model does not contain requested finetune module(s): {missing}")
+
+    for name in trainable_modules:
+        for parameter in module_by_name[name].parameters():
+            parameter.requires_grad = True
+
+    trainable = sum(parameter.numel() for parameter in model.parameters() if parameter.requires_grad)
+    total = sum(parameter.numel() for parameter in model.parameters())
+    return {
+        "scope": scope,
+        "modules": list(trainable_modules),
+        "trainable_parameters": int(trainable),
+        "total_parameters": int(total),
+        "trainable_fraction": float(trainable / total) if total else 0.0,
+    }
+
+
+def split_finetune_parameters(model: nn.Module) -> tuple[list[torch.nn.Parameter], list[torch.nn.Parameter]]:
+    head_prefixes = tuple(f"{name}." for name in HEAD_MODULE_NAMES)
+    head_params: list[torch.nn.Parameter] = []
+    backbone_params: list[torch.nn.Parameter] = []
+    for name, parameter in model.named_parameters():
+        if not parameter.requires_grad:
+            continue
+        if name.startswith(head_prefixes):
+            head_params.append(parameter)
+        else:
+            backbone_params.append(parameter)
+    return head_params, backbone_params
+
+
+def freeze_batch_norm_stats(model: nn.Module) -> None:
+    for module in model.modules():
+        if isinstance(module, nn.modules.batchnorm._BatchNorm):
+            module.eval()
+
+
+def validate_training_mode_args(args: argparse.Namespace) -> None:
+    if args.finetune_scope not in FINETUNE_SCOPE_CHOICES:
+        raise ValueError(f"Unsupported finetune scope: {args.finetune_scope}")
+    if args.finetune_scope != "head_only" and getattr(args, "use_ema", False):
+        raise ValueError("--use-ema is only supported by the cached head_only training path")
+    if BACKBONE_FINETUNE_MODULES[args.finetune_scope] and args.backbone_lr <= 0:
+        raise ValueError("--backbone-lr must be positive when Layer_4/Layer_5 fine-tuning is selected")
+
+
+def select_finetune_loss_indices(
+    one_hot: np.ndarray,
+    boundary: np.ndarray,
+    max_frames: int,
+    neg_per_pos: int,
+    min_negatives: int,
+    rng: np.random.Generator,
+) -> np.ndarray:
+    if max_frames <= 0 or max_frames >= len(one_hot):
+        return np.arange(len(one_hot), dtype=np.int64)
+    return select_sample_indices(
+        one_hot,
+        boundary,
+        max_samples_per_video=max_frames,
+        neg_per_pos=neg_per_pos,
+        min_neg_per_video=min_negatives,
+        rng=rng,
+    )
+
+
+def fine_tune_model(
+    model: nn.Module,
+    entries: dict[str, dict[str, Any]],
+    train_keys: list[str],
+    args: argparse.Namespace,
+) -> tuple[nn.Module, list[float], dict[str, Any]]:
+    trainable_summary = configure_finetune_modules(model, args.finetune_scope)
+    head_params, backbone_params = split_finetune_parameters(model)
+    if not head_params:
+        raise RuntimeError("No trainable head parameters were selected")
+
+    if args.loss == "focal":
+        criterion = FocalLoss(gamma=args.gamma, alpha=args.alpha)
+    elif args.loss == "bce":
+        criterion = nn.BCEWithLogitsLoss()
+    else:
+        raise ValueError(f"Unsupported loss: {args.loss}")
+
+    head_optimizer = ManualAdam(head_params, lr=args.lr, weight_decay=args.weight_decay)
+    backbone_optimizer = (
+        ManualAdam(backbone_params, lr=args.backbone_lr, weight_decay=args.weight_decay)
+        if backbone_params
+        else None
+    )
+    losses: list[float] = []
+    start_epoch = 1
+    train_config = {
+        "mode": "end_to_end_finetune",
+        "scope": args.finetune_scope,
+        "modules": trainable_summary["modules"],
+        "lr": args.lr,
+        "backbone_lr": args.backbone_lr,
+        "weight_decay": args.weight_decay,
+        "loss": args.loss,
+        "gamma": args.gamma,
+        "alpha": args.alpha,
+        "manyhot_weight": args.manyhot_weight,
+        "boundary_window": args.boundary_window,
+        "max_train_videos": args.max_train_videos,
+        "max_finetune_videos": args.max_finetune_videos,
+        "finetune_batches_per_video": args.finetune_batches_per_video,
+        "finetune_max_frames_per_batch": args.finetune_max_frames_per_batch,
+        "finetune_min_neg_per_batch": args.finetune_min_neg_per_batch,
+        "seed": args.seed,
+    }
+
+    if os.path.exists(args.resume_state) and not args.no_resume:
+        state = torch.load(args.resume_state, map_location=device, weights_only=False)
+        if state.get("train_config") != train_config and not args.ignore_resume_config:
+            raise RuntimeError(
+                f"Resume config mismatch in {args.resume_state}. "
+                "Use --no-resume or --ignore-resume-config if this is intentional."
+            )
+        model.load_state_dict(state["model"])
+        head_optimizer.load_state_dict(state["head_optimizer"])
+        if backbone_optimizer is not None and state.get("backbone_optimizer") is not None:
+            backbone_optimizer.load_state_dict(state["backbone_optimizer"])
+        losses = list(state.get("losses", []))
+        start_epoch = int(state.get("epoch", 0)) + 1
+        print(f"Resuming end-to-end fine-tuning from epoch {start_epoch}/{args.epochs}")
+
+    os.makedirs(args.checkpoint_dir, exist_ok=True)
+
+    def save_training_state(epoch: int) -> None:
+        payload = {
+            "epoch": epoch,
+            "model": {k: v.detach().cpu() for k, v in model.state_dict().items()},
+            "head_optimizer": head_optimizer.state_dict(),
+            "backbone_optimizer": backbone_optimizer.state_dict() if backbone_optimizer is not None else None,
+            "losses": losses,
+            "train_config": train_config,
+            "trainable_summary": trainable_summary,
+            "args": vars(args),
+        }
+        torch.save(payload, args.resume_state)
+        if args.save_every_epochs > 0 and (epoch % args.save_every_epochs == 0 or epoch == args.epochs):
+            torch.save(payload, os.path.join(args.checkpoint_dir, f"finetune_epoch_{epoch:03d}.pt"))
+
+    work_keys = list(train_keys)
+    random.Random(args.seed).shuffle(work_keys)
+    cap = args.max_finetune_videos if args.max_finetune_videos > 0 else args.max_train_videos
+    if cap > 0:
+        work_keys = work_keys[:cap]
+
+    stats: dict[str, Any] = {
+        "mode": "end_to_end_finetune",
+        "scope": args.finetune_scope,
+        "trainable_summary": trainable_summary,
+        "videos_requested": len(work_keys),
+        "videos_seen": 0,
+        "videos_skipped": [],
+        "batches": 0,
+        "frames_used": 0,
+        "one_hot_positive_frames": 0,
+        "boundary_positive_frames": 0,
+        "one_hot_positive_rate": 0.0,
+        "boundary_positive_rate": 0.0,
+    }
+
+    if start_epoch > args.epochs:
+        print(f"End-to-end fine-tuning already complete at epoch {start_epoch - 1}.")
+        return model, losses, stats
+
+    for epoch in range(start_epoch, args.epochs + 1):
+        model.train()
+        freeze_batch_norm_stats(model)
+        total_loss = 0.0
+        n_frames_seen = 0
+        rng = np.random.default_rng(args.seed + epoch)
+        for video_index, key in enumerate(work_keys, 1):
+            entry = entries[key]
+            try:
+                check_sample_cache_video_budget(entry["video_path"], args)
+                frames = get_frames(entry["video_path"])
+            except Exception as exc:
+                stats["videos_skipped"].append((key, str(exc)))
+                continue
+            if len(frames) == 0:
+                stats["videos_skipped"].append((key, "no decoded frames"))
+                continue
+
+            n_frames = int(len(frames))
+            scenes = transitions_to_scenes(entry["transitions"], n_frames)
+            one_hot_np, _ = scenes2zero_one_representation(scenes, n_frames)
+            boundary_np = make_boundary_labels(one_hot_np, args.boundary_window)
+            stats["videos_seen"] += 1
+
+            for batch_index, batch in enumerate(get_batches(frames), 1):
+                if args.finetune_batches_per_video > 0 and batch_index > args.finetune_batches_per_video:
+                    break
+                start = (batch_index - 1) * 50
+                valid = min(50, n_frames - start)
+                if valid <= 0:
+                    break
+
+                one_hot_slice = one_hot_np[start : start + valid].astype(np.float32)
+                boundary_slice = boundary_np[start : start + valid].astype(np.float32)
+                selected = select_finetune_loss_indices(
+                    one_hot_slice,
+                    boundary_slice,
+                    args.finetune_max_frames_per_batch,
+                    args.neg_per_pos,
+                    args.finetune_min_neg_per_batch,
+                    rng,
+                )
+                if len(selected) == 0:
+                    continue
+
+                inputs = torch.from_numpy(batch.transpose((3, 0, 1, 2))[np.newaxis, ...]).float().to(device)
+                outputs = model(inputs)
+                if isinstance(outputs, tuple):
+                    logits1, logits2 = outputs
+                else:
+                    logits1, logits2 = outputs, None
+                logits1 = logits1[0, 25 : 25 + valid, :][selected]
+                if logits2 is None:
+                    if args.manyhot_weight > 0:
+                        raise RuntimeError("Model did not return many-hot logits but --manyhot-weight is positive")
+                    logits2 = logits1
+                else:
+                    logits2 = logits2[0, 25 : 25 + valid, :][selected]
+
+                one_hot_target = torch.from_numpy(one_hot_slice[selected, np.newaxis]).float().to(device)
+                boundary_target = torch.from_numpy(boundary_slice[selected, np.newaxis]).float().to(device)
+                loss = criterion(logits1, one_hot_target) + args.manyhot_weight * criterion(logits2, boundary_target)
+
+                head_optimizer.zero_grad()
+                if backbone_optimizer is not None:
+                    backbone_optimizer.zero_grad()
+                loss.backward()
+                head_optimizer.step()
+                if backbone_optimizer is not None:
+                    backbone_optimizer.step()
+
+                used = int(len(selected))
+                total_loss += float(loss.item()) * used
+                n_frames_seen += used
+                stats["batches"] += 1
+                stats["frames_used"] += used
+                stats["one_hot_positive_frames"] += int(one_hot_slice[selected].sum())
+                stats["boundary_positive_frames"] += int(boundary_slice[selected].sum())
+
+                if stats["batches"] == 1 or stats["batches"] % args.log_every_batches == 0:
+                    running_loss = total_loss / max(n_frames_seen, 1)
+                    print(
+                        f"finetune epoch {epoch:03d}/{args.epochs} "
+                        f"video {video_index:04d}/{len(work_keys):04d} "
+                        f"batch {batch_index:04d} loss={running_loss:.6f}",
+                        flush=True,
+                    )
+
+            if deadline_expired(args):
+                avg_loss = total_loss / max(n_frames_seen, 1)
+                losses.append(avg_loss)
+                save_training_state(epoch)
+                raise TimeBudgetExpired("Time budget reached after saving fine-tune checkpoint.")
+
+        avg_loss = total_loss / max(n_frames_seen, 1)
+        losses.append(avg_loss)
+        print(f"finetune epoch {epoch:03d}/{args.epochs} done loss={avg_loss:.6f}", flush=True)
+        save_training_state(epoch)
+        if deadline_expired(args):
+            raise TimeBudgetExpired("Time budget reached after saving fine-tune checkpoint.")
+
+    stats["one_hot_positive_rate"] = (
+        float(stats["one_hot_positive_frames"] / stats["frames_used"]) if stats["frames_used"] else 0.0
+    )
+    stats["boundary_positive_rate"] = (
+        float(stats["boundary_positive_frames"] / stats["frames_used"]) if stats["frames_used"] else 0.0
+    )
+    return model, losses, stats
+
+
 def merge_head_into_state(base_state: dict[str, torch.Tensor], head: ClassificationHead) -> dict[str, torch.Tensor]:
     full_sd = {k: v.detach().cpu().clone() for k, v in base_state.items()}
     for k, v in head.fc1.state_dict().items():
@@ -465,6 +778,12 @@ def main() -> None:
     parser.add_argument("--batch-size", type=int, default=512)
     parser.add_argument("--loss", choices=["bce", "focal"], default="focal")
     parser.add_argument("--lr", type=float, default=1e-5)
+    parser.add_argument("--backbone-lr", type=float, default=1e-6)
+    parser.add_argument("--finetune-scope", choices=FINETUNE_SCOPE_CHOICES, default="head_only")
+    parser.add_argument("--max-finetune-videos", type=int, default=0)
+    parser.add_argument("--finetune-batches-per-video", type=int, default=0)
+    parser.add_argument("--finetune-max-frames-per-batch", type=int, default=50)
+    parser.add_argument("--finetune-min-neg-per-batch", type=int, default=16)
     parser.add_argument("--gamma", type=float, default=1.0)
     parser.add_argument("--alpha", type=float, default=0.5)
     parser.add_argument("--weight-decay", type=float, default=1e-4)
@@ -493,6 +812,7 @@ def main() -> None:
     parser.add_argument("--no-eval-cache", action="store_true")
     parser.add_argument("--skip-test-eval", action="store_true")
     args = parser.parse_args()
+    validate_training_mode_args(args)
     args._deadline = time.monotonic() + args.stop_after_minutes * 60.0 if args.stop_after_minutes > 0 else None
 
     set_global_seeds(args.seed)
@@ -509,71 +829,91 @@ def main() -> None:
     base_hash = sha256_file(args.base_ckpt)
     backbone = load_supernet(args.base_ckpt)
 
-    pretrained_head_cpu = {
-        "fc1": {k: v.detach().cpu().clone() for k, v in backbone.fc1_0.state_dict().items()},
-        "cls_layer1": {k: v.detach().cpu().clone() for k, v in backbone.cls_layer1.state_dict().items()},
-        "cls_layer2": {k: v.detach().cpu().clone() for k, v in backbone.cls_layer2.state_dict().items()},
-        "full_state": {k: v.detach().cpu().clone() for k, v in backbone.state_dict().items()},
-    }
+    if args.finetune_scope == "head_only":
+        pretrained_head_cpu = {
+            "fc1": {k: v.detach().cpu().clone() for k, v in backbone.fc1_0.state_dict().items()},
+            "cls_layer1": {k: v.detach().cpu().clone() for k, v in backbone.cls_layer1.state_dict().items()},
+            "cls_layer2": {k: v.detach().cpu().clone() for k, v in backbone.cls_layer2.state_dict().items()},
+            "full_state": {k: v.detach().cpu().clone() for k, v in backbone.state_dict().items()},
+        }
 
-    try:
-        features, one_hot, boundary, sample_stats = build_or_load_sample_cache(
-            args.sample_cache,
-            args.meta,
-            entries,
-            train_keys,
-            backbone,
-            base_hash,
-            args,
-        )
-    except TimeBudgetExpired as exc:
-        print(f"{exc} Resume by rerunning the same command with previous outputs restored.")
+        try:
+            features, one_hot, boundary, sample_stats = build_or_load_sample_cache(
+                args.sample_cache,
+                args.meta,
+                entries,
+                train_keys,
+                backbone,
+                base_hash,
+                args,
+            )
+        except TimeBudgetExpired as exc:
+            print(f"{exc} Resume by rerunning the same command with previous outputs restored.")
+            backbone.cpu()
+            if device == "cuda":
+                torch.cuda.empty_cache()
+            return
+
         backbone.cpu()
+        del backbone
         if device == "cuda":
             torch.cuda.empty_cache()
-        return
 
-    backbone.cpu()
-    del backbone
-    if device == "cuda":
-        torch.cuda.empty_cache()
+        print("Sample cache stats:")
+        print(f"  samples: {sample_stats['samples']}")
+        print(f"  one-hot positive rate: {sample_stats['one_hot_positive_rate']:.6f}")
+        print(f"  boundary positive rate: {sample_stats['boundary_positive_rate']:.6f}")
+        if sample_stats["skipped"]:
+            print(f"  skipped videos: {len(sample_stats['skipped'])}")
+        data_manifest = None
+        if args.data_manifest:
+            data_manifest = write_training_data_manifest(
+                args.data_manifest,
+                args.meta,
+                args.base_ckpt,
+                entries,
+                sample_stats,
+                args.data_seed,
+            )
+            print(f"Training data manifest -> {args.data_manifest}")
 
-    print("Sample cache stats:")
-    print(f"  samples: {sample_stats['samples']}")
-    print(f"  one-hot positive rate: {sample_stats['one_hot_positive_rate']:.6f}")
-    print(f"  boundary positive rate: {sample_stats['boundary_positive_rate']:.6f}")
-    if sample_stats["skipped"]:
-        print(f"  skipped videos: {len(sample_stats['skipped'])}")
-    data_manifest = None
-    if args.data_manifest:
-        data_manifest = write_training_data_manifest(
-            args.data_manifest,
-            args.meta,
-            args.base_ckpt,
-            entries,
-            sample_stats,
-            args.data_seed,
-        )
-        print(f"Training data manifest -> {args.data_manifest}")
+        dataset = SampleFeatureDataset(features, one_hot, boundary)
+        in_features = int(features.shape[1])
+        head = ClassificationHead(in_features=in_features).to(device)
+        head.fc1.load_state_dict(pretrained_head_cpu["fc1"])
+        head.cls_layer1.load_state_dict(pretrained_head_cpu["cls_layer1"])
+        head.cls_layer2.load_state_dict(pretrained_head_cpu["cls_layer2"])
 
-    dataset = SampleFeatureDataset(features, one_hot, boundary)
-    in_features = int(features.shape[1])
-    head = ClassificationHead(in_features=in_features).to(device)
-    head.fc1.load_state_dict(pretrained_head_cpu["fc1"])
-    head.cls_layer1.load_state_dict(pretrained_head_cpu["cls_layer1"])
-    head.cls_layer2.load_state_dict(pretrained_head_cpu["cls_layer2"])
-
-    training_started = time.perf_counter()
-    try:
-        head, train_losses = train_head(head, dataset, args)
-    except TimeBudgetExpired as exc:
-        print(f"{exc} Resume by rerunning the same command with previous outputs restored.")
-        return
-    training_elapsed_seconds = time.perf_counter() - training_started
-    state_fingerprint = hash_head_state(head)
-    full_state = merge_head_into_state(pretrained_head_cpu["full_state"], head)
-
-    eval_model = load_model_from_state(full_state)
+        training_started = time.perf_counter()
+        try:
+            head, train_losses = train_head(head, dataset, args)
+        except TimeBudgetExpired as exc:
+            print(f"{exc} Resume by rerunning the same command with previous outputs restored.")
+            return
+        training_elapsed_seconds = time.perf_counter() - training_started
+        state_fingerprint = hash_head_state(head)
+        full_state = merge_head_into_state(pretrained_head_cpu["full_state"], head)
+        eval_model = load_model_from_state(full_state)
+    else:
+        print(f"End-to-end fine-tune scope: {args.finetune_scope}")
+        training_started = time.perf_counter()
+        try:
+            eval_model, train_losses, sample_stats = fine_tune_model(backbone, entries, train_keys, args)
+        except TimeBudgetExpired as exc:
+            print(f"{exc} Resume by rerunning the same command with previous outputs restored.")
+            return
+        training_elapsed_seconds = time.perf_counter() - training_started
+        state_fingerprint = hash_state_dict(eval_model.state_dict())
+        full_state = {k: v.detach().cpu().clone() for k, v in eval_model.state_dict().items()}
+        print("Fine-tune stats:")
+        print(f"  videos seen: {sample_stats['videos_seen']}/{sample_stats['videos_requested']}")
+        print(f"  batches: {sample_stats['batches']}")
+        print(f"  frames used: {sample_stats['frames_used']}")
+        print(f"  one-hot positive rate: {sample_stats['one_hot_positive_rate']:.6f}")
+        print(f"  boundary positive rate: {sample_stats['boundary_positive_rate']:.6f}")
+        if sample_stats["videos_skipped"]:
+            print(f"  skipped videos: {len(sample_stats['videos_skipped'])}")
+        data_manifest = None
     os.makedirs(args.eval_cache_dir, exist_ok=True)
 
     val_cache_config = {
@@ -641,7 +981,7 @@ def main() -> None:
                 "val_f1": deploy_val["f1"],
                 "training_data": "Shot train + ClipShots train",
                 "metadata": os.path.abspath(args.meta),
-                "sample_cache": os.path.abspath(args.sample_cache),
+                "sample_cache": os.path.abspath(args.sample_cache) if args.finetune_scope == "head_only" else None,
                 "sample_cache_stats": sample_stats,
             },
         },

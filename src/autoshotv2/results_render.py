@@ -361,13 +361,8 @@ def render_paper_tex_tables(manifest: dict[str, Any]) -> str:
             f"{paper_metric(metrics['bbc'])} & {paper_metric(metrics['clipshots'], bold_clip)} \\\\"
         )
 
-    deploy = experiments["phase2_deploy_threshold"]["metrics"]
     best_sweep = comparisons["autoshotv2_best_sweep"]["metrics"]
     comparison_rows += [
-        "AutoShotV2 (ours), fixed deploy threshold & "
-        f"{paper_metric(deploy['shot']['f1'])} & "
-        f"{paper_metric(deploy['bbc']['f1'], True)} & "
-        f"{paper_metric(deploy['clipshots']['f1'])} \\\\",
         "AutoShotV2 (ours), per-dataset oracle best$^{\\dagger}$ & "
         f"{paper_metric(best_sweep['shot'], True)} & "
         f"{paper_metric(best_sweep['bbc'], True)} & "

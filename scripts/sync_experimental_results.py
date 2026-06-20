@@ -23,7 +23,6 @@ from autoshotv2.results_render import (
     render_markdown,
     render_paper_tex_macros,
     render_paper_tex_tables,
-    render_slide_data,
     render_tex_macros,
     render_tex_tables,
 )

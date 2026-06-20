@@ -52,5 +52,7 @@ ignore = [
 # Tests legitimately mutate sys.path before importing the package under test.
 "tests/*" = ["E402"]
 "tests/test_web_backend.py" = ["E501"]
+# Scripts contain long strings/tables for reporting
+"scripts/*" = ["E501"]
 # FastAPI's File(...)/Form(...) defaults are the framework idiom.
 "apps/web/backend/*" = ["B008"]

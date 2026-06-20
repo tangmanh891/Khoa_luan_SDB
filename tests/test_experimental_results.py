@@ -22,7 +22,7 @@ def test_experiment_manifest_is_complete_and_current():
     manifest = json.loads(expected[ROOT / "reports" / "experimental_results.json"])
     experiments = {item["id"]: item for item in manifest["experiments"]}
     assert len(experiments) == 17
-    assert len(manifest["comparison_models"]) == 6
+    assert len(manifest["comparison_models"]) == 8
 
     for experiment_id in sync.ABLATION_ORDER:
         assert set(experiments[experiment_id]["metrics"]) == {"shot", "bbc", "clipshots"}
@@ -40,19 +40,7 @@ def test_thesis_snapshot_and_releases_are_present():
     assert (thesis / "main.tex").is_file()
     assert len(list((thesis / "images").iterdir())) == 18
     assert (thesis / "releases" / "AutoShotV2_Thesis.pdf").stat().st_size > 3_000_000
-    assert (thesis / "releases" / "AutoShotV2_Defense.pptx").stat().st_size > 3_000_000
 
-
-def test_slide_data_matches_manifest():
-    manifest = json.loads((ROOT / "reports" / "experimental_results.json").read_text(encoding="utf-8"))
-    slide_data = json.loads(
-        (ROOT / "publications" / "thesis" / "generated" / "slide_results.json").read_text(
-            encoding="utf-8"
-        )
-    )
-    experiments = {item["id"]: item for item in manifest["experiments"]}
-    assert slide_data["summary"]["shot_f1"] == experiments["phase2_best_sweep"]["metrics"]["shot"]["f1"]
-    assert len(slide_data["ablation"]) == 9
 
 
 def test_paper_snapshot_generated_tables_and_release_are_present():
