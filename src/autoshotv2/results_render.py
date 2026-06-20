@@ -368,7 +368,7 @@ def render_paper_tex_tables(manifest: dict[str, Any]) -> str:
         f"{paper_metric(deploy['shot']['f1'])} & "
         f"{paper_metric(deploy['bbc']['f1'], True)} & "
         f"{paper_metric(deploy['clipshots']['f1'])} \\\\",
-        "AutoShotV2 (ours), supplemental oracle$^{\\dagger}$ & "
+        "AutoShotV2 (ours), per-dataset oracle best$^{\\dagger}$ & "
         f"{paper_metric(best_sweep['shot'], True)} & "
         f"{paper_metric(best_sweep['bbc'], True)} & "
         f"{paper_metric(best_sweep['clipshots'])} \\\\",

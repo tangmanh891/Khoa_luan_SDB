@@ -108,7 +108,7 @@ On ClipShots, the F1 score of the fixed deployment configuration (\PaperDeployCl
 \end{tabular}
 }
 \vspace{0.5ex}
-\noindent{\footnotesize $^\dagger$ Supplemental configuration evaluated with oracle per-dataset thresholds (Focal $\gamma{=}2.0$, $\alpha{=}0.6$, lr$=7{\times}10^{-6}$, $T^{*}{=}0.2413$); threshold tuned per-dataset (oracle). Uses a different checkpoint from the deployed model; reported for potential analysis only (Section~\ref{sec:oracle_sweep}).}
+\noindent{\footnotesize $^\dagger$ Peak F1 scores optimized per-dataset under oracle decision thresholds (SHOT and ClipShots evaluated on the supplemental configuration; BBC evaluated on the primary deployment configuration). The supplemental setup uses Focal $\gamma{=}2.0$, $\alpha{=}0.6$, lr$=7{\times}10^{-6}$, weight decay $10^{-4}$, and $T^{*}{=}0.2413$ (reported for potential analysis only; see Section~\ref{sec:oracle_sweep}).}
 \end{table}
 
 \begin{figure}[!t]
@@ -139,13 +139,13 @@ points in F1.}
 \label{fig:bars}
 \end{figure}
 
-\subsection{Oracle Threshold Analysis}
+\subsection{Supplemental Configuration and Oracle Thresholds}
 \label{sec:oracle_sweep}
 
-In addition to the primary AutoShotV2 configuration, we conduct an oracle threshold analysis utilizing a revised training and post-processing setup. Specifically, we set $T^* = 0.2413$, $\sigma = 2.0$, Focal Loss parameters $\gamma = 2.0$ and $\alpha = 0.6$, many-hot supervision weight to $0.3$, learning rate to $7 \times 10^{-6}$, and weight decay to $10^{-4}$. The goal is to investigate whether increasing the focusing parameter of Focal Loss ($\gamma = 2.0$ vs. $1.0$) and reducing the learning rate can yield higher peak F1 scores when the decision threshold is optimized independently for each target dataset (oracle thresholding).
+In addition to the primary AutoShotV2 configuration, we conduct an oracle analysis using a supplemental configuration with a revised training and post-processing setup. Specifically, we set $T^* = 0.2413$, $\sigma = 2.0$, Focal Loss parameters $\gamma = 2.0$ and $\alpha = 0.6$, many-hot supervision weight to $0.3$, learning rate to $7 \times 10^{-6}$, and weight decay to $10^{-4}$. The goal is to investigate whether increasing the focusing parameter of Focal Loss ($\gamma = 2.0$ vs. $1.0$) and reducing the learning rate can yield higher peak F1 scores when the decision threshold is optimized independently for each target dataset (oracle thresholding).
 
 \begin{table}[!t]
-\caption{Peak F1 Scores Under Oracle Threshold Analysis}
+\caption{Peak F1 Scores Under Oracle Analysis of the Supplemental Configuration}
 \label{tab:extra_sweep_peaks}
 \centering
 \small
@@ -161,7 +161,11 @@ BBC & 0.12 & 0.9668 & 0.9628 & 0.9648 \\
 \end{tabular}
 \end{table}
 
-As shown in Table~\ref{tab:extra_sweep_peaks}, this oracle configuration achieves superior peak F1 scores on SHOT (0.8607 vs. 0.8545, a gain of 0.62 percentage points) and ClipShots (0.7706 vs. 0.7529, a gain of 1.77 percentage points) when thresholds are optimized individually. Specifically, the "supplemental oracle" row in Table~\ref{tab:overall} consolidates these peak outcomes by selecting the best F1 score per dataset across both the primary and supplemental configurations. This yields 0.8607 on SHOT (from the supplemental configuration), 0.7706 on ClipShots (from the supplemental configuration), and 0.9656 on BBC (from the primary configuration, which is higher than the 0.9648 achieved by the supplemental configuration). However, this setup is less robust than the primary configuration under a unified deployment threshold. For example, the best joint threshold for this oracle configuration ($\theta = 0.17$) yields F1 scores of 0.8518 on SHOT, 0.7581 on ClipShots, and 0.9598 on BBC, resulting in an average F1 of 0.8566. This is lower than the primary deployment average of 0.8577 across the three datasets. Consequently, while the oracle results reveal domain-specific optimization potential, we retain the primary configuration for the main deployment results of the paper.
+As shown in Table~\ref{tab:extra_sweep_peaks}, this supplemental configuration achieves superior peak F1 scores on SHOT (0.8607 vs. 0.8545, a gain of 0.62 percentage points) and ClipShots (0.7706 vs. 0.7529, a gain of 1.77 percentage points) when decision thresholds are optimized individually for each dataset.
+
+Specifically, the "per-dataset oracle best" row in Table~\ref{tab:overall} consolidates these peak outcomes by selecting the best F1 score per dataset across both the primary and supplemental configurations. This yields 0.8607 on SHOT (from the supplemental configuration), 0.7706 on ClipShots (from the supplemental configuration), and 0.9656 on BBC (from the primary deployment configuration, which outperforms the 0.9648 achieved by the supplemental configuration).
+
+However, this supplemental setup is less robust than the primary configuration under a unified deployment threshold. For example, the best joint threshold for this supplemental configuration ($\theta = 0.17$) yields F1 scores of 0.8518 on SHOT, 0.7581 on ClipShots, and 0.9598 on BBC, resulting in an average F1 of 0.8566. This joint performance is lower than the primary deployment average of 0.8577 across the three datasets. Consequently, while these results reveal domain-specific optimization potential, we retain the primary configuration for the main deployment results of the paper.
 
 \subsection{Controlled Component Analysis}
 
