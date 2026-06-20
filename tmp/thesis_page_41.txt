@@ -1,0 +1,73 @@
+nhận F1 validation làm phần thưởng — chi phí cao (hàng trăm đến hàng
+nghìn GPU-giờ); EA [3] tiến hóa quần thể kiến trúc qua đột biến và lai
+ghép — dễ song song hóa nhưng vẫn tốn đánh giá; Tối ưu hóa Bayesian
+(BO) [3] xây dựng Gaussian Process xấp xỉ hàm hiệu suất và dùng hàm
+thu thập để chọn ứng viên tiếp theo một cách thông minh, hiệu quả mẫu
+nhất trong nhóm. AutoShot sử dụng BO với GP và hàm PoF ở giai đoạn
+tìm kiếm (Mục 3.4.3).
+Kỹ thuật một lần bắn và DARTS
+Các phương pháp một lần bắn (One-Shot) mã hóa toàn bộ không gian
+tìm kiếm vào một supernetwork duy nhất, cho phép tất cả kiến trúc con
+chia sẻ trọng số và được đánh giá nhanh mà không cần huấn luyện riêng.
+DARTS [14] là biến thể phổ biến nhất, chuyển không gian rời rạc thành
+dạng liên tục qua softmax có trọng số trên các phép toán ứng viên; tuy
+giảm chi phí xuống vài GPU-giờ nhưng gặp vấn đề khoảng cách rời rạc hóa
+khi argmax cuối cùng phá vỡ biểu diễn liên tục đã học — điểm yếu chí
+mạng với không gian rời rạc như các biến thể DDCNN.
+AutoShot vì vậy chọn Single-Path One-Shot (SPOS): tại mỗi bước huấn
+luyện, một kiến trúc con được lấy mẫu đồng đều và chỉ trọng số của đường
+đi đó được cập nhật. Cách làm này tránh tương quan giữa các nhánh và
+hoạt động ổn định với không gian hoàn toàn rời rạc; sau khi SuperNet hội
+tụ, mọi kiến trúc con có thể được đánh giá tức thời bằng cách kế thừa
+trọng số chia sẻ.
+Bảng 3.2 tóm tắt đặc điểm và đánh đổi của các chiến lược tìm kiếm
+chính, giúp định vị AutoShot trong toàn cảnh NAS.
+Bảng 3.2: So sánh các chiến lược tìm kiếm kiến trúc
+Chiến lược
+
+Chi phí
+GPU
+
+Yêu cầu
+gradient
+
+Không
+gian rời
+rạc
+
+Ví dụ
+
+Học tăng cường (RL)
+Tiến hóa (EA)
+Tối ưu hóa Bayesian (BO)
+DARTS (One-Shot)
+Single-Path One-Shot
+
+Rất cao
+Cao
+Trung bình
+Thấp
+Thấp
+
+Không
+Không
+Không
+Có
+Không
+
+Có
+Có
+Có
+Không
+Có
+
+NASNet
+AmoebaNet
+AutoShot
+PC-DARTS
+SPOS,
+AutoShot
+
+24
+
+

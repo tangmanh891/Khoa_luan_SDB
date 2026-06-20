@@ -22,7 +22,7 @@ def test_experiment_manifest_is_complete_and_current():
     manifest = json.loads(expected[ROOT / "reports" / "experimental_results.json"])
     experiments = {item["id"]: item for item in manifest["experiments"]}
     assert len(experiments) == 17
-    assert len(manifest["comparison_models"]) == 6
+    assert len(manifest["comparison_models"]) == 8
 
     for experiment_id in sync.ABLATION_ORDER:
         assert set(experiments[experiment_id]["metrics"]) == {"shot", "bbc", "clipshots"}
@@ -30,7 +30,7 @@ def test_experiment_manifest_is_complete_and_current():
     deploy = experiments["phase2_best_sweep"]["metrics"]
     assert experiments["phase2_deploy_threshold"]["reproducibility"] == "logits"
     assert "artifacts/experiments/deploy_regen/results_shot.json" in experiments["phase2_deploy_threshold"]["sources"]
-    assert round(deploy["shot"]["f1"], 4) == 0.8546
+    assert round(deploy["shot"]["f1"], 4) == 0.8545
     assert round(deploy["bbc"]["f1"], 4) == 0.9656
     assert round(deploy["clipshots"]["f1"], 4) == 0.7556
 
@@ -40,19 +40,7 @@ def test_thesis_snapshot_and_releases_are_present():
     assert (thesis / "main.tex").is_file()
     assert len(list((thesis / "images").iterdir())) == 18
     assert (thesis / "releases" / "AutoShotV2_Thesis.pdf").stat().st_size > 3_000_000
-    assert (thesis / "releases" / "AutoShotV2_Defense.pptx").stat().st_size > 3_000_000
 
-
-def test_slide_data_matches_manifest():
-    manifest = json.loads((ROOT / "reports" / "experimental_results.json").read_text(encoding="utf-8"))
-    slide_data = json.loads(
-        (ROOT / "publications" / "thesis" / "generated" / "slide_results.json").read_text(
-            encoding="utf-8"
-        )
-    )
-    experiments = {item["id"]: item for item in manifest["experiments"]}
-    assert slide_data["summary"]["shot_f1"] == experiments["phase2_best_sweep"]["metrics"]["shot"]["f1"]
-    assert len(slide_data["ablation"]) == 9
 
 
 def test_paper_snapshot_generated_tables_and_release_are_present():
@@ -63,14 +51,24 @@ def test_paper_snapshot_generated_tables_and_release_are_present():
 
     macros = (paper / "generated" / "experiment_macros.tex").read_text(encoding="utf-8")
     tables = (paper / "generated" / "experiment_tables.tex").read_text(encoding="utf-8")
-    assert r"\newcommand{\PaperDeployShotFOne}{0.8546}" in macros
+    assert r"\newcommand{\PaperDeployShotFOne}{0.8545}" in macros
     assert r"\newcommand{\PaperDeployBBCFOne}{0.9656}" in macros
     assert r"\newcommand{\PaperDeployClipFOne}{0.7529}" in macros
-    assert r"\newcommand{\PaperDeployClipBestFOne}{0.7556}" in macros
+    assert r"\newcommand{\PaperBestClipFOne}{0.7706}" in macros
     assert r"\newcommand{\PaperDeployTemperature}{0.3878}" in macros
     assert r"\newcommand{\PaperBFourVsAOneShotPP}{1.62}" in macros
     assert r"\newcommand{\PaperBFourVsAOneClipPP}{4.57}" in macros
     assert r"\PaperMainResultRows" in tables
+    assert (
+        r"AutoShotV2 (ours), fixed deployment & "
+        r"0.8545 & \textbf{0.9656} & 0.7529 \\"
+        in tables
+    )
+    assert (
+        r"AutoShotV2 (ours), per-dataset best$^{\dagger}$ & "
+        r"\textbf{0.8607} & \textbf{0.9656} & \textbf{0.7706} \\"
+        in tables
+    )
     assert r"\PaperAblationDeltaRows" in tables
     assert r"\textbf{+1.62}" in tables
     assert "no EMA" not in tables

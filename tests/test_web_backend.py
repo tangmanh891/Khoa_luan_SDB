@@ -17,6 +17,7 @@ pytest.importorskip("cv2")
 from app.core.config import Settings
 from app.ml import scene_detector
 from app.services.storage_service import safe_video_extension
+
 from autoshotv2.runtime import DEFAULT_SIGMA, DEFAULT_TEMPERATURE, DEFAULT_THRESHOLD
 
 

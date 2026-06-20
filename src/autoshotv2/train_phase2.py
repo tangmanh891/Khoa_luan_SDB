@@ -4,7 +4,6 @@ import json
 import os
 import pickle
 import random
-import subprocess
 import time
 import warnings
 from typing import Any
@@ -17,7 +16,32 @@ from scipy.ndimage import gaussian_filter1d
 from scipy.optimize import minimize_scalar
 from torch.utils.data import DataLoader, Dataset
 
+from autoshotv2.common import f1_pr, set_global_seeds, sigmoid_np
 from autoshotv2.model.linear import Linear_
+
+# Data/cache side lives in phase2_data; names are re-exported here because
+# ablation, journal_protocol, paper_analysis and the tests import them from
+# this module.
+from autoshotv2.phase2_data import (  # noqa: F401
+    SAMPLE_CACHE_SCHEMA_VERSION,
+    TimeBudgetExpired,
+    build_or_load_sample_cache,
+    build_sample_cache_config,
+    check_sample_cache_video_budget,
+    deadline_expired,
+    device,
+    extract_backbone_features,
+    hash_keys,
+    load_metadata,
+    make_boundary_labels,
+    probe_video_info,
+    sample_cache_partial_paths,
+    select_sample_indices,
+    select_training_keys,
+    sha256_file,
+    transitions_to_scenes,
+    write_training_data_manifest,
+)
 from autoshotv2.utils import (
     evaluate_scenes,
     get_batches,
@@ -39,8 +63,6 @@ DEFAULT_EVAL_CACHE_DIR = "./eval_cache_shot_clipshots"
 DEFAULT_RESUME_STATE = "./artifacts/models/training/phase2_shot_clipshots_resume.pt"
 DEFAULT_CHECKPOINT_DIR = "./artifacts/models/training/phase2_shot_clipshots_checkpoints"
 
-
-device = "cuda" if torch.cuda.is_available() else "cpu"
 FINETUNE_SCOPE_CHOICES = ("head_only", "fc1_0", "layer5", "layer4_layer5")
 HEAD_MODULE_NAMES = ("fc1_0", "cls_layer1", "cls_layer2")
 BACKBONE_FINETUNE_MODULES = {
@@ -49,10 +71,6 @@ BACKBONE_FINETUNE_MODULES = {
     "layer5": ("Layer_5_12",),
     "layer4_layer5": ("Layer_4_13", "Layer_5_12"),
 }
-
-
-class TimeBudgetExpired(Exception):
-    pass
 
 
 class FocalLoss(nn.Module):
@@ -168,82 +186,12 @@ class ManualAdam:
             dst.copy_(src.to(dst.device))
 
 
-def sha256_file(path: str) -> str:
-    h = hashlib.sha256()
-    with open(path, "rb") as f:
-        for chunk in iter(lambda: f.read(1024 * 1024), b""):
-            h.update(chunk)
-    return h.hexdigest()
-
-
-def hash_keys(keys: list[str]) -> str:
-    h = hashlib.sha256()
-    for key in sorted(keys):
-        h.update(key.encode("utf-8", errors="ignore"))
-        h.update(b"\n")
-    return h.hexdigest()
-
-
 def hash_head_state(head: ClassificationHead) -> str:
     h = hashlib.sha256()
     for name, tensor in sorted(head.state_dict().items()):
         h.update(name.encode("utf-8"))
         h.update(tensor.detach().cpu().contiguous().numpy().tobytes())
     return h.hexdigest()
-
-
-def hash_state_dict(state: dict[str, torch.Tensor]) -> str:
-    h = hashlib.sha256()
-    for name, tensor in sorted(state.items()):
-        h.update(name.encode("utf-8"))
-        h.update(tensor.detach().cpu().contiguous().numpy().tobytes())
-    return h.hexdigest()
-
-
-def make_boundary_labels(one_hot: np.ndarray, window: int) -> np.ndarray:
-    labels = one_hot.copy().astype(np.float32)
-    for idx in np.flatnonzero(one_hot > 0):
-        start = max(0, idx - window)
-        end = min(len(labels), idx + window + 1)
-        labels[start:end] = 1.0
-    return labels
-
-
-def transitions_to_scenes(transitions: np.ndarray, n_frames: int) -> np.ndarray:
-    transitions = np.asarray(transitions, dtype=np.int32)
-    if n_frames <= 0:
-        return np.asarray([[0, 0]], dtype=np.int32)
-    if transitions.size == 0:
-        return np.asarray([[0, n_frames - 1]], dtype=np.int32)
-
-    transitions = transitions.reshape(-1, 2)
-    transitions = transitions[np.argsort(transitions[:, 0])]
-    transitions = np.clip(transitions, 0, n_frames - 1)
-    transitions = transitions[transitions[:, 0] <= transitions[:, 1]]
-    if len(transitions) == 0:
-        return np.asarray([[0, n_frames - 1]], dtype=np.int32)
-
-    scenes = [[0, int(transitions[0, 0])]]
-    for i in range(1, len(transitions)):
-        scenes.append([int(transitions[i - 1, 1]), int(transitions[i, 0])])
-    scenes.append([int(transitions[-1, 1]), n_frames - 1])
-
-    arr = np.asarray(scenes, dtype=np.int32)
-    arr = np.clip(arr, 0, n_frames - 1)
-    arr = arr[arr[:, 0] <= arr[:, 1]]
-    if len(arr) == 0:
-        arr = np.asarray([[0, n_frames - 1]], dtype=np.int32)
-    return arr
-
-
-def load_metadata(path: str) -> dict[str, Any]:
-    with open(path, "rb") as f:
-        payload = pickle.load(f)
-    required = {"entries", "train_keys", "val_keys", "shot_test_entries"}
-    missing = required - set(payload)
-    if missing:
-        raise ValueError(f"Metadata file is missing fields: {sorted(missing)}")
-    return payload
 
 
 def load_supernet(ckpt_path: str):
@@ -257,343 +205,6 @@ def load_supernet(ckpt_path: str):
     model.load_state_dict(sd)
     print(f"Loaded {len(pretrained)}/{len(sd)} tensors from {ckpt_path}")
     return model
-
-
-def _parse_rate(value: str | None) -> float | None:
-    if not value or value in {"0/0", "N/A"}:
-        return None
-    if "/" in value:
-        num, den = value.split("/", 1)
-        den_f = float(den)
-        if den_f == 0:
-            return None
-        return float(num) / den_f
-    return float(value)
-
-
-def probe_video_info(video_path: str) -> dict[str, float | int | None]:
-    cmd = [
-        "ffprobe",
-        "-v",
-        "error",
-        "-select_streams",
-        "v:0",
-        "-show_entries",
-        "stream=nb_frames,avg_frame_rate,r_frame_rate,duration",
-        "-show_entries",
-        "format=duration,size",
-        "-of",
-        "json",
-        video_path,
-    ]
-    try:
-        proc = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True)
-        payload = json.loads(proc.stdout or "{}")
-    except Exception as exc:
-        return {"probe_error": str(exc), "duration": None, "fps": None, "frames": None, "size": None}
-
-    stream = (payload.get("streams") or [{}])[0]
-    fmt = payload.get("format") or {}
-    duration_raw = stream.get("duration") or fmt.get("duration")
-    duration = None if duration_raw in {None, "N/A"} else float(duration_raw)
-    fps = _parse_rate(stream.get("avg_frame_rate")) or _parse_rate(stream.get("r_frame_rate"))
-
-    frames_raw = stream.get("nb_frames")
-    frames = int(frames_raw) if frames_raw not in {None, "N/A"} else None
-    if frames is None and duration is not None and fps is not None:
-        frames = int(duration * fps)
-
-    size_raw = fmt.get("size")
-    size = int(size_raw) if size_raw not in {None, "N/A"} else None
-    return {"probe_error": None, "duration": duration, "fps": fps, "frames": frames, "size": size}
-
-
-def check_sample_cache_video_budget(video_path: str, args: argparse.Namespace) -> None:
-    info = probe_video_info(video_path)
-    frames = info.get("frames")
-    duration = info.get("duration")
-    fps = info.get("fps")
-
-    if frames is not None and args.max_cache_video_frames > 0 and frames > args.max_cache_video_frames:
-        raise RuntimeError(
-            "video too long for sample cache: "
-            f"frames={frames} fps={fps} duration={duration} "
-            f"limit_frames={args.max_cache_video_frames} path={video_path}"
-        )
-
-    if duration is not None and args.max_cache_video_seconds > 0 and duration > args.max_cache_video_seconds:
-        raise RuntimeError(
-            "video too long for sample cache: "
-            f"duration={duration:.1f}s frames={frames} fps={fps} "
-            f"limit_seconds={args.max_cache_video_seconds} path={video_path}"
-        )
-
-    if info.get("probe_error"):
-        raise RuntimeError(f"ffprobe failed before sample-cache decode: {info['probe_error']} path={video_path}")
-
-
-def extract_backbone_features(backbone, video_path: str, captured: dict[str, torch.Tensor]) -> torch.Tensor:
-    frames = get_frames(video_path)
-    if len(frames) == 0:
-        raise RuntimeError(f"No decoded frames: {video_path}")
-
-    chunks: list[torch.Tensor] = []
-    with torch.no_grad():
-        for batch in get_batches(frames):
-            t = torch.from_numpy(batch.transpose((3, 0, 1, 2))[np.newaxis, ...]).float().to(device)
-            captured.clear()
-            backbone(t)
-            if "feat" not in captured:
-                raise RuntimeError("fc1_0 hook did not capture features")
-            chunks.append(captured["feat"][0, 25:75, :].cpu())
-    return torch.cat(chunks, 0)[: len(frames)]
-
-
-def select_sample_indices(
-    one_hot: np.ndarray,
-    boundary: np.ndarray,
-    max_samples_per_video: int,
-    neg_per_pos: int,
-    min_neg_per_video: int,
-    rng: np.random.Generator,
-) -> np.ndarray:
-    pos_idx = np.unique(np.concatenate([np.flatnonzero(one_hot > 0), np.flatnonzero(boundary > 0)]))
-    neg_idx = np.flatnonzero(boundary == 0)
-
-    if max_samples_per_video <= 0:
-        max_samples_per_video = len(one_hot)
-
-    if len(pos_idx) > 0:
-        pos_cap = max(1, max_samples_per_video // max(neg_per_pos + 1, 1))
-        if len(pos_idx) > pos_cap:
-            pos_idx = rng.choice(pos_idx, size=pos_cap, replace=False)
-        n_neg = min(len(neg_idx), max_samples_per_video - len(pos_idx), max(min_neg_per_video, len(pos_idx) * neg_per_pos))
-    else:
-        n_neg = min(len(neg_idx), max_samples_per_video, min_neg_per_video)
-
-    if n_neg > 0:
-        neg_idx = rng.choice(neg_idx, size=n_neg, replace=False)
-        selected = np.concatenate([pos_idx, neg_idx])
-    else:
-        selected = pos_idx
-
-    if len(selected) == 0:
-        return selected.astype(np.int64)
-    rng.shuffle(selected)
-    return selected.astype(np.int64)
-
-
-def deadline_expired(args: argparse.Namespace) -> bool:
-    deadline = getattr(args, "_deadline", None)
-    return deadline is not None and time.monotonic() >= deadline
-
-
-def sample_cache_partial_paths(cache_path: str) -> tuple[str, str]:
-    return cache_path + ".parts", cache_path + ".partial.pkl"
-
-
-def build_or_load_sample_cache(
-    cache_path: str,
-    meta_path: str,
-    entries: dict[str, dict[str, Any]],
-    train_keys: list[str],
-    backbone,
-    base_ckpt_hash: str,
-    args: argparse.Namespace,
-) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, dict[str, Any]]:
-    cache_config = {
-        "meta_path": os.path.abspath(meta_path),
-        "keys_hash": hash_keys(train_keys),
-        "base_ckpt_hash": base_ckpt_hash,
-        "max_samples_per_video": args.max_samples_per_video,
-        "max_total_samples": args.max_total_samples,
-        "neg_per_pos": args.neg_per_pos,
-        "min_neg_per_video": args.min_neg_per_video,
-        "boundary_window": args.boundary_window,
-        "seed": args.seed,
-    }
-    parts_dir, partial_manifest_path = sample_cache_partial_paths(cache_path)
-
-    if os.path.exists(cache_path) and not args.rebuild_sample_cache:
-        with open(cache_path, "rb") as f:
-            cached = pickle.load(f)
-        if cached.get("config") == cache_config:
-            print(f"Loading sample cache: {cache_path}")
-            return cached["features"], cached["one_hot"], cached["boundary"], cached["stats"]
-        cached_config = cached.get("config", {})
-        core_fields = [
-            "keys_hash",
-            "base_ckpt_hash",
-            "max_samples_per_video",
-            "max_total_samples",
-            "neg_per_pos",
-            "min_neg_per_video",
-            "seed",
-        ]
-        core_matches = all(cached_config.get(field) == cache_config[field] for field in core_fields)
-        boundary_matches = cached_config.get("boundary_window") == cache_config["boundary_window"]
-        boundary_unused = float(getattr(args, "manyhot_weight", 0.0)) == 0.0
-        if core_matches and (boundary_matches or boundary_unused):
-            stats = dict(cached["stats"])
-            stats["compatible_cache_config"] = cached_config
-            stats["compatible_cache_note"] = (
-                "Loaded cache with different metadata path or boundary_window. "
-                "This is valid because keys/hash and sampling fields match, and boundary labels are unused or compatible."
-            )
-            print(f"Loading compatible sample cache: {cache_path}")
-            return cached["features"], cached["one_hot"], cached["boundary"], stats
-        print("Sample cache exists but config changed; rebuilding.")
-
-    rng = np.random.default_rng(args.seed)
-    work_keys = list(train_keys)
-    random.Random(args.seed).shuffle(work_keys)
-    if args.max_train_videos > 0:
-        work_keys = work_keys[: args.max_train_videos]
-
-    done_keys: set[str] = set()
-    part_files: list[str] = []
-    skipped: list[tuple[str, str]] = []
-    total_samples = 0
-
-    if os.path.exists(partial_manifest_path) and not args.rebuild_sample_cache:
-        with open(partial_manifest_path, "rb") as f:
-            manifest = pickle.load(f)
-        if manifest.get("config") == cache_config:
-            done_keys = set(manifest.get("done_keys", []))
-            part_files = list(manifest.get("part_files", []))
-            skipped = list(manifest.get("skipped", []))
-            total_samples = int(manifest.get("samples", 0))
-            print(f"Resuming partial sample cache: done_videos={len(done_keys)} samples={total_samples}")
-        else:
-            print("Partial sample cache exists but config changed; starting over.")
-
-    os.makedirs(parts_dir, exist_ok=True)
-
-    captured: dict[str, torch.Tensor] = {}
-
-    def hook(_module, inp, _out):
-        captured["feat"] = inp[0].detach().cpu()
-
-    handle = backbone.fc1_0.register_forward_hook(hook)
-    chunk_features: list[torch.Tensor] = []
-    chunk_one_hot: list[torch.Tensor] = []
-    chunk_boundary: list[torch.Tensor] = []
-    chunk_keys: list[str] = []
-
-    def write_manifest() -> None:
-        with open(partial_manifest_path, "wb") as f:
-            pickle.dump(
-                {
-                    "config": cache_config,
-                    "done_keys": sorted(done_keys),
-                    "part_files": part_files,
-                    "skipped": skipped,
-                    "samples": total_samples,
-                },
-                f,
-                protocol=pickle.HIGHEST_PROTOCOL,
-            )
-
-    def flush_chunk() -> None:
-        nonlocal chunk_features, chunk_one_hot, chunk_boundary, chunk_keys
-        if not chunk_features:
-            write_manifest()
-            return
-        part_path = os.path.join(parts_dir, f"part_{len(part_files):05d}.pt")
-        torch.save(
-            {
-                "features": torch.cat(chunk_features, 0),
-                "one_hot": torch.cat(chunk_one_hot, 0),
-                "boundary": torch.cat(chunk_boundary, 0),
-                "keys": chunk_keys,
-            },
-            part_path,
-        )
-        part_files.append(part_path)
-        chunk_features = []
-        chunk_one_hot = []
-        chunk_boundary = []
-        chunk_keys = []
-        write_manifest()
-        print(f"  partial sample cache saved: {part_path}", flush=True)
-
-    try:
-        for i, key in enumerate(work_keys, 1):
-            if key in done_keys:
-                continue
-            if args.max_total_samples > 0 and total_samples >= args.max_total_samples:
-                break
-
-            entry = entries[key]
-            try:
-                print(f"  sample cache processing [{i}/{len(work_keys)}] key={key}", flush=True)
-                check_sample_cache_video_budget(entry["video_path"], args)
-                feats = extract_backbone_features(backbone, entry["video_path"], captured)
-                n_frames = int(feats.shape[0])
-                scenes = transitions_to_scenes(entry["transitions"], n_frames)
-                one_hot_np, _ = scenes2zero_one_representation(scenes, n_frames)
-                boundary_np = make_boundary_labels(one_hot_np, args.boundary_window)
-                idx = select_sample_indices(
-                    one_hot_np,
-                    boundary_np,
-                    args.max_samples_per_video,
-                    args.neg_per_pos,
-                    args.min_neg_per_video,
-                    rng,
-                )
-                if len(idx) == 0:
-                    skipped.append((key, "no sampled indices"))
-                    continue
-                if args.max_total_samples > 0 and total_samples + len(idx) > args.max_total_samples:
-                    keep = args.max_total_samples - total_samples
-                    idx = rng.choice(idx, size=keep, replace=False)
-
-                chunk_features.append(feats[idx].half())
-                chunk_one_hot.append(torch.from_numpy(one_hot_np[idx].astype(np.float32)))
-                chunk_boundary.append(torch.from_numpy(boundary_np[idx].astype(np.float32)))
-                chunk_keys.append(key)
-                total_samples += len(idx)
-                done_keys.add(key)
-                if i == 1 or i % 25 == 0:
-                    pct = 100.0 * i / max(len(work_keys), 1)
-                    print(f"  sample cache {pct:6.2f}% [{i}/{len(work_keys)}] samples={total_samples} key={key}", flush=True)
-                if args.save_every_videos > 0 and len(chunk_keys) >= args.save_every_videos:
-                    flush_chunk()
-                if deadline_expired(args):
-                    flush_chunk()
-                    raise TimeBudgetExpired("Time budget reached while building sample cache.")
-            except Exception as exc:
-                skipped.append((key, str(exc)))
-                print(f"  [skip] {key}: {exc}")
-                done_keys.add(key)
-                if deadline_expired(args):
-                    flush_chunk()
-                    raise TimeBudgetExpired("Time budget reached while building sample cache.")
-    finally:
-        handle.remove()
-
-    flush_chunk()
-
-    if not part_files:
-        raise RuntimeError("No training samples were extracted.")
-
-    loaded_parts = [torch.load(path, map_location="cpu", weights_only=False) for path in part_files]
-    x = torch.cat([part["features"] for part in loaded_parts], 0)
-    y1 = torch.cat([part["one_hot"] for part in loaded_parts], 0)
-    y2 = torch.cat([part["boundary"] for part in loaded_parts], 0)
-    stats = {
-        "videos_seen": len(work_keys),
-        "samples": int(x.shape[0]),
-        "one_hot_positive_rate": float(y1.mean().item()),
-        "boundary_positive_rate": float(y2.mean().item()),
-        "skipped": skipped,
-        "partial_parts": part_files,
-    }
-
-    with open(cache_path, "wb") as f:
-        pickle.dump({"config": cache_config, "features": x, "one_hot": y1, "boundary": y2, "stats": stats}, f, protocol=pickle.HIGHEST_PROTOCOL)
-    print(f"Sample cache saved -> {cache_path}")
-    return x, y1, y2, stats
 
 
 def train_head(
@@ -610,7 +221,6 @@ def train_head(
         raise ValueError(f"Unsupported loss: {args.loss}")
     optimizer = ManualAdam(head.parameters(), lr=args.lr, weight_decay=args.weight_decay)
     losses: list[float] = []
-    ema_state: dict[str, torch.Tensor] | None = None
     start_epoch = 1
     train_config = {
         "in_features": int(dataset.features.shape[1]),
@@ -622,8 +232,7 @@ def train_head(
         "alpha": args.alpha,
         "weight_decay": args.weight_decay,
         "manyhot_weight": args.manyhot_weight,
-        "use_ema": args.use_ema,
-        "ema_decay": args.ema_decay,
+        "training_seed": args.seed,
     }
 
     if os.path.exists(args.resume_state) and not args.no_resume:
@@ -637,12 +246,7 @@ def train_head(
         optimizer.load_state_dict(state["optimizer"])
         losses = list(state.get("losses", []))
         start_epoch = int(state.get("epoch", 0)) + 1
-        if args.use_ema and state.get("ema_state") is not None:
-            ema_state = {k: v.to(device) for k, v in state["ema_state"].items()}
         print(f"Resuming training from epoch {start_epoch}/{args.epochs}")
-
-    if args.use_ema and ema_state is None:
-        ema_state = {k: v.detach().clone().to(device) for k, v in head.state_dict().items()}
 
     os.makedirs(args.checkpoint_dir, exist_ok=True)
 
@@ -650,7 +254,6 @@ def train_head(
         payload = {
             "epoch": epoch,
             "head": head.state_dict(),
-            "ema_state": {k: v.detach().cpu() for k, v in ema_state.items()} if ema_state is not None else None,
             "optimizer": optimizer.state_dict(),
             "losses": losses,
             "train_config": train_config,
@@ -662,8 +265,6 @@ def train_head(
 
     if start_epoch > args.epochs:
         print(f"Training already complete at epoch {start_epoch - 1}.")
-        if ema_state is not None:
-            head.load_state_dict({k: v.detach().cpu() for k, v in ema_state.items()})
         return head, losses
 
     for epoch in range(start_epoch, args.epochs + 1):
@@ -681,10 +282,6 @@ def train_head(
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-            if ema_state is not None:
-                with torch.no_grad():
-                    for name, value in head.state_dict().items():
-                        ema_state[name].mul_(args.ema_decay).add_(value.detach(), alpha=1.0 - args.ema_decay)
 
             total_loss += float(loss.item()) * len(feats)
             n_seen += len(feats)
@@ -703,9 +300,15 @@ def train_head(
         save_training_state(epoch)
         if deadline_expired(args):
             raise TimeBudgetExpired("Time budget reached after saving epoch checkpoint.")
-    if ema_state is not None:
-        head.load_state_dict({k: v.detach().cpu() for k, v in ema_state.items()})
     return head, losses
+
+
+def hash_state_dict(state: dict[str, torch.Tensor]) -> str:
+    h = hashlib.sha256()
+    for name, tensor in sorted(state.items()):
+        h.update(name.encode("utf-8"))
+        h.update(tensor.detach().cpu().contiguous().numpy().tobytes())
+    return h.hexdigest()
 
 
 def module_names_for_finetune_scope(scope: str) -> tuple[str, ...]:
@@ -764,7 +367,7 @@ def freeze_batch_norm_stats(model: nn.Module) -> None:
 def validate_training_mode_args(args: argparse.Namespace) -> None:
     if args.finetune_scope not in FINETUNE_SCOPE_CHOICES:
         raise ValueError(f"Unsupported finetune scope: {args.finetune_scope}")
-    if args.finetune_scope != "head_only" and args.use_ema:
+    if args.finetune_scope != "head_only" and getattr(args, "use_ema", False):
         raise ValueError("--use-ema is only supported by the cached head_only training path")
     if BACKBONE_FINETUNE_MODULES[args.finetune_scope] and args.backbone_lr <= 0:
         raise ValueError("--backbone-lr must be positive when Layer_4/Layer_5 fine-tuning is selected")
@@ -1076,10 +679,6 @@ def load_or_run_logits(
     return logits
 
 
-def sigmoid_np(x: np.ndarray) -> np.ndarray:
-    return 1.0 / (1.0 + np.exp(-x))
-
-
 def logits_to_pred_dict(logits: dict[str, np.ndarray], temperature: float, sigma: float) -> dict[str, np.ndarray]:
     pred: dict[str, np.ndarray] = {}
     for key, arr in logits.items():
@@ -1122,9 +721,7 @@ def evaluate_fixed(pred: dict[str, np.ndarray], gt: dict[str, np.ndarray], thres
         tp += tp_
         fp += fp_
         fn += fn_
-    precision = tp / (tp + fp) if tp + fp > 0 else 0.0
-    recall = tp / (tp + fn) if tp + fn > 0 else 0.0
-    f1 = 2.0 * precision * recall / (precision + recall) if precision + recall > 0 else 0.0
+    f1, precision, recall = f1_pr(tp, fp, fn)
     return {
         "f1": float(f1),
         "precision": float(precision),
@@ -1175,6 +772,8 @@ def main() -> None:
     parser.add_argument("--eval-cache-dir", default=DEFAULT_EVAL_CACHE_DIR)
     parser.add_argument("--resume-state", default=DEFAULT_RESUME_STATE)
     parser.add_argument("--checkpoint-dir", default=DEFAULT_CHECKPOINT_DIR)
+    parser.add_argument("--data-manifest", default="")
+    parser.add_argument("--run-manifest", default="")
     parser.add_argument("--epochs", type=int, default=20)
     parser.add_argument("--batch-size", type=int, default=512)
     parser.add_argument("--loss", choices=["bce", "focal"], default="focal")
@@ -1191,14 +790,13 @@ def main() -> None:
     parser.add_argument("--manyhot-weight", type=float, default=0.3)
     parser.add_argument("--sigma", type=float, default=2.0)
     parser.add_argument("--temperature-mode", choices=["off", "auto"], default="auto")
-    parser.add_argument("--use-ema", action="store_true")
-    parser.add_argument("--ema-decay", type=float, default=0.999)
     parser.add_argument("--boundary-window", type=int, default=1)
     parser.add_argument("--max-samples-per-video", type=int, default=160)
     parser.add_argument("--max-total-samples", type=int, default=0)
     parser.add_argument("--neg-per-pos", type=int, default=3)
     parser.add_argument("--min-neg-per-video", type=int, default=32)
     parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--data-seed", type=int, default=42)
     parser.add_argument("--max-train-videos", type=int, default=0)
     parser.add_argument("--max-val-videos", type=int, default=200)
     parser.add_argument("--max-test-videos", type=int, default=0)
@@ -1217,9 +815,7 @@ def main() -> None:
     validate_training_mode_args(args)
     args._deadline = time.monotonic() + args.stop_after_minutes * 60.0 if args.stop_after_minutes > 0 else None
 
-    random.seed(args.seed)
-    np.random.seed(args.seed)
-    torch.manual_seed(args.seed)
+    set_global_seeds(args.seed)
     print(f"Device: {device}")
 
     meta = load_metadata(args.meta)
@@ -1269,6 +865,17 @@ def main() -> None:
         print(f"  boundary positive rate: {sample_stats['boundary_positive_rate']:.6f}")
         if sample_stats["skipped"]:
             print(f"  skipped videos: {len(sample_stats['skipped'])}")
+        data_manifest = None
+        if args.data_manifest:
+            data_manifest = write_training_data_manifest(
+                args.data_manifest,
+                args.meta,
+                args.base_ckpt,
+                entries,
+                sample_stats,
+                args.data_seed,
+            )
+            print(f"Training data manifest -> {args.data_manifest}")
 
         dataset = SampleFeatureDataset(features, one_hot, boundary)
         in_features = int(features.shape[1])
@@ -1277,23 +884,27 @@ def main() -> None:
         head.cls_layer1.load_state_dict(pretrained_head_cpu["cls_layer1"])
         head.cls_layer2.load_state_dict(pretrained_head_cpu["cls_layer2"])
 
+        training_started = time.perf_counter()
         try:
             head, train_losses = train_head(head, dataset, args)
         except TimeBudgetExpired as exc:
             print(f"{exc} Resume by rerunning the same command with previous outputs restored.")
             return
+        training_elapsed_seconds = time.perf_counter() - training_started
         state_fingerprint = hash_head_state(head)
         full_state = merge_head_into_state(pretrained_head_cpu["full_state"], head)
         eval_model = load_model_from_state(full_state)
     else:
         print(f"End-to-end fine-tune scope: {args.finetune_scope}")
+        training_started = time.perf_counter()
         try:
             eval_model, train_losses, sample_stats = fine_tune_model(backbone, entries, train_keys, args)
         except TimeBudgetExpired as exc:
             print(f"{exc} Resume by rerunning the same command with previous outputs restored.")
             return
+        training_elapsed_seconds = time.perf_counter() - training_started
+        state_fingerprint = hash_state_dict(eval_model.state_dict())
         full_state = {k: v.detach().cpu().clone() for k, v in eval_model.state_dict().items()}
-        state_fingerprint = hash_state_dict(full_state)
         print("Fine-tune stats:")
         print(f"  videos seen: {sample_stats['videos_seen']}/{sample_stats['videos_requested']}")
         print(f"  batches: {sample_stats['batches']}")
@@ -1302,8 +913,7 @@ def main() -> None:
         print(f"  boundary positive rate: {sample_stats['boundary_positive_rate']:.6f}")
         if sample_stats["videos_skipped"]:
             print(f"  skipped videos: {len(sample_stats['videos_skipped'])}")
-
-    eval_model.eval()
+        data_manifest = None
     os.makedirs(args.eval_cache_dir, exist_ok=True)
 
     val_cache_config = {
@@ -1341,9 +951,15 @@ def main() -> None:
         deploy_val = val_no_temp
 
     print("\nValidation:")
-    print(f"  no temp: F1={val_no_temp['f1']:.6f} P={val_no_temp['precision']:.6f} R={val_no_temp['recall']:.6f} thr={val_no_temp['threshold']:.4f}")
+    print(
+        f"  no temp: F1={val_no_temp['f1']:.6f} P={val_no_temp['precision']:.6f} "
+        f"R={val_no_temp['recall']:.6f} thr={val_no_temp['threshold']:.4f}"
+    )
     if val_temp is not None:
-        print(f"  temp T={temperature:.4f}: F1={val_temp['f1']:.6f} P={val_temp['precision']:.6f} R={val_temp['recall']:.6f} thr={val_temp['threshold']:.4f}")
+        print(
+            f"  temp T={temperature:.4f}: F1={val_temp['f1']:.6f} P={val_temp['precision']:.6f} "
+            f"R={val_temp['recall']:.6f} thr={val_temp['threshold']:.4f}"
+        )
     else:
         print("  temp: disabled")
     print(f"  deploy: T={deploy_temperature:.4f} thr={deploy_threshold:.4f}")
@@ -1362,14 +978,6 @@ def main() -> None:
                 "threshold": deploy_threshold,
                 "manyhot_weight": args.manyhot_weight,
                 "boundary_window": args.boundary_window,
-                "use_ema": args.use_ema,
-                "ema_decay": args.ema_decay,
-                "finetune_scope": args.finetune_scope,
-                "backbone_lr": args.backbone_lr,
-                "finetune_modules": list(module_names_for_finetune_scope(args.finetune_scope)),
-                "finetune_max_frames_per_batch": args.finetune_max_frames_per_batch,
-                "finetune_min_neg_per_batch": args.finetune_min_neg_per_batch,
-                "finetune_batches_per_video": args.finetune_batches_per_video,
                 "val_f1": deploy_val["f1"],
                 "training_data": "Shot train + ClipShots train",
                 "metadata": os.path.abspath(args.meta),
@@ -1402,11 +1010,19 @@ def main() -> None:
         shot_test_best = evaluate_best(test_pred, test_gt)
         shot_test_deploy = evaluate_fixed(test_pred, test_gt, deploy_threshold)
         print("\nShot test (200-video AutoShot test split):")
-        print(f"  best sweep: F1={shot_test_best['f1']:.6f} P={shot_test_best['precision']:.6f} R={shot_test_best['recall']:.6f} thr={shot_test_best['threshold']:.4f}")
-        print(f"  deploy thr={deploy_threshold:.4f}: F1={shot_test_deploy['f1']:.6f} P={shot_test_deploy['precision']:.6f} R={shot_test_deploy['recall']:.6f} TP={shot_test_deploy['tp']} FP={shot_test_deploy['fp']} FN={shot_test_deploy['fn']}")
+        print(
+            f"  best sweep: F1={shot_test_best['f1']:.6f} P={shot_test_best['precision']:.6f} "
+            f"R={shot_test_best['recall']:.6f} thr={shot_test_best['threshold']:.4f}"
+        )
+        print(
+            f"  deploy thr={deploy_threshold:.4f}: F1={shot_test_deploy['f1']:.6f} "
+            f"P={shot_test_deploy['precision']:.6f} R={shot_test_deploy['recall']:.6f} "
+            f"TP={shot_test_deploy['tp']} FP={shot_test_deploy['fp']} FN={shot_test_deploy['fn']}"
+        )
 
     results = {
         "train_losses": train_losses,
+        "training_elapsed_seconds_this_invocation": training_elapsed_seconds,
         "sample_stats": sample_stats,
         "val_no_temp": val_no_temp,
         "val_temp": val_temp,
@@ -1422,6 +1038,51 @@ def main() -> None:
     with open(args.results, "wb") as f:
         pickle.dump(results, f, protocol=pickle.HIGHEST_PROTOCOL)
     print(f"Results saved -> {args.results}")
+
+    if args.run_manifest:
+        run_manifest = {
+            "schema_version": 1,
+            "training_seed": args.seed,
+            "data_seed": args.data_seed,
+            "selected_keys_hash": sample_stats["selected_keys_hash"],
+            "state_fingerprint": state_fingerprint,
+            "configuration": {
+                key: value
+                for key, value in vars(args).items()
+                if not key.startswith("_")
+            },
+            "artifacts": {
+                "checkpoint": {
+                    "path": os.path.abspath(args.out_ckpt),
+                    "sha256": sha256_file(args.out_ckpt),
+                },
+                "results": {
+                    "path": os.path.abspath(args.results),
+                    "sha256": sha256_file(args.results),
+                },
+                "data_manifest": (
+                    {
+                        "path": os.path.abspath(args.data_manifest),
+                        "sha256": sha256_file(args.data_manifest),
+                    }
+                    if data_manifest is not None
+                    else None
+                ),
+            },
+            "validation": {
+                "videos": len(val_logits),
+                "logits_keys_hash": hash_keys(list(val_logits)),
+                "no_temperature": val_no_temp,
+                "temperature_candidate": val_temp,
+            },
+            "training_elapsed_seconds_this_invocation": training_elapsed_seconds,
+            "test_evaluated": not args.skip_test_eval,
+        }
+        os.makedirs(os.path.dirname(args.run_manifest) or ".", exist_ok=True)
+        with open(args.run_manifest, "w", encoding="utf-8") as handle:
+            json.dump(run_manifest, handle, indent=2)
+            handle.write("\n")
+        print(f"Run manifest -> {args.run_manifest}")
 
 
 if __name__ == "__main__":

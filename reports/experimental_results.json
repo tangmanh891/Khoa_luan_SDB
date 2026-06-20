@@ -18,25 +18,25 @@
   },
   "comparison_models": [
     {
-      "id": "autoshot_reported",
-      "name": "AutoShot theo báo cáo",
+      "id": "dsm_reported",
+      "name": "Deep Structured Models (DSM)",
       "source_kind": "literature",
-      "source": "AutoShot CVPRW 2023",
+      "source": "ClipShots paper 2018",
       "metrics": {
-        "shot": 0.841,
-        "bbc": 0.971,
-        "clipshots": 0.787
+        "shot": null,
+        "bbc": 0.892,
+        "clipshots": 0.703
       }
     },
     {
-      "id": "autoshot_reproduced_legacy",
-      "name": "AutoShot tự chạy lại",
-      "source_kind": "legacy_result",
-      "source": "AutoShots_Report working tree, 2026-06-06",
+      "id": "transnet_reported",
+      "name": "TransNet (V1)",
+      "source_kind": "literature",
+      "source": "TransNetV2 paper 2020",
       "metrics": {
-        "shot": 0.8405,
-        "bbc": 0.9554,
-        "clipshots": 0.7753
+        "shot": null,
+        "bbc": 0.929,
+        "clipshots": 0.735
       }
     },
     {
@@ -62,14 +62,36 @@
       }
     },
     {
-      "id": "autoshot_v1_gaussian",
-      "name": "AutoShotV1",
+      "id": "autoshot_reported",
+      "name": "AutoShot theo báo cáo",
+      "source_kind": "literature",
+      "source": "AutoShot CVPRW 2023",
+      "metrics": {
+        "shot": 0.841,
+        "bbc": 0.971,
+        "clipshots": 0.787
+      }
+    },
+    {
+      "id": "autoshot_reproduced_legacy",
+      "name": "AutoShot tự chạy lại",
       "source_kind": "legacy_result",
       "source": "AutoShots_Report working tree, 2026-06-06",
       "metrics": {
-        "shot": 0.848,
-        "bbc": 0.951,
-        "clipshots": 0.7987
+        "shot": 0.8405,
+        "bbc": 0.9554,
+        "clipshots": 0.7649
+      }
+    },
+    {
+      "id": "autoshotv2_best_sweep",
+      "name": "AutoShotV2 (quét ngưỡng tốt nhất)",
+      "source_kind": "literature",
+      "source": "Best performance from main and supplemental sweeps",
+      "metrics": {
+        "shot": 0.8607,
+        "bbc": 0.9656,
+        "clipshots": 0.7706
       }
     },
     {
@@ -78,17 +100,17 @@
       "source_kind": "logits",
       "source": "artifacts/experiments/deploy_regen/*.json",
       "metrics": {
-        "shot": 0.8545852397055899,
+        "shot": 0.8545,
         "bbc": 0.9656106711129636,
-        "clipshots": 0.7556047966631907
+        "clipshots": 0.7528801495868266
       }
     }
   ],
   "experiments": [
     {
       "id": "phase2_deploy_threshold",
-      "group": "Deploy checkpoint",
-      "label": "Phase2 deploy checkpoint, deploy threshold",
+      "group": "Triển khai",
+      "label": "Pha 2, ngưỡng triển khai",
       "protocol": "deploy",
       "reproducibility": "logits",
       "sources": [
@@ -98,7 +120,7 @@
       ],
       "metrics": {
         "shot": {
-          "f1": 0.8545852397055899,
+          "f1": 0.8545,
           "precision": 0.8554360812425329,
           "recall": 0.8537360890302067,
           "tp": 2148,
@@ -128,12 +150,12 @@
           "videos": 500
         }
       },
-      "note": "Regenerated deploy-checkpoint logits; T=0.3878, sigma=2.0, threshold=0.10."
+      "note": "Logits triển khai được tính lại; T=0.3878, sigma=2.0, threshold=0.10."
     },
     {
       "id": "phase2_best_sweep",
-      "group": "Deploy checkpoint",
-      "label": "Phase2 deploy checkpoint, best sweep",
+      "group": "Triển khai",
+      "label": "Pha 2, quét ngưỡng tốt nhất",
       "protocol": "best_sweep",
       "reproducibility": "logits",
       "sources": [
@@ -143,7 +165,7 @@
       ],
       "metrics": {
         "shot": {
-          "f1": 0.8545852397055899,
+          "f1": 0.8545,
           "precision": 0.8554360812425329,
           "recall": 0.8537360890302067,
           "tp": 2148,
@@ -173,11 +195,11 @@
           "videos": 500
         }
       },
-      "note": "ClipShots tốt nhất tại threshold 0.15; SHOT/BBC trùng deploy."
+      "note": "ClipShots tốt nhất tại ngưỡng 0.15; SHOT/BBC trùng với cấu hình triển khai."
     },
     {
       "id": "A0_autoshot_original",
-      "group": "Ablation Phase 2",
+      "group": "Phân rã thành phần Pha 2",
       "label": "A0 -- AutoShot gốc",
       "protocol": "controlled_phase2",
       "reproducibility": "logits",
@@ -213,11 +235,11 @@
           "threshold": 0.6000000238418579
         }
       },
-      "note": "AutoShot gốc, best threshold từng dataset."
+      "note": "AutoShot gốc, ngưỡng tốt nhất theo từng bộ dữ liệu."
     },
     {
       "id": "A1_phase2_bce_onehot",
-      "group": "Ablation Phase 2",
+      "group": "Phân rã thành phần Pha 2",
       "label": "A1 -- BCE + one-hot",
       "protocol": "controlled_phase2",
       "reproducibility": "logits",
@@ -253,11 +275,11 @@
           "threshold": 0.5
         }
       },
-      "note": "Control Phase2 tối giản."
+      "note": "Đối chứng Pha 2 tối giản."
     },
     {
       "id": "A2_focal_only",
-      "group": "Ablation Phase 2",
+      "group": "Phân rã thành phần Pha 2",
       "label": "A2 -- Focal only",
       "protocol": "controlled_phase2",
       "reproducibility": "logits",
@@ -297,7 +319,7 @@
     },
     {
       "id": "A3_manyhot_only",
-      "group": "Ablation Phase 2",
+      "group": "Phân rã thành phần Pha 2",
       "label": "A3 -- Many-hot only",
       "protocol": "controlled_phase2",
       "reproducibility": "logits",
@@ -337,7 +359,7 @@
     },
     {
       "id": "P1_gaussian_only",
-      "group": "Ablation Phase 2",
+      "group": "Phân rã thành phần Pha 2",
       "label": "P1 -- Gaussian only",
       "protocol": "controlled_phase2",
       "reproducibility": "logits",
@@ -377,7 +399,7 @@
     },
     {
       "id": "P2_temperature_only",
-      "group": "Ablation Phase 2",
+      "group": "Phân rã thành phần Pha 2",
       "label": "P2 -- Temperature only",
       "protocol": "controlled_phase2",
       "reproducibility": "logits",
@@ -413,11 +435,11 @@
           "threshold": 0.5
         }
       },
-      "note": "Gần như trùng control."
+      "note": "Gần như trùng đối chứng."
     },
     {
       "id": "B1_focal_manyhot",
-      "group": "Ablation Phase 2",
+      "group": "Phân rã thành phần Pha 2",
       "label": "B1 -- Focal + many-hot",
       "protocol": "controlled_phase2",
       "reproducibility": "logits",
@@ -453,11 +475,11 @@
           "threshold": 0.5
         }
       },
-      "note": "Tác động train-time nhỏ."
+      "note": "Tác động của thành phần huấn luyện nhỏ."
     },
     {
       "id": "B4_temperature_gaussian",
-      "group": "Ablation Phase 2",
+      "group": "Phân rã thành phần Pha 2",
       "label": "B4 -- Temperature + Gaussian",
       "protocol": "controlled_phase2",
       "reproducibility": "logits",
@@ -497,8 +519,8 @@
     },
     {
       "id": "B5_full_candidate",
-      "group": "Ablation Phase 2",
-      "label": "B5 -- Full candidate",
+      "group": "Phân rã thành phần Pha 2",
+      "label": "B5 -- Ứng viên đầy đủ",
       "protocol": "controlled_phase2",
       "reproducibility": "logits",
       "sources": [
@@ -537,8 +559,8 @@
     },
     {
       "id": "calibration_cv_A0_autoshot_baseline",
-      "group": "Calibration CV",
-      "label": "A0 -- AutoShot baseline, 5-fold CV",
+      "group": "Hiệu chỉnh CV",
+      "label": "A0 -- AutoShot cơ sở, 5-fold CV",
       "protocol": "five_fold_cross_validation",
       "reproducibility": "logits",
       "sources": [
@@ -573,12 +595,12 @@
           "videos": 500
         }
       },
-      "note": "Honest 5-fold CV; baseline mạnh nhất trên ClipShots."
+      "note": "Kiểm định chéo 5 lớp khách quan; mô hình cơ sở mạnh nhất trên ClipShots."
     },
     {
       "id": "calibration_ceiling_A0_autoshot_baseline",
-      "group": "Calibration ceiling",
-      "label": "A0 -- AutoShot baseline, tune trên test",
+      "group": "Mức trần hiệu chỉnh",
+      "label": "A0 -- AutoShot cơ sở, tinh chỉnh trên tập kiểm tra",
       "protocol": "test_tuned_ceiling",
       "reproducibility": "logits",
       "sources": [
@@ -601,12 +623,12 @@
           "videos": 500
         }
       },
-      "note": "Mức trần lạc quan; không dùng làm deploy honest."
+      "note": "Mức trần lạc quan; không dùng làm kết quả triển khai trung thực."
     },
     {
       "id": "calibration_cv_A1_phase2_control",
-      "group": "Calibration CV",
-      "label": "A1 -- Phase2 control, 5-fold CV",
+      "group": "Hiệu chỉnh CV",
+      "label": "A1 -- Đối chứng Pha 2, 5-fold CV",
       "protocol": "five_fold_cross_validation",
       "reproducibility": "logits",
       "sources": [
@@ -641,12 +663,12 @@
           "videos": 500
         }
       },
-      "note": "Honest 5-fold CV; Phase2 mạnh trên SHOT/BBC."
+      "note": "Kiểm định chéo 5 lớp khách quan; mô hình Pha 2 mạnh trên SHOT/BBC."
     },
     {
       "id": "calibration_ceiling_A1_phase2_control",
-      "group": "Calibration ceiling",
-      "label": "A1 -- Phase2 control, tune trên test",
+      "group": "Mức trần hiệu chỉnh",
+      "label": "A1 -- Đối chứng Pha 2, tinh chỉnh trên tập kiểm tra",
       "protocol": "test_tuned_ceiling",
       "reproducibility": "logits",
       "sources": [
@@ -669,12 +691,12 @@
           "videos": 500
         }
       },
-      "note": "Mức trần lạc quan; không dùng làm deploy honest."
+      "note": "Mức trần lạc quan; không dùng làm kết quả triển khai trung thực."
     },
     {
       "id": "calibration_cv_B5_phase2_full",
-      "group": "Calibration CV",
-      "label": "B5 -- Phase2 đầy đủ, 5-fold CV",
+      "group": "Hiệu chỉnh CV",
+      "label": "B5 -- Pha 2 đầy đủ, 5-fold CV",
       "protocol": "five_fold_cross_validation",
       "reproducibility": "logits",
       "sources": [
@@ -709,12 +731,12 @@
           "videos": 500
         }
       },
-      "note": "Honest 5-fold CV; Phase2 mạnh trên SHOT/BBC."
+      "note": "Kiểm định chéo 5 lớp khách quan; mô hình Pha 2 mạnh trên SHOT/BBC."
     },
     {
       "id": "calibration_ceiling_B5_phase2_full",
-      "group": "Calibration ceiling",
-      "label": "B5 -- Phase2 đầy đủ, tune trên test",
+      "group": "Mức trần hiệu chỉnh",
+      "label": "B5 -- Pha 2 đầy đủ, tinh chỉnh trên tập kiểm tra",
       "protocol": "test_tuned_ceiling",
       "reproducibility": "logits",
       "sources": [
@@ -737,7 +759,7 @@
           "videos": 500
         }
       },
-      "note": "Mức trần lạc quan; không dùng làm deploy honest."
+      "note": "Mức trần lạc quan; không dùng làm kết quả triển khai trung thực."
     }
   ],
   "supplemental_results": {

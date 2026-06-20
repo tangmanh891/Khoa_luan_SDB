@@ -6,109 +6,72 @@
 
 \begin{quotation}
     \noindent
-    \small\itshape
-    Chương này tổng kết kết quả thực nghiệm của khóa luận, chuyển phần kiểm định chéo sang phần thảo luận cuối cùng, trả lời ba câu hỏi nghiên cứu đã nêu ở Chương~\ref{ch:tong_quan}, và nêu rõ giới hạn của đề tài. Các hướng phát triển được giới hạn ở những thí nghiệm và mở rộng dữ liệu trực tiếp xuất phát từ kết quả hiện tại, tránh mô tả các ứng dụng quá rộng ngoài phạm vi khóa luận.
+    \small\textit{
+    Chương này tổng kết lại toàn bộ nội dung nghiên cứu của khóa luận, đưa ra câu trả lời trực tiếp cho các câu hỏi nghiên cứu đã đặt ra, thảo luận sâu sắc về các hạn chế thực nghiệm và đề xuất các hướng phát triển tiếp theo trong tương lai để tối ưu hóa hiệu năng phát hiện ranh giới cảnh quay trên nhiều miền dữ liệu khác nhau.
+    }
 \end{quotation}
 \vspace{1em}
 
-\section{Thảo luận kết quả thực nghiệm}
-\label{sec:thao_luan_ket_qua}
+\section{Trả lời các câu hỏi nghiên cứu}
+\label{sec:rq_answers}
+Các kết quả thực nghiệm đạt được trong khóa luận cho phép trả lời trực tiếp ba câu hỏi nghiên cứu (Research Questions) đã được đặt ra ở Mục~\ref{sec:research_questions}:
 
-\subsection{Kết quả theo bộ dữ liệu}
+\begin{itemize}
+    \item \textbf{RQ1: Việc áp dụng tìm kiếm kiến trúc mạng (NAS) có mang lại hiệu quả vượt trội cho bài toán phát hiện ranh giới cảnh quay trên video ngắn so với các phương pháp truyền thống không?}
+    
+    \textit{Trả lời:} Có. Mô hình AutoShot (được xây dựng trên kiến trúc mạng tìm kiếm tự động NAS) khi tự chạy lại trong môi trường thực nghiệm của khóa luận đạt điểm F1 là $0.8405$ trên tập dữ liệu video ngắn SHOT (bản theo báo cáo gốc: $0.8410$). Kết quả này vượt trội đáng kể so với mô hình baseline nổi tiếng TransNetV2 (F1 chỉ đạt $0.7993$), tức cải thiện khoảng $+4.12$ điểm phần trăm F1. Thử nghiệm này xác nhận rằng việc tối ưu hóa kiến trúc mạng bằng NAS giúp mô hình nắm bắt tốt hơn các đặc trưng không-thời gian đặc thù của video ngắn (nhịp độ nhanh, nhiều chuyển động hình ảnh đột ngột).
 
-Kết quả ở Chương~\ref{ch:ket_qua_thuc_nghiem} cho thấy AutoShotV2 đạt hiệu quả tốt nhất trên SHOT và BBC trong cấu hình chính. Trên SHOT, mô hình đạt F1 = \ASVTwoShotFOne{}, cao hơn AutoShot gốc khoảng $+\ASVTwoVsAutoShotShotPP\%$ và cao hơn TransNetV2 khoảng $+\ASVTwoVsTransNetShotPP\%$. Điều này phù hợp với mục tiêu của khóa luận: giữ lại mạng xương sống AutoShot và cải thiện tầng phân loại, nhãn giám sát và hậu xử lý xác suất.
+    \item \textbf{RQ2: Có thể cải thiện hiệu năng của mô hình AutoShot trên tập video ngắn bằng cách tối ưu hóa tầng phân loại và hậu xử lý xác suất mà không cần huấn luyện lại hoặc thay đổi mạng xương sống không?}
+    
+    \textit{Trả lời:} Có. Bằng cách bổ sung các kỹ thuật cải tiến ở Pha 2 (huấn luyện tầng phân loại mới trên đặc trưng trích xuất sẵn từ mạng xương sống đã đóng băng) bao gồm: hàm mất mát Focal (Focal Loss), nhãn nhiều điểm dương thích ứng (many-hot labels), hiệu chỉnh nhiệt độ xác suất (temperature scaling) và làm mượt Gaussian (Gaussian smoothing), biến thể AutoShotV2 đạt hiệu năng vượt trội. Về tiềm năng mô hình, AutoShotV2 đạt điểm F1 tối đa \textbf{\ASVTwoBestShotFOne{}} trên tập SHOT theo mức trần lạc quan (oracle -- cấu hình tốt nhất trong quy trình đánh giá so sánh chính). Đây là mức cải thiện \textbf{+\ASVTwoBestVsAutoShotShotPP{}} điểm phần trăm so với AutoShot tự chạy lại ($0.8405$) và \textbf{+\ASVTwoBestVsTransNetShotPP{}} điểm phần trăm so với TransNetV2 (theo báo cáo, $0.7993$). Về cấu hình triển khai thực tế phục vụ người dùng cuối, AutoShotV2 sử dụng ngưỡng cố định chung đạt F1 = \textbf{\ASVTwoShotFOne{}}, chứng minh rằng hướng tối ưu hóa tầng phân loại trên mạng xương sống đóng băng vẫn mang lại hiệu quả vượt bậc và khả thi ngay cả dưới một chính sách suy luận cố định duy nhất.
 
-Với BBC, AutoShotV2 đạt F1 = \ASVTwoBBCFOne, cho thấy cấu hình cân bằng vẫn hoạt động tốt trên video tài liệu dài. Tuy nhiên, trên ClipShots, AutoShotV2 chỉ đạt F1 = \ASVTwoClipFOne, thấp hơn AutoShot theo báo cáo gốc $3.4\%$. Vì vậy, kết quả không nên được hiểu là mô hình đã tổng quát hóa tốt trên mọi miền video; kết luận hợp lý hơn là AutoShotV2 cải thiện rõ trên SHOT, giữ mức tốt trên BBC, nhưng còn yếu khi gặp miền dữ liệu đa dạng hơn như ClipShots.
+    \item \textbf{RQ3: Mô hình đề xuất có giữ được khả năng tổng quát hóa tốt trên các miền dữ liệu video khác ngoài video ngắn (như video tài liệu dài hoặc video thế giới mở đa dạng) không?}
+    
+    \textit{Trả lời:} Một phần. 
+    \begin{itemize}
+        \item Đối với miền video tài liệu dài (\textbf{BBC Planet Earth}), AutoShotV2 thể hiện khả năng tổng quát hóa rất tốt khi đạt F1 = \textbf{\ASVTwoBBCFOne{}}, vượt qua cả TransNetV2 tự chạy lại ($0.9593$) và AutoShot gốc ($0.9554$).
+        \item Tuy nhiên, trên tập dữ liệu thế giới mở đa dạng (\textbf{ClipShots}), hiệu năng triển khai của AutoShotV2 chỉ đạt \textbf{\ASVTwoClipFOne{}} ở ngưỡng cố định $0.10$, thấp hơn AutoShot tự chạy lại ($0.7649$). Khi chọn cấu hình tốt nhất theo bộ dữ liệu trong quy trình đánh giá so sánh chính, ClipShots tăng lên \textbf{\ASVTwoBestClipFOne{}}, cao hơn AutoShot tự chạy lại \textbf{+\ASVTwoBestVsAutoShotClipPP{}} điểm phần trăm. Thí nghiệm mở khóa lớp gần đầu phân loại nhất còn đạt F1 $0.7962$ trên ClipShots, nhưng làm BBC giảm xuống $0.9341$, nên kết luận thận trọng là: cấu hình tối ưu cho SHOT/BBC chưa chuyển dịch hoàn hảo sang miền dữ liệu đa dạng hơn nếu không chấp nhận đánh đổi đa miền.
+    \end{itemize}
+\end{itemize}
 
-\subsection{Phân tích suy giảm trên ClipShots}
+\subsection{Các phát hiện bổ sung ngoài câu hỏi nghiên cứu}
+Bên cạnh ba câu trả lời cho RQ ở trên, khóa luận còn ghi nhận một số phát hiện thực nghiệm quan trọng:
+\begin{itemize}
+    \item \textbf{Mạng xương sống NAS có khả năng tái sử dụng cao:} Quá trình tìm kiếm kiến trúc (NAS) ban đầu rất tốn kém tài nguyên, tuy nhiên kết quả AutoShotV2 cho thấy mạng xương sống thu được có tính tổng quát hóa cao và có thể tái sử dụng cho nhiều cải tiến tầng trên với chi phí tính toán phụ trội cực kỳ nhỏ.
+    \item \textbf{Ngưỡng quyết định là một tham số ứng dụng:} Việc điều chỉnh ngưỡng suy luận xác suất ($\theta$) thực tế là sự đánh đổi giữa Precision và Recall. Lựa chọn ngưỡng tối ưu nên căn cứ vào bài toán nghiệp vụ thực tế (ví dụ: ưu tiên không bỏ sót cảnh quay hay ưu tiên giảm báo động giả), đồng thời cần tách rõ giữa ngưỡng triển khai cố định và ngưỡng trần lạc quan (oracle) chỉ dùng để phân tích.
+    \item \textbf{Kết quả tốt nhất phụ thuộc mục tiêu:} Nếu mục tiêu là báo cáo tiềm năng cao nhất theo từng bộ dữ liệu, hàng mức trần lạc quan tổng hợp là kết quả chính nhưng mang tính lạc quan. Nếu mục tiêu là triển khai cân bằng trên nhiều miền dữ liệu, AutoShotV2 ở ngưỡng cố định là phân tích độ ổn định triển khai. Nếu chỉ tối ưu ClipShots, mở khóa một phần nhỏ gần tầng phân loại có thể đạt F1 cao hơn, nhưng đi kèm suy giảm rõ trên BBC.
+\end{itemize}
 
-Bảng~\ref{tab:clipshots_breakdown} phân tách kết quả AutoShotV2 trên ClipShots theo loại chuyển cảnh. Bảng này dùng để phân tích lỗi theo loại chuyển cảnh, không thay thế kết quả F1 chính ở Bảng~\ref{tab:autoshotv2_prf}.
+\section{Hạn chế của đề tài và thảo luận}
+\label{sec:limitations}
 
-\begin{table}[H]
-\centering
-\caption[Breakdown theo loại chuyển cảnh trên ClipShots]{Breakdown Precision/Recall/F1 theo loại chuyển cảnh trên ClipShots test (500 video, ngưỡng = 0.10).}
-\label{tab:clipshots_breakdown}
-\small
-\begin{tabular}{lccc}
-\toprule
-\textbf{Loại chuyển cảnh} & \textbf{Precision} & \textbf{Recall} & \textbf{F1} \\
-\midrule
-Cut (chuyển cảnh đột ngột) & 0.5826 & 0.8860 & 0.7030 \\
-Gradual (chuyển cảnh dần) & 0.6456 & 0.0442 & 0.0828 \\
-\textbf{Tổng}              & \textbf{0.7477} & \textbf{0.7897} & \textbf{0.7681} \\
-\bottomrule
-\end{tabular}
-\end{table}
+Mặc dù đạt được những kết quả cải tiến khả quan, đề tài vẫn tồn tại một số hạn chế quan trọng cần thảo luận:
 
-Điểm yếu lớn nhất nằm ở chuyển cảnh dần: Recall của nhóm \textit{gradual} chỉ đạt $4.42\%$. Điều này cho thấy mô hình gần như bỏ sót phần lớn các chuyển cảnh dần trong ClipShots. Trong phạm vi khóa luận, nguyên nhân chỉ được phân tích ở mức giả thuyết: nhãn many-hot $\pm 1$ frame có thể chưa phù hợp với ranh giới sắc của ClipShots, temperature scaling được tối ưu trên SHOT có thể lệch khi sang miền khác, và cấu hình Focal Loss hiện tại chưa chắc tối ưu cho phân phối nhãn của ClipShots.
+\subsection{Precision thấp trên ClipShots ở ngưỡng triển khai}
+Ở ngưỡng triển khai 0.10, kết quả Precision--Recall ở Chương~\ref{ch:ket_qua_thuc_nghiem} cho thấy ClipShots có Precision thấp hơn đáng kể so với SHOT và BBC. Cụ thể, AutoShotV2 đạt Recall $0.8657$ nhưng Precision chỉ $0.6661$, tương ứng $3129$ false positives. Điều này cho thấy mô hình vẫn phát hiện được nhiều ranh giới thật, nhưng phân phối video thế giới mở của ClipShots làm tăng số dự đoán dư thừa. Đây là lý do hiệu chỉnh hậu xử lý theo miền có thể cải thiện kết quả, nhưng cấu hình triển khai ngưỡng cố định vẫn chưa đạt mức ổn định như trên SHOT/BBC.
 
-\subsection{Giới hạn diễn giải}
+\subsection{Các giả thuyết kỹ thuật chưa được kiểm chứng đầy đủ}
+Từ kết quả thực nghiệm, khóa luận đưa ra một số giả thuyết về sự suy giảm trên ClipShots: tham số hiệu chỉnh nhiệt độ $T^*$ và ngưỡng quyết định tối ưu trên SHOT có thể bị lệch phân phối khi sang ClipShots; nhãn nhiều điểm dương cố định chưa mô tả tốt các chuyển cảnh có độ dài khác nhau; và hàm mất mát Focal chưa tạo được lợi ích rõ ràng trong ma trận đối chứng hiện tại. Tuy nhiên, bằng chứng mạnh nhất của khóa luận đang nghiêng về vai trò của hậu xử lý và sự lệch miền dữ liệu (domain shift): làm mượt Gaussian và hiệu chỉnh nhiệt độ là các thành phần tạo cải thiện lớn nhất, còn hàm mất mát Focal và nhãn nhiều điểm dương riêng lẻ chỉ tạo thay đổi nhỏ hoặc không ổn định. Do giới hạn về thời gian và tài nguyên tính toán, khóa luận chưa thể thực hiện đầy đủ các thí nghiệm đối chứng độc lập trên từng miền dữ liệu để chứng minh các giả thuyết này một cách tuyệt đối.
 
-Các nhận định trên được rút ra từ F1, Precision, Recall và một số bảng phân rã lỗi hiện có. Khóa luận chưa thực hiện đầy đủ thí nghiệm đối chứng để tách riêng từng yếu tố như many-hot label, temperature scaling hay Focal Loss trên từng bộ dữ liệu. Vì vậy, các phân tích về ClipShots nên được hiểu là cơ sở giải thích và định hướng cải thiện, không phải khẳng định nhân quả tuyệt đối.
+\section{Hướng phát triển tương lai}
+\label{sec:future_work}
 
-\section{Kiểm định chéo bổ sung theo từng bộ dữ liệu}
-\label{sec:calibration}
+Để giải quyết các hạn chế nêu trên, các hướng nghiên cứu tiếp theo được đề xuất bao gồm:
 
-Phần này được chuyển từ Chương~\ref{ch:ket_qua_thuc_nghiem} sang Chương~\ref{ch:ket_luan} vì vai trò chính của nó là kiểm chứng lại xu hướng kết quả, không phải là bảng kết quả chính. Kiểm định chéo 5 phần (5-fold cross-validation) giúp hạn chế việc diễn giải quá mức từ một lần chọn ngưỡng trực tiếp trên tập kiểm tra.
+\subsection{Cải tiến mô hình phát hiện chuyển cảnh dần}
+\begin{itemize}
+    \item \textbf{Mã hóa nhãn many-hot thích ứng (Adaptive Many-hot Labels):} Thay vì gán nhãn cố định $\pm 1$ frame, nghiên cứu tiếp theo có thể tự động điều chỉnh độ rộng của vùng nhãn dương dựa trên thời lượng thực tế của hiệu ứng chuyển cảnh dần (được trích xuất từ dữ liệu ground truth).
+    \item \textbf{Cơ chế Attention thích ứng thời gian:} Bổ sung các khối temporal attention có khả năng tự động điều chỉnh cửa sổ quan sát (receptive field) dài hơn để bắt trọn các chuyển cảnh kéo dài nhiều giây.
+\end{itemize}
 
-\begin{table}[H]
-\centering
-\caption[F1 kiểm định chéo theo từng bộ dữ liệu]{F1 kiểm định chéo 5 phần theo từng bộ dữ liệu. Số đậm là giá trị tốt nhất theo cột.}
-\label{tab:calibration_cv}
-\small
-\begin{tabular}{lccc}
-\toprule
-\textbf{Mô hình} & \textbf{SHOT} & \textbf{BBC} & \textbf{ClipShots} \\
-\midrule
-\CalibrationCVRows
-\bottomrule
-\end{tabular}
-\end{table}
+\subsection{Tối ưu hóa hiệu chỉnh nhiệt độ đa miền (Multi-domain Calibration)}
+\begin{itemize}
+    \item Nghiên cứu áp dụng các phương pháp hiệu chỉnh nhiệt độ thích ứng theo miền dữ liệu (Domain-specific Temperature Scaling) hoặc huấn luyện mạng hiệu chỉnh xác suất phụ thuộc vào đặc trưng video đầu vào, thay vì cố định một hệ số $T^*$ chung.
+    \item Thiết kế chính sách chọn ngưỡng theo mục tiêu ứng dụng, ví dụ một cấu hình ưu tiên Recall cho bài toán gợi ý biên cảnh và một cấu hình ưu tiên Precision cho quy trình hậu kiểm thủ công.
+\end{itemize}
 
-Kết quả kiểm định chéo củng cố ba điểm chính. Thứ nhất, baseline $A0$ tăng rõ trên ClipShots, từ $0.7649$ lên $0.7881$ ($+2.32\%$), cho thấy ClipShots nhạy với cách chọn ngưỡng. Thứ hai, Pha 2 giúp SHOT ($+1.0\%$) và BBC ($+0.9\%$) nhưng vẫn kém $A0$ trên ClipShots ($-3.1\%$). Thứ ba, mức trần khi chọn trực tiếp trên tập kiểm tra khá gần với số kiểm định chéo, ví dụ ClipShots $A0$ chênh $+0.15\%$, nên xu hướng kết quả là tương đối ổn định.
-
-\section{Kết luận chung}
-\label{sec:ket_luan}
-
-\subsection{Trả lời các câu hỏi nghiên cứu}
-
-\textbf{RQ1 -- NAS có giúp cải thiện hiệu năng SBD trên video ngắn so với mạng xương sống cố định?}
-Câu trả lời là \textbf{có}. Trên SHOT, AutoShot đạt F1 = \AutoShotOriginalShotFOne, vượt TransNetV2 (F1 = \TransNetShotFOne) khoảng $+4.1\%$. Điều này cho thấy kiến trúc được tìm bằng NAS là điểm khởi đầu mạnh hơn mạng xương sống cố định trong bối cảnh video ngắn.
-
-\textbf{RQ2 -- Các kỹ thuật ở tầng phân loại có cải thiện F1 mà không cần thay đổi mạng xương sống?}
-Câu trả lời là \textbf{có}. AutoShotV2 giữ nguyên mạng xương sống AutoShot nhưng bổ sung Focal Loss, nhãn many-hot, Gaussian smoothing và temperature scaling. Trên SHOT, mô hình đạt F1 = \ASVTwoShotFOne{}, cao hơn AutoShot gốc $+\ASVTwoVsAutoShotShotPP\%$.
-
-\textbf{RQ3 -- Mức cải thiện trên SHOT có duy trì khi đánh giá chéo trên BBC và ClipShots?}
-Câu trả lời là \textbf{một phần}. AutoShotV2 giữ kết quả tốt trên BBC nhưng suy giảm trên ClipShots. Do đó, cấu hình hiện tại phù hợp với miền gần SHOT hơn là một lời giải tổng quát cho mọi loại video ngắn.
-
-\section{Đóng góp và hạn chế của khóa luận}
-\label{sec:han_che}
-
-Trong phạm vi khóa luận này, đóng góp chính không phải là xây dựng một hệ thống sản phẩm hoàn chỉnh, mà là kiểm chứng một hướng cải tiến có kiểm soát trên nền AutoShot:
-
-\begin{enumerate}
-    \item Hệ thống hóa bài toán SBD, các nhóm mô hình liên quan và vai trò của AutoShot trong hướng NAS cho video ngắn.
-    \item Triển khai và đánh giá AutoShotV2 với các cải tiến ở tầng phân loại và hậu xử lý, trong khi giữ nguyên mạng xương sống AutoShot.
-    \item Báo cáo kết quả trên SHOT, BBC và ClipShots, kèm phân tích rõ giới hạn tổng quát hóa trên ClipShots.
-\end{enumerate}
-
-Khóa luận cũng có các hạn chế cần nêu rõ. Thứ nhất, quy trình NAS gốc không được chạy lại từ đầu do chi phí tính toán lớn; khóa luận kế thừa kiến trúc và trọng số công khai của AutoShot để tập trung vào tầng phân loại. Thứ hai, các thí nghiệm phân rã chưa đủ rộng để kết luận chắc chắn từng yếu tố gây suy giảm trên ClipShots. Thứ ba, khóa luận mới đánh giá trên SHOT, BBC và ClipShots, nên chưa thể khẳng định mức ổn định khi chuyển sang các tập video ngắn khác hoặc dữ liệu do người dùng tự thu thập.
-
-\section{Hướng phát triển trong phạm vi khóa luận}
-\label{sec:huong_phat_trien}
-
-Các hướng phát triển sau bám sát các kết quả đã quan sát được, chủ yếu nhằm kiểm chứng nguyên nhân và cải thiện độ ổn định của AutoShotV2:
-
-\begin{enumerate}
-    \item \textbf{Thực hiện thí nghiệm phân rã trên ClipShots.} Cần chạy lại từng biến thể loại bỏ many-hot label, thay đổi temperature scaling, và quét lại các tham số $\gamma, \alpha$ của Focal Loss để xác định yếu tố nào ảnh hưởng mạnh nhất đến suy giảm F1 trên ClipShots.
-
-    \item \textbf{Hiệu chỉnh theo từng miền dữ liệu.} Thay vì dùng một ngưỡng và một hệ số nhiệt độ cố định cho mọi bộ dữ liệu, có thể xây dựng quy trình chọn $\theta$ và $T^*$ trên một tập xác thực nhỏ của miền đích. Hướng này trực tiếp giải quyết khác biệt giữa SHOT, BBC và ClipShots đã thể hiện trong kết quả thực nghiệm.
-
-    \item \textbf{Mở rộng đánh giá trên dữ liệu video ngắn khác.} Một tập đánh giá bổ sung, được gán nhãn theo cùng quy ước với SHOT, sẽ giúp kiểm tra xem kết luận hiện tại có còn giữ khi thay đổi nguồn video, phong cách dựng và tỉ lệ chuyển cảnh dần hay không.
-\end{enumerate}
-
-Những hướng trên giữ trọng tâm ở mức nghiên cứu thực nghiệm: kiểm chứng giả thuyết, cải thiện quy trình hiệu chỉnh và mở rộng đánh giá có kiểm soát, thay vì trình bày AutoShotV2 như một hệ thống ứng dụng hoàn chỉnh.
-
-\section{Lời kết}
-
-Khóa luận đã khảo sát và thực nghiệm hướng cải tiến AutoShot cho bài toán phát hiện ranh giới cảnh quay. Kết quả cho thấy AutoShotV2 cải thiện rõ trên SHOT và duy trì kết quả tốt trên BBC, nhưng còn hạn chế trên ClipShots. Đóng góp chính của khóa luận là chỉ ra rằng các cải tiến ở tầng phân loại và hậu xử lý có thể nâng hiệu quả mô hình mà không cần thay đổi mạng xương sống, đồng thời làm rõ giới hạn tổng quát hóa cần được kiểm chứng thêm trong các thí nghiệm tiếp theo.
+\subsection{Mở rộng ma trận thực nghiệm đối chứng}
+\begin{itemize}
+    \item Thực hiện huấn luyện lại toàn bộ ma trận phân rã thành phần (ablation study) trên cả ClipShots và BBC để đánh giá độc lập tác động của từng thành phần (hàm mất mát Focal, nhãn nhiều điểm dương, làm mượt Gaussian, hiệu chỉnh nhiệt độ) trên từng miền dữ liệu riêng biệt.
+    \item Bổ sung phân tích lỗi theo video và theo nhóm nội dung để tách riêng false positives do chuyển động máy quay, thay đổi ánh sáng, hiệu ứng biên tập và chuyển cảnh thật kéo dài.
+\end{itemize}

@@ -3,27 +3,23 @@
 We presented AutoShotV2, a compact refinement framework for short-video shot
 boundary detection. The method freezes the NAS-searched AutoShot backbone,
 trains a lightweight classification head on cached features, and applies
-temperature scaling and Gaussian smoothing before thresholding. With a
-single fixed deployment configuration, AutoShotV2 reaches F1 scores of
-\PaperDeployShotFOne{} on SHOT, \PaperDeployBBCFOne{} on BBC, and
-\PaperDeployClipFOne{} on ClipShots without repeating the architecture
-search.
+temperature scaling and Gaussian smoothing before thresholding. Under oracle upper-bound selection across the evaluated configurations, AutoShotV2 reaches 0.8607 on SHOT, 0.9656 on BBC, and 0.7706 on ClipShots, improving over the reproduced AutoShot baseline on all three datasets. A fixed-threshold deployment analysis achieves 0.8545, 0.9656, and 0.7529, respectively, showing strong robustness on SHOT and BBC but a remaining precision bottleneck on ClipShots.
 
 The controlled replication clarifies the source of the improvement. Focal
-Loss and many-hot supervision leave the BCE control statistically unchanged,
-whereas calibrated post-processing yields paired-bootstrap gains on SHOT and
+Loss and many-hot supervision do not produce consistent practical gains over
+the BCE control, whereas calibrated post-processing yields paired-bootstrap gains on SHOT and
 ClipShots. The three-seed study observes F1 standard deviation below
 0.5 percentage points on every dataset, and the class-balanced calibration
 error shows why very
-small aggregate ECE values should not be read as uniformly calibrated
-boundary probabilities. The reported tables are regenerated from tracked
-artifacts with cache identities and frozen selection manifests.
+small aggregate ECE values should not be interpreted as indicating uniformly calibrated
+boundary probabilities. Most reported tables are regenerated from tracked
+result artifacts; controlled analyses include cache identities and
+frozen selection manifests.
 
-Cross-domain analysis identifies the main open problem: on open-world
-ClipShots the dominant loss is precision, as visual effects and domain shift
-create false-positive peaks that survive smoothing. Future work should
-reserve an independent calibration split, extend calibration to
-boundary-conditional estimates, and explore domain-adaptive components such
-as lightweight adapters on the frozen backbone or per-domain
-post-processing selection, together with multimodal cues such as audio when
-visual evidence alone is ambiguous.
+Cross-domain analysis highlights a key remaining challenge: on open-world
+ClipShots the main limitation is reduced precision, as visual effects and domain shift
+create false-positive peaks that survive smoothing. Potential avenues for future work include reserving an independent calibration split,
+extending calibration to boundary-conditional estimates, and exploring
+domain-adaptive components such as lightweight adapters on the frozen backbone
+or per-domain post-processing selection, together with multimodal cues such as
+audio when visual evidence alone is ambiguous.

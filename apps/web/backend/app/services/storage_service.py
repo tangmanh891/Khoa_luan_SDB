@@ -7,7 +7,6 @@ import cloudinary.uploader
 
 from app.core.config import get_settings
 
-
 ALLOWED_EXTENSIONS = {".mp4", ".mov", ".webm", ".mkv", ".avi", ".m4v"}
 
 

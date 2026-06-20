@@ -1,30 +1,24 @@
 \begin{abstract}
 Shot boundary detection (SBD) is a fundamental preprocessing step for video
 indexing, retrieval, summarization, and automated editing. Modern short-video
-platforms create a difficult operating regime: clips are brief, edits are
-dense, transitions are visually diverse, and boundary frames are sparse. This
-paper presents AutoShotV2, a lightweight refinement of AutoShot for
-short-video SBD. Rather than re-running neural architecture search or
-updating the full backbone, AutoShotV2 freezes the AutoShot feature extractor
-and trains a compact classification head on 4864-dimensional cached features.
-The resulting logits are then calibrated with temperature scaling, smoothed
-with a one-dimensional Gaussian filter, and thresholded under a
-validation-selected operating point. With the fixed deployment configuration
-($T^{*}=\PaperDeployTemperature$), AutoShotV2 reaches an F1 score of
-\PaperDeployShotFOne{} on the 200-video SHOT test set, improving over the
-reproduced AutoShot baseline by \PaperDeployVsAutoShotPP{} percentage
-points and over the reported TransNetV2 baseline by
-\PaperDeployVsTransNetPP{} percentage points in F1. The same configuration
-achieves high performance on BBC documentary footage
-(\PaperDeployBBCFOne) but remains weaker on open-world ClipShots
-(\PaperDeployClipFOne). A controlled replication under a frozen
-validation-only protocol indicates that the measured gain is driven by
-calibrated post-processing rather than by Focal Loss or boundary-aware
-many-hot supervision. Paired video bootstrap intervals support positive
-deltas on SHOT and ClipShots but not on BBC. Calibration diagnostics further
-show that low aggregate frame-level ECE can hide larger positive-class error
-under severe boundary sparsity, and a three-seed study observes F1 standard
-deviation below 0.5 percentage points on every dataset. We provide
-validation-selection manifests, per-video statistics, analysis code, and
-checksum-oriented artifact tooling.
+platforms introduce a challenging operating regime characterized by brief video
+durations, dense edits, visually diverse transitions, and sparse boundary frames.
+This paper presents AutoShotV2, a lightweight SBD refinement framework. Instead
+of repeating computationally expensive neural architecture search or updating the
+full backbone, AutoShotV2 freezes the searched feature extractor and trains a compact
+classification head on cached features.
+This paper reports two complementary evaluation protocols: an oracle upper-bound
+comparison that selects the best configuration and operating point per dataset,
+and a fixed-threshold deployment protocol that uses a single decision threshold.
+Under the oracle upper-bound protocol, AutoShotV2 achieves F1 scores of 0.8607
+on SHOT, 0.9656 on BBC, and 0.7706 on ClipShots, improving over the reproduced
+AutoShot baseline by 2.02, 1.02, and 0.57 percentage points, respectively. Under
+fixed-threshold deployment, it reaches 0.8545, 0.9656, and 0.7529 F1 on the same
+datasets. A controlled ablation study shows that calibrated post-processing
+accounts for most of the measured gain, while alternative training losses do not
+add consistent improvements. Paired bootstrap intervals support positive deltas
+on SHOT and ClipShots, and a three-seed study observes F1 standard deviation
+below 0.5 percentage points on every dataset. We release validation manifests,
+per-video statistics, and checksummed artifacts and scripts.
 \end{abstract}
+

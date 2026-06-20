@@ -20,7 +20,6 @@ from autoshotv2.runtime import (
     probabilities_to_scenes,
 )
 
-
 logger = logging.getLogger(__name__)
 
 BackendName = Literal["auto", "phase2", "baseline"]

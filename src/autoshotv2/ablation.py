@@ -1,5 +1,4 @@
 import argparse
-import csv
 import json
 import os
 import pickle
@@ -10,20 +9,25 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-import matplotlib.pyplot as plt
-import numpy as np
-
+from autoshotv2.ablation_report import add_deltas, flatten_metric, make_figures, write_csv, write_summary  # noqa: F401
+from autoshotv2.common import (
+    build_train_phase2_command,
+    clean_key,
+    load_logits,
+    load_pickle_payload,
+    scores_from_cache,
+)
+from autoshotv2.eval import DEFAULT_THRESHOLDS, eval_at_threshold
 from autoshotv2.train_phase2 import (
+    build_sample_cache_config,
     evaluate_best,
     find_temperature,
     gt_for_logits,
-    hash_keys,
     load_metadata,
     logits_to_pred_dict,
+    select_training_keys,
     sha256_file,
 )
-from autoshotv2.eval import DEFAULT_THRESHOLDS, eval_at_threshold, sigmoid_np
-
 
 DATASETS = ("shot", "clipshots", "bbc")
 
@@ -37,8 +41,6 @@ class Experiment:
     loss: str = "bce"
     manyhot_weight: float = 0.0
     boundary_window: int = 0
-    use_ema: bool = False
-    ema_decay: float = 0.999
     sigma: float = 0.0
     temperature_mode: str = "off"
     control_id: str | None = "A1_phase2_bce_onehot"
@@ -53,7 +55,7 @@ EXPERIMENTS: dict[str, Experiment] = {
     ),
     "A1_phase2_bce_onehot": Experiment(
         "A1_phase2_bce_onehot",
-        "Minimal Phase2 control: BCE, one-hot only, no EMA.",
+        "Minimal Phase2 control: BCE, one-hot only.",
         "train",
         loss="bce",
         manyhot_weight=0.0,
@@ -78,15 +80,6 @@ EXPERIMENTS: dict[str, Experiment] = {
         manyhot_weight=0.3,
         boundary_window=1,
     ),
-    "A4_ema_only": Experiment(
-        "A4_ema_only",
-        "EMA effect with BCE and one-hot labels only.",
-        "train",
-        loss="bce",
-        manyhot_weight=0.0,
-        boundary_window=0,
-        use_ema=True,
-    ),
     "P1_gaussian_only": Experiment(
         "P1_gaussian_only",
         "Gaussian smoothing effect on A1 logits.",
@@ -110,24 +103,6 @@ EXPERIMENTS: dict[str, Experiment] = {
         loss="focal",
         manyhot_weight=0.3,
         boundary_window=1,
-    ),
-    "B2_focal_ema": Experiment(
-        "B2_focal_ema",
-        "Focal loss with EMA.",
-        "train",
-        loss="focal",
-        manyhot_weight=0.0,
-        boundary_window=0,
-        use_ema=True,
-    ),
-    "B3_manyhot_ema": Experiment(
-        "B3_manyhot_ema",
-        "Many-hot auxiliary target with EMA.",
-        "train",
-        loss="bce",
-        manyhot_weight=0.3,
-        boundary_window=1,
-        use_ema=True,
     ),
     "B4_temperature_gaussian": Experiment(
         "B4_temperature_gaussian",
@@ -206,26 +181,13 @@ def run_command(cmd: list[str], cwd: Path, continue_on_error: bool) -> tuple[boo
     return True, ""
 
 
-def load_pickle_payload(path: Path) -> Any:
-    with path.open("rb") as f:
-        return pickle.load(f)
-
-
-def load_logits(path: Path) -> dict[str, np.ndarray]:
-    payload = load_pickle_payload(path)
-    return payload["logits"] if isinstance(payload, dict) and "logits" in payload else payload
-
-
-def clean_key(key: str) -> str:
-    return str(key).split(":", 1)[-1]
-
-
 def logits_overlap_gt(logits_path: Path, gt_path: Path) -> bool:
     try:
         logits = load_logits(logits_path)
         with gt_path.open("rb") as f:
             gt = pickle.load(f)
-    except Exception:
+    except (OSError, pickle.UnpicklingError, EOFError, KeyError, ValueError) as exc:
+        print(f"WARNING: cannot read {logits_path} or {gt_path}: {exc}", flush=True)
         return False
     pred_keys = {clean_key(key) for key in logits}
     return bool(pred_keys & set(gt))
@@ -251,7 +213,11 @@ def prepare_filtered_videos(videos_dir: Path, gt_path: Path, out_dir: Path) -> P
     for stem in available:
         src = source_by_stem[stem]
         gt_name = wanted_names[stem]
-        dst_name = f"{gt_name}{src.suffix}" if Path(gt_name).suffix.lower() in {".mp4", ".mov", ".mkv", ".avi", ".webm", ".m4v"} else src.name
+        dst_name = (
+            f"{gt_name}{src.suffix}"
+            if Path(gt_name).suffix.lower() in {".mp4", ".mov", ".mkv", ".avi", ".webm", ".m4v"}
+            else src.name
+        )
         dst = out_dir / dst_name
         if dst.exists():
             continue
@@ -276,28 +242,6 @@ def prepare_subset_gt(gt_path: Path, out_path: Path, max_videos: int) -> Path:
     with out_path.open("wb") as f:
         pickle.dump(subset, f, protocol=pickle.HIGHEST_PROTOCOL)
     return out_path
-
-
-def scores_from_cache(scores: dict[str, np.ndarray], temperature: float, sigma: float, input_kind: str) -> dict[str, np.ndarray]:
-    from scipy.ndimage import gaussian_filter1d
-
-    pred: dict[str, np.ndarray] = {}
-    for key, arr in scores.items():
-        value = np.asarray(arr, dtype=np.float32).reshape(-1)
-        if input_kind == "logits":
-            value = sigmoid_np(value / temperature)
-        elif input_kind == "probabilities":
-            if temperature != 1.0:
-                eps = np.finfo(np.float32).eps
-                clipped = np.clip(value, eps, 1.0 - eps)
-                logits = np.log(clipped / (1.0 - clipped))
-                value = sigmoid_np(logits / temperature)
-        else:
-            raise ValueError(f"Unsupported input kind: {input_kind}")
-        if sigma > 0:
-            value = gaussian_filter1d(value, sigma=sigma)
-        pred[clean_key(key)] = value[:, np.newaxis].astype(np.float32)
-    return pred
 
 
 def write_json(path: Path, payload: Any) -> None:
@@ -409,35 +353,23 @@ def sample_cache_matches(
         return False
     try:
         cached = load_pickle_payload(cache_path)
-    except Exception:
+    except (OSError, pickle.UnpicklingError, EOFError, KeyError, ValueError) as exc:
+        print(f"WARNING: sample cache {cache_path} unreadable; it will be rebuilt: {exc}", flush=True)
         return False
-    expected = {
-        "meta_path": os.path.abspath(meta_path),
-        "keys_hash": hash_keys(train_keys),
-        "base_ckpt_hash": base_ckpt_hash,
-        "max_samples_per_video": args.max_samples_per_video,
-        "max_total_samples": args.max_total_samples,
-        "neg_per_pos": args.neg_per_pos,
-        "min_neg_per_video": args.min_neg_per_video,
-        "boundary_window": exp.boundary_window,
-        "seed": args.seed,
-    }
-    cached_config = cached.get("config", {})
-    if cached_config == expected:
-        return True
-    core_fields = [
-        "keys_hash",
-        "base_ckpt_hash",
-        "max_samples_per_video",
-        "max_total_samples",
-        "neg_per_pos",
-        "min_neg_per_video",
-        "seed",
-    ]
-    core_matches = all(cached_config.get(field) == expected[field] for field in core_fields)
-    boundary_matches = cached_config.get("boundary_window") == expected["boundary_window"]
-    boundary_unused = exp.manyhot_weight == 0.0
-    return core_matches and (boundary_matches or boundary_unused)
+    selected_keys = select_training_keys(
+        train_keys,
+        args.data_seed,
+        args.max_train_videos,
+    )
+    cache_args = argparse.Namespace(**vars(args))
+    cache_args.boundary_window = exp.boundary_window
+    expected = build_sample_cache_config(
+        str(meta_path),
+        selected_keys,
+        base_ckpt_hash,
+        cache_args,
+    )
+    return cached.get("config") == expected
 
 
 def train_run(
@@ -454,75 +386,50 @@ def train_run(
         return True, ""
 
     run_dir.mkdir(parents=True, exist_ok=True)
-    cmd = [
-        sys.executable,
-        "-m",
-        "autoshotv2.train_phase2",
-        "--meta",
-        str(meta_path),
-        "--base-ckpt",
-        str(base_ckpt),
-        "--sample-cache",
-        str(sample_cache),
-        "--resume-state",
-        str(run_dir / "resume.pt"),
-        "--checkpoint-dir",
-        str(run_dir / "checkpoints"),
-        "--out-ckpt",
-        str(ckpt_path),
-        "--results",
-        str(run_dir / "train_results.pkl"),
-        "--eval-cache-dir",
-        str(run_dir / "eval_cache"),
-        "--epochs",
-        str(args.epochs),
-        "--batch-size",
-        str(args.batch_size),
-        "--loss",
-        exp.loss,
-        "--manyhot-weight",
-        str(exp.manyhot_weight),
-        "--boundary-window",
-        str(exp.boundary_window),
-        "--sigma",
-        str(exp.sigma),
-        "--temperature-mode",
-        exp.temperature_mode,
-        "--max-samples-per-video",
-        str(args.max_samples_per_video),
-        "--max-total-samples",
-        str(args.max_total_samples),
-        "--neg-per-pos",
-        str(args.neg_per_pos),
-        "--min-neg-per-video",
-        str(args.min_neg_per_video),
-        "--seed",
-        str(args.seed),
-        "--max-train-videos",
-        str(args.max_train_videos),
-        "--max-val-videos",
-        str(args.max_val_videos),
-        "--max-test-videos",
-        str(args.max_test_videos),
-        "--save-every-videos",
-        str(args.save_every_videos),
-        "--save-every-epochs",
-        str(args.save_every_epochs),
-        "--log-every-batches",
-        str(args.log_every_batches),
-        "--stop-after-minutes",
-        str(args.stop_after_minutes),
-    ]
-    if exp.use_ema:
-        cmd.extend(["--use-ema", "--ema-decay", str(exp.ema_decay)])
+    options = {
+        "--meta": meta_path,
+        "--base-ckpt": base_ckpt,
+        "--sample-cache": sample_cache,
+        "--resume-state": run_dir / "resume.pt",
+        "--checkpoint-dir": run_dir / "checkpoints",
+        "--out-ckpt": ckpt_path,
+        "--results": run_dir / "train_results.pkl",
+        "--eval-cache-dir": run_dir / "eval_cache",
+        "--epochs": args.epochs,
+        "--batch-size": args.batch_size,
+        "--loss": exp.loss,
+        "--manyhot-weight": exp.manyhot_weight,
+        "--boundary-window": exp.boundary_window,
+        "--sigma": exp.sigma,
+        "--temperature-mode": exp.temperature_mode,
+        "--max-samples-per-video": args.max_samples_per_video,
+        "--max-total-samples": args.max_total_samples,
+        "--neg-per-pos": args.neg_per_pos,
+        "--min-neg-per-video": args.min_neg_per_video,
+        "--seed": args.seed,
+        "--data-seed": args.data_seed,
+        "--max-train-videos": args.max_train_videos,
+        "--max-val-videos": args.max_val_videos,
+        "--max-test-videos": args.max_test_videos,
+        "--save-every-videos": args.save_every_videos,
+        "--save-every-epochs": args.save_every_epochs,
+        "--log-every-batches": args.log_every_batches,
+        "--stop-after-minutes": args.stop_after_minutes,
+        "--max-cache-video-frames": args.max_cache_video_frames,
+        "--max-cache-video-seconds": args.max_cache_video_seconds,
+        "--data-manifest": run_dir / "training_data_manifest.json",
+        "--run-manifest": run_dir / "run_manifest.json",
+    }
+    extra: list[object] = []
     if args.no_eval_cache:
-        cmd.append("--no-eval-cache")
+        extra.append("--no-eval-cache")
     if args.skip_test_eval:
-        cmd.append("--skip-test-eval")
+        extra.append("--skip-test-eval")
     if args.rebuild_sample_cache:
-        cmd.append("--rebuild-sample-cache")
+        extra.append("--rebuild-sample-cache")
     if not args.resume_training:
-        cmd.append("--no-resume")
+        extra.append("--no-resume")
+    cmd = build_train_phase2_command(options, extra)
     return run_command(cmd, repo_dir, args.continue_on_error)
 
 
@@ -569,21 +476,27 @@ def resource_candidates(repo_dir: Path, args: argparse.Namespace) -> dict[str, d
             "videos": Path(args.shot_videos)
             if args.shot_videos
             else repo_dir / "data" / "ShotDataset",
-            "logits": Path(args.shot_logits) if args.shot_logits else artifact_root / "eval_cache_shot_clipshots" / "shot_test_logits.pkl",
+            "logits": Path(args.shot_logits)
+            if args.shot_logits
+            else artifact_root / "eval_cache_shot_clipshots" / "shot_test_logits.pkl",
         },
         "clipshots": {
             "gt": Path(args.clipshots_gt) if args.clipshots_gt else artifact_root / "clipshots_test_gt_scenes.pickle",
             "videos": Path(args.clipshots_videos)
             if args.clipshots_videos
             else repo_dir / "data" / "ClipShots" / "videos" / "test",
-            "logits": Path(args.clipshots_logits) if args.clipshots_logits else artifact_root / "eval_cache_clipshots" / "clipshot_test_logits.pkl",
+            "logits": Path(args.clipshots_logits)
+            if args.clipshots_logits
+            else artifact_root / "eval_cache_clipshots" / "clipshot_test_logits.pkl",
         },
         "bbc": {
             "gt": Path(args.bbc_gt) if args.bbc_gt else artifact_root / "bbc_shots_gt_scenes.pickle",
             "videos": Path(args.bbc_videos)
             if args.bbc_videos
             else repo_dir / "data" / "BBCDataset",
-            "logits": Path(args.bbc_logits) if args.bbc_logits else artifact_root / "eval_cache_bbc" / "bbc_test_logits.pkl",
+            "logits": Path(args.bbc_logits)
+            if args.bbc_logits
+            else artifact_root / "eval_cache_bbc" / "bbc_test_logits.pkl",
         },
     }
 
@@ -690,185 +603,6 @@ def evaluate_dataset(
     return {"status": "ok", "dataset": dataset, "result": payload}
 
 
-def flatten_metric(
-    exp: Experiment,
-    dataset: str,
-    eval_payload: dict[str, Any],
-    postprocess: dict[str, Any],
-) -> dict[str, Any]:
-    row = {
-        "experiment_id": exp.experiment_id,
-        "description": exp.description,
-        "kind": exp.kind,
-        "control_id": exp.control_id or "",
-        "source_experiment": exp.source_experiment or "",
-        "dataset": dataset,
-        "loss": exp.loss,
-        "manyhot_weight": exp.manyhot_weight,
-        "boundary_window": exp.boundary_window,
-        "use_ema": exp.use_ema,
-        "ema_decay": exp.ema_decay,
-        "temperature_mode": exp.temperature_mode,
-        "temperature": postprocess["temperature"],
-        "sigma": exp.sigma,
-        "threshold": postprocess["threshold"],
-        "status": eval_payload["status"],
-        "f1": "",
-        "precision": "",
-        "recall": "",
-        "tp": "",
-        "fp": "",
-        "fn": "",
-        "best_f1": "",
-        "best_threshold": "",
-        "delta_f1": "",
-        "delta_precision": "",
-        "delta_recall": "",
-        "delta_tp": "",
-        "delta_fp": "",
-        "delta_fn": "",
-    }
-    if eval_payload["status"] != "ok":
-        row["error"] = eval_payload.get("error", "")
-        return row
-
-    result = eval_payload["result"]
-    deploy = result["deploy"]
-    best = result["best_sweep"]
-    if exp.kind == "baseline":
-        metric = best
-        row["threshold"] = metric["threshold"]
-    else:
-        metric = deploy
-    row.update(
-        {
-            "f1": metric["f1"],
-            "precision": metric["precision"],
-            "recall": metric["recall"],
-            "tp": metric["tp"],
-            "fp": metric["fp"],
-            "fn": metric["fn"],
-            "best_f1": best["f1"],
-            "best_threshold": best["threshold"],
-            "error": "",
-        }
-    )
-    return row
-
-
-def add_deltas(rows: list[dict[str, Any]]) -> None:
-    by_key = {(row["experiment_id"], row["dataset"]): row for row in rows if row["status"] == "ok"}
-    for row in rows:
-        control_id = row.get("control_id")
-        if row["status"] != "ok" or not control_id:
-            continue
-        control = by_key.get((control_id, row["dataset"]))
-        if not control:
-            continue
-        for field in ("f1", "precision", "recall"):
-            row[f"delta_{field}"] = float(row[field]) - float(control[field])
-        for field in ("tp", "fp", "fn"):
-            row[f"delta_{field}"] = int(row[field]) - int(control[field])
-
-
-def write_csv(path: Path, rows: list[dict[str, Any]]) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    fieldnames: list[str] = []
-    for row in rows:
-        for key in row:
-            if key not in fieldnames:
-                fieldnames.append(key)
-    with path.open("w", encoding="utf-8", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=fieldnames)
-        writer.writeheader()
-        writer.writerows(rows)
-
-
-def make_figures(out_dir: Path, rows: list[dict[str, Any]]) -> None:
-    figures_dir = out_dir / "figures"
-    figures_dir.mkdir(parents=True, exist_ok=True)
-    completed = [row for row in rows if row["status"] == "ok" and row.get("delta_f1") != ""]
-    if not completed:
-        return
-
-    labels = [f"{row['experiment_id']}\n{row['dataset']}" for row in completed]
-    delta_f1 = [float(row["delta_f1"]) for row in completed]
-    plt.figure(figsize=(max(10, len(labels) * 0.6), 5))
-    plt.bar(labels, delta_f1, color="#4c78a8")
-    plt.axhline(0, color="#333333", linewidth=0.8)
-    plt.ylabel("Delta F1 vs control")
-    plt.xticks(rotation=70, ha="right")
-    plt.tight_layout()
-    plt.savefig(figures_dir / "component_delta_f1.png", dpi=180)
-    plt.close()
-
-    delta_precision = [float(row["delta_precision"]) for row in completed]
-    delta_recall = [float(row["delta_recall"]) for row in completed]
-    x = np.arange(len(labels))
-    width = 0.38
-    plt.figure(figsize=(max(10, len(labels) * 0.6), 5))
-    plt.bar(x - width / 2, delta_precision, width, label="Precision", color="#59a14f")
-    plt.bar(x + width / 2, delta_recall, width, label="Recall", color="#f28e2b")
-    plt.axhline(0, color="#333333", linewidth=0.8)
-    plt.ylabel("Delta vs control")
-    plt.xticks(x, labels, rotation=70, ha="right")
-    plt.legend()
-    plt.tight_layout()
-    plt.savefig(figures_dir / "precision_recall_delta.png", dpi=180)
-    plt.close()
-
-    by_exp: dict[str, dict[str, float]] = {}
-    for row in completed:
-        by_exp.setdefault(row["experiment_id"], {})[row["dataset"]] = float(row["delta_f1"])
-    xs = []
-    ys = []
-    texts = []
-    for exp_id, values in by_exp.items():
-        if "shot" in values and "clipshots" in values:
-            xs.append(values["shot"])
-            ys.append(values["clipshots"])
-            texts.append(exp_id)
-    if xs:
-        plt.figure(figsize=(7, 6))
-        plt.scatter(xs, ys, color="#4c78a8")
-        for x_val, y_val, text in zip(xs, ys, texts):
-            plt.annotate(text, (x_val, y_val), fontsize=8, xytext=(4, 4), textcoords="offset points")
-        plt.axhline(0, color="#333333", linewidth=0.8)
-        plt.axvline(-0.002, color="#d62728", linewidth=0.8, linestyle="--", label="SHOT guardrail")
-        plt.xlabel("SHOT delta F1")
-        plt.ylabel("ClipShots delta F1")
-        plt.legend()
-        plt.tight_layout()
-        plt.savefig(figures_dir / "dataset_tradeoff.png", dpi=180)
-        plt.close()
-
-
-def write_summary(out_dir: Path, rows: list[dict[str, Any]]) -> None:
-    completed = [row for row in rows if row["status"] == "ok"]
-    failed = [row for row in rows if row["status"] != "ok"]
-    lines = [
-        "# Ablation Summary",
-        "",
-        f"- Completed rows: {len(completed)}",
-        f"- Incomplete rows: {len(failed)}",
-        "- Control for train-time and post-process components: `A1_phase2_bce_onehot`.",
-        "- `A0_autoshot_original` uses per-dataset best threshold when logits/videos are available.",
-        "",
-        "## Best Completed Rows",
-        "",
-    ]
-    for row in sorted(completed, key=lambda item: float(item["f1"]), reverse=True)[:10]:
-        lines.append(
-            f"- {row['experiment_id']} / {row['dataset']}: "
-            f"F1={float(row['f1']):.4f}, P={float(row['precision']):.4f}, R={float(row['recall']):.4f}"
-        )
-    if failed:
-        lines.extend(["", "## Incomplete Rows", ""])
-        for row in failed[:20]:
-            lines.append(f"- {row['experiment_id']} / {row['dataset']}: {row['status']} {row.get('error', '')}")
-    (out_dir / "ablation_summary.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
-
-
 def copy_or_select_sample_cache(
     exp: Experiment,
     run_dir: Path,
@@ -897,6 +631,7 @@ def main() -> None:
     parser.add_argument("--no-relocate-missing-paths", action="store_true")
     parser.add_argument("--reuse-sample-cache", default="")
     parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--data-seed", type=int, default=42)
     parser.add_argument("--epochs", type=int, default=20)
     parser.add_argument("--batch-size", type=int, default=512)
     parser.add_argument("--max-samples-per-video", type=int, default=160)
@@ -907,6 +642,8 @@ def main() -> None:
     parser.add_argument("--max-val-videos", type=int, default=200)
     parser.add_argument("--max-test-videos", type=int, default=0)
     parser.add_argument("--max-eval-videos", type=int, default=0)
+    parser.add_argument("--max-cache-video-frames", type=int, default=180000)
+    parser.add_argument("--max-cache-video-seconds", type=float, default=7200.0)
     parser.add_argument("--save-every-videos", type=int, default=25)
     parser.add_argument("--save-every-epochs", type=int, default=1)
     parser.add_argument("--log-every-batches", type=int, default=100)
@@ -941,7 +678,9 @@ def main() -> None:
     meta = load_metadata(str(meta_path))
     relocation_stats = None
     if not args.no_relocate_missing_paths:
-        relocated_meta_path, relocation_stats = relocate_metadata_paths(meta, repo_dir, out_dir / "resolved_meta.pickle")
+        relocated_meta_path, relocation_stats = relocate_metadata_paths(
+            meta, repo_dir, out_dir / "resolved_meta.pickle"
+        )
         meta_path = relocated_meta_path.resolve()
         meta = load_metadata(str(meta_path))
     train_keys = list(meta["train_keys"])
@@ -976,12 +715,23 @@ def main() -> None:
             ok, error = train_run(exp, run_dir, repo_dir, meta_path, base_ckpt, sample_cache, args)
             if not ok:
                 for dataset in datasets:
-                    rows.append(flatten_metric(exp, dataset, {"status": "failed", "error": error}, {"temperature": 1.0, "threshold": 0.1}))
+                    rows.append(
+                        flatten_metric(
+                            exp, dataset, {"status": "failed", "error": error}, {"temperature": 1.0, "threshold": 0.1}
+                        )
+                    )
                 continue
         elif exp.kind == "postprocess" and not (source_run_dir / "checkpoint.pth").exists():
             error = f"missing source experiment checkpoint: {source_run_dir / 'checkpoint.pth'}"
             for dataset in datasets:
-                rows.append(flatten_metric(exp, dataset, {"status": "missing_source", "error": error}, {"temperature": 1.0, "threshold": 0.1}))
+                rows.append(
+                    flatten_metric(
+                        exp,
+                        dataset,
+                        {"status": "missing_source", "error": error},
+                        {"temperature": 1.0, "threshold": 0.1},
+                    )
+                )
             continue
 
         if exp.kind == "postprocess":
@@ -989,7 +739,9 @@ def main() -> None:
         postprocess = (
             {"temperature": 1.0, "threshold": 0.1, "val_metric": None, "status": "baseline_default"}
             if exp.kind == "baseline"
-            else tune_postprocess(source_run_dir if exp.kind == "postprocess" else run_dir, meta, args.max_val_videos, exp)
+            else tune_postprocess(
+                source_run_dir if exp.kind == "postprocess" else run_dir, meta, args.max_val_videos, exp
+            )
         )
         write_json(run_dir / "postprocess_config.json", postprocess)
 

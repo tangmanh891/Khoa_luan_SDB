@@ -37,9 +37,8 @@ from typing import Any
 
 import numpy as np
 
+from autoshotv2.common import f1_pr, load_logits, scores_from_cache
 from autoshotv2.eval import DEFAULT_THRESHOLDS, eval_at_threshold, evaluate_scenes, predictions_to_scenes
-from autoshotv2.ablation import load_logits, scores_from_cache
-
 
 REPO_DIR = Path(__file__).resolve().parents[2]  # src/autoshotv2/X.py -> repo root
 EXPERIMENTS = REPO_DIR / "artifacts" / "experiments"
@@ -105,6 +104,11 @@ def restem(mapping: dict[str, Any]) -> dict[str, Any]:
 
     This is the key-normalisation fix documented in the ablation report (section 9:
     ClipShots logits use the stem while ground truth keys carry the `.mp4` suffix).
+
+    Close to `{common.normalize_key(k): v}` but deliberately kept separate:
+    normalize_key also strips a "dataset:" prefix, and the bundled calibration
+    caches this module reads cannot be re-verified here to prove the two are
+    interchangeable. Do not swap without rerunning `--reproduce` on the bundle.
     """
     out: dict[str, Any] = {}
     for key, value in mapping.items():
@@ -127,15 +131,10 @@ def load_model_dataset(model: str, dataset: str) -> tuple[dict[str, np.ndarray],
     return scores, gt, spec["input_kind"]
 
 
-def make_pred(scores: dict[str, np.ndarray], input_kind: str, temperature: float, sigma: float) -> dict[str, np.ndarray]:
+def make_pred(
+    scores: dict[str, np.ndarray], input_kind: str, temperature: float, sigma: float
+) -> dict[str, np.ndarray]:
     return scores_from_cache(scores, temperature=temperature, sigma=sigma, input_kind=input_kind)
-
-
-def f1_pr(tp: int, fp: int, fn: int) -> tuple[float, float, float]:
-    precision = tp / (tp + fp) if tp + fp else 0.0
-    recall = tp / (tp + fn) if tp + fn else 0.0
-    f1 = 2 * precision * recall / (precision + recall) if precision + recall else 0.0
-    return f1, precision, recall
 
 
 def per_video_stats(
@@ -249,7 +248,7 @@ def run_reproduce(thresholds: list[float]) -> int:
         scores, gt, input_kind = load_model_dataset(model, dataset)
         pred = make_pred(scores, input_kind, temp, sigma)
         if mode == "best":
-            got = max((eval_at_threshold(pred, gt, t)["f1"] for t in thresholds))
+            got = max(eval_at_threshold(pred, gt, t)["f1"] for t in thresholds)
         else:
             got = eval_at_threshold(pred, gt, thr)["f1"]
         diff = got - expected
@@ -267,7 +266,9 @@ def run_reproduce(thresholds: list[float]) -> int:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--reproduce", action="store_true", help="Validate the harness against bundle numbers and exit.")
+    parser.add_argument(
+        "--reproduce", action="store_true", help="Validate the harness against bundle numbers and exit."
+    )
     parser.add_argument("--models", default=",".join(MODELS), help="Comma-separated model ids to calibrate.")
     parser.add_argument("--datasets", default="shot,clipshots,bbc")
     parser.add_argument("--k-folds", type=int, default=5)
@@ -289,7 +290,9 @@ def main() -> None:
         for dataset in datasets:
             print(f"calibrating {model} / {dataset} ...", flush=True)
             results.append(
-                cross_validate(model, dataset, DEFAULT_TEMPERATURES, DEFAULT_SIGMAS, CALIB_THRESHOLDS, args.k_folds, args.seed)
+                cross_validate(
+                    model, dataset, DEFAULT_TEMPERATURES, DEFAULT_SIGMAS, CALIB_THRESHOLDS, args.k_folds, args.seed
+                )
             )
 
     out_json = Path(args.out_json)

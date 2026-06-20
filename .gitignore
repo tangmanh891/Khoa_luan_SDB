@@ -79,3 +79,13 @@ publications/paper/**/*.synctex.gz
 
 # Notebook/runtime noise
 .ipynb_checkpoints/
+
+# Local datasets and artifacts
+data/
+artifacts/
+.claude
+
+# Reference drafts for the paper rewrite (working files, not release artifacts)
+publications/paper/main_tieng_*.pdf
+
+.github/

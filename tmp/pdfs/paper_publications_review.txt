@@ -1,0 +1,576 @@
+AUTOSHOTV2, JUNE 2026                                                                                                                          1
+
+
+
+
+        AutoShotV2: Calibrated Classification and
+      Post-Processing for Short-Video Shot Boundary
+                         Detection
+                               Senh Manh Tang, Tien Manh Do, Thai Son Tran, and Hoai Viet Vo
+
+
+
+   Abstract—Shot boundary detection (SBD) is a fundamental                      sequences and have advanced modern SBD systems. Concur-
+preprocessing step for video indexing, retrieval, summarization,                rently, the rise of short-video platforms (e.g., TikTok, YouTube
+and automated editing. Modern short-video platforms introduce                   Shorts) has introduced a new, challenging operating regime:
+a challenging operating regime characterized by brief video
+durations, dense edits, visually diverse transitions, and sparse                brief videos, dense editing, and heavy special effects. To
+boundary frames. This paper presents AutoShotV2, a lightweight                  address it, AutoShot [4] leverages neural architecture search
+SBD refinement framework. Instead of repeating computation-                     (NAS) to select a 3-D convolutional backbone, demonstrat-
+ally expensive neural architecture search or updating the full                  ing notable performance on the newly introduced SHOT
+backbone, AutoShotV2 freezes the searched feature extractor                     dataset. Further improving these models, however, encounters
+and trains a compact classification head on cached features.
+This paper reports two complementary evaluation protocols: an                   a practical bottleneck: the NAS pipeline requires substantial
+oracle upper-bound comparison that selects the best configu-                    computation for supernet training and architecture evaluation.
+ration and operating point per dataset, and a fixed-threshold                   Moreover, short-video SBD suffers from extreme class im-
+deployment protocol that uses a single decision threshold. Under                balance — boundary frames are exceptionally rare — and
+the oracle upper-bound protocol, AutoShotV2 achieves F1 scores                  complex visual effects that act as hard negatives.
+of 0.8607 on SHOT, 0.9656 on BBC, and 0.7706 on ClipShots,
+improving over the reproduced AutoShot baseline by 2.02, 1.02,                     We study an alternative refinement path that separates the
+and 0.57 percentage points, respectively. Under fixed-threshold                 frozen representation from the decision stage. Instead of re-
+deployment, it reaches 0.8545, 0.9656, and 0.7529 F1 on the                     running the NAS process or updating the searched AutoShot
+same datasets. A controlled ablation study shows that calibrated                backbone, AutoShotV2 trains a compact classification head on
+post-processing accounts for most of the measured gain, while                   cached 4864-dimensional features. This frozen-feature setting
+alternative training losses do not add consistent improvements.
+Paired bootstrap intervals support positive deltas on SHOT and                  isolates a decision-stage design space: binary cross-entropy,
+ClipShots, and a three-seed study observes F1 standard deviation                Focal Loss [9], and boundary-aware many-hot supervision can
+below 0.5 percentage points on every dataset. We release vali-                  be compared without changing the representation. Because
+dation manifests, per-video statistics, and checksummed artifacts               SBD decisions are made by thresholding scores, the deci-
+and scripts.                                                                    sion stage also includes probability calibration and temporal
+   Index Terms—Shot boundary detection, short video, AutoShot,                  smoothing. Temperature scaling [10] rescales logits without
+frozen features, focal loss, probability calibration, temperature               changing their ranking, and a one-dimensional Gaussian filter
+scaling, Gaussian smoothing, video understanding.                               suppresses isolated peaks caused by flashes, camera motion,
+                                                                                or short-lived visual effects.
+                                                                                   Under oracle upper-bound selection across the evaluated pri-
+                          I. I NTRODUCTION
+                                                                                mary and supplemental configurations, AutoShotV2 achieves
+   Effectively parsing video content is a fundamental require-                  F1 scores of 0.8607 on SHOT, 0.9656 on BBC, and 0.7706
+ment for many downstream applications such as video index-                      on ClipShots, outperforming the reproduced AutoShot baseline
+ing, content retrieval, summarization, and automated editing.                   by 2.02, 1.02, and 0.57 percentage points, respectively. Under
+Within this pipeline, shot boundary detection (SBD) serves as                   a single fixed deployment threshold, the framework achieves
+a critical preliminary step: it partitions a video into temporally              0.8545, 0.9656, and 0.7529 F1. A controlled replication under
+coherent shots by identifying frames where camera views,                        a frozen, validation-only five-fold protocol separates training
+scene contents, or editing states transition [1], [2]. Classical                choices from post-processing choices: the training-loss alter-
+methods based on hand-crafted cues such as color histograms                     natives change F1 only marginally, whereas calibrated post-
+and motion differences are efficient but fragile under fast                     processing adds 1.62 percentage points on SHOT and 4.57
+camera motion, flashes, and modern editing styles [3].                          percentage points on ClipShots in F1 over the BCE control.
+   Deep architectures such as TransNet and TransNetV2 [5],                      Paired bootstrap intervals support the positive deltas on SHOT
+[6] learn spatiotemporal representations directly from frame                    and ClipShots, but not on BBC.
+                                                                                   In summary, our main contributions are:
+   S. M. Tang and T. M. Do are with the Faculty of Information Technology,         • We propose AutoShotV2, an efficient frozen-feature SBD
+University of Science, Vietnam National University Ho Chi Minh City,                  refinement pipeline that improves reproduced AutoShot
+Vietnam. T. S. Tran supervised this research. H. V. Vo is with the Faculty of
+Information Technology, University of Science, Vietnam National University            under oracle upper-bound selection across evaluated con-
+Ho Chi Minh City, Vietnam.                                                            figurations, reaching F1 scores of 0.8607 on SHOT,
+AUTOSHOTV2, JUNE 2026                                                                                                             2
+
+
+
+     0.9656 on BBC, and 0.7706 on ClipShots.                       SHOT, a dataset with brief clips, dense editing, vertical
+  •  We separate domain-specific operating-point analysis          layouts, complex gradual transitions, and heavy visual effects
+     from fixed-threshold deployment evaluation, showing that      [4]. AutoShot uses NAS [8], [11], [12] to search over approx-
+     the same framework reaches 0.8545, 0.9656, and 0.7529         imately 83.9 million candidate architectures composed of 3-D
+     F1 under a single deployment threshold on SHOT, BBC,          separable convolution blocks and temporal Transformer blocks
+     and ClipShots.                                                [22]. The search trains a single-path one-shot supernet [23] and
+   • We evaluate compact head variants and a loss-design           explores architectures with Bayesian optimization rather than
+     space, including Focal Loss and boundary-aware many-          differentiable relaxation [24]. Although the searched backbone
+     hot supervision, and show that most of the performance        improves SHOT performance, repeating the search and retrain-
+     gain is attributable to calibrated post-processing, while     ing pipeline is computationally costly. AutoShotV2 therefore
+     alternative training losses do not add consistent gains.      asks how much can be gained by keeping this representation
+   • We define a validation-only, source-stratified selection      frozen and refining only the decision stage.
+     protocol that fixes temperature, smoothing, and threshold        Imbalance, calibration, and temporal smoothing. Frame-
+     before test evaluation, and we quantify uncertainty with      level SBD is severely imbalanced because boundary frames are
+     paired video bootstrap intervals and calibration diagnos-     rare. Focal Loss reduces the contribution of easy examples
+     tics including adaptive and class-balanced ECE.               and is a natural alternative to BCE [9], while soft and
+   • We report experiments on SHOT, BBC, and ClipShots             neighborhood-expanded targets such as label smoothing [25]
+     with cache identity checks, split/run manifests, a three-     motivate the boundary-aware many-hot supervision explored
+     seed robustness study, and checksum-based artifact pack-      in this paper. SBD is also threshold-sensitive: temperature
+     aging.                                                        scaling rescales logits without changing their ranking [10],
+   This paper employs two complementary evaluation tracks.         while richer alternatives such as Platt scaling [15] and iso-
+The fixed-deployment checkpoint provides the deployment            tonic regression [16] require more calibration data. Measuring
+robustness analysis and is preserved through tracked, check-       calibration is itself nontrivial under sparse positives, because
+summed result files. A controlled replication with full logit      equal-width ECE can be dominated by the majority class;
+caches anchors the logit-level confidence intervals, calibration   this motivates adaptive and class-conditional estimators [17].
+diagnostics, ablations, and seed study (Section IV-B).             AutoShotV2 evaluates these mechanisms separately so that
+                                                                   improvements from training losses and post-processing are not
+                                                                   conflated.
+                     II. R ELATED W ORK
+                                                                      Efficient adaptation of frozen representations. Reusing a
+   Shot boundary detection. Shot boundary detection has            pretrained backbone without updating it is a common strategy,
+long been a central task in video processing. Early systems        from linear probing of frozen features to parameter-efficient
+detect frame-to-frame discontinuities with hand-crafted cues       modules such as adapters [18] and low-rank updates [19].
+such as color histograms, edge-change ratios, motion compen-       Our setting is deliberately conservative: the searched AutoShot
+sation, and thresholding heuristics. These methods are com-        representation is fully frozen, a small classification head is
+putationally simple, but they often confuse lighting changes,      trained on cached features, and the final adaptation happens
+camera motion, or object movement with actual boundaries           through validation-selected calibration and smoothing. This
+[3]. Survey studies group the main challenges around abrupt        keeps adaptation inexpensive and auditable, while also expos-
+cuts, gradual transitions, illumination changes, object and        ing the limits of a frozen representation under the ClipShots
+camera motion, and dataset-dependent evaluation protocols          domain shift.
+[1], [2]. These failure modes are amplified in short videos,
+where edits are dense and effects can be visually similar to
+true transitions.                                                                      III. M ETHODOLOGY
+   Deep SBD models. Deep SBD models learn temporal
+patterns that are difficult to encode manually [13], [14],            This section formulates the shot boundary detection prob-
+ranging from hierarchical clustering for broadcast reuse [20]      lem, summarizes the TransNetV2 and AutoShot components
+to large-scale spatiotemporal CNNs [21]. TransNet casts SBD        needed to define the frozen backbone, and presents the Au-
+as dense frame-level prediction over low-resolution frame se-      toShotV2 decision-stage pipeline built on top of it. Note that
+quences [6]. TransNetV2 extends this design with dilated 3-D       the convolutional blocks and search spaces are inherited from
+convolutions, frame-similarity features, color histograms, and     prior work; AutoShotV2 modifies only the decision stage
+dual prediction heads for single-frame and all-transition labels   described from Section III-F onward.
+[5]. These models provide fast and accurate baselines, but
+their decision quality still depends on thresholded frame-level
+scores, making calibration and temporal stability important for    A. Problem Formulation
+deployment.
+   AutoShot and short-video SBD. Most established SBD                 Given a video represented as an ordered sequence of T
+datasets, such as BBC, RAI, and ClipShots, emphasize docu-         frames {xt }Tt=1 , SBD predicts a binary sequence {bt }Tt=1 ,
+mentaries, broadcast footage, or longer user-generated videos.     where bt =1 denotes a shot boundary (an abrupt cut or a
+AutoShot addresses the short-video setting by introducing          gradual transition) at frame t. A model outputs a boundary
+AUTOSHOTV2, JUNE 2026                                                                                                               3
+
+
+
+probability sequence {pt }Tt=1 with pt ∈ [0, 1], and the final    (differing in channel configuration and spatial feature sharing)
+boundary set is obtained by thresholding:                         across six layers plus a choice of zero to four Transformer lay-
+                           (                                      ers [22] at the seventh, about 83.9×106 candidate architectures
+                             1, pt > θ,                           in total. The search trains a single-path one-shot supernet [23]
+                     b̂t =                                 (1)
+                             0, pt ≤ θ,                           explored with Bayesian optimization (differentiable alterna-
+                                                                  tives such as DARTS [24] were considered by the original
+where θ is a fixed operating point selected before test evalua-
+                                                                  authors), and the selected model is refined with knowledge
+tion. Following standard practice, a predicted boundary counts
+                                                                  distillation and weight grafting. The architecture found under
+as correct when it falls within 2 frames of a ground-truth
+                                                                  the F1 criterion uses DDCNNV2 blocks of 4–12 filters with
+boundary, and consecutive positive predictions are grouped
+                                                                  shared spatial convolutions in layers 2–4 and no Transformer
+into one transition.
+                                                                  layer. Its penultimate stage exposes a 4864-dimensional feature
+                                                                  vector, which we freeze and cache:
+B. Spatial-Temporal Factorized Convolution
+                                                                                                 ht ∈ R4864 .                    (3)
+   Full 3-D convolutional kernels of size k × k × k are expen-
+sive on frame sequences. The TransNetV2 family therefore          All AutoShotV2 components operate on ht without updating
+factorizes each 3-D convolution into a 2-D spatial convolution    the backbone.
+(1×k×k, learning edges, textures, and color regions per frame)       AutoShotV2 improves the decision stage of SBD: it trains
+followed by a 1-D temporal convolution (k × 1 × 1, capturing      a new classification head on the frozen features of Eq. (3) and
+motion patterns along the temporal axis). With C input/output     adds probability calibration and temporal smoothing before
+channels and k=3, the parameter count drops from 27C 2 to         thresholding. Fig. 1 shows the deployed inference pipeline.
+9C 2 + 3C 2 = 12C 2 , a reduction of roughly 56% that also
+imposes a useful inductive bias separating spatial content from   F. Classification Head Architecture
+temporal motion.
+                                                                    The head maps each cached feature vector ht to a shared
+                                                                  hidden state
+C. Dilated DDCNN Blocks                                                                                      
+                                                                               ut = Dropout ReLU(Wf ht + cf ) ,         (4)
+   The backbone stacks Dilated Convolutional Neural Network
+(DDCNN) blocks. Each block splits its input features into         with Wf ∈ R1024×4864 and dropout probability 0.5. Two
+four parallel temporal-convolution branches with exponentially    parallel linear branches then produce logits
+increasing dilation rates d ∈ {1, 2, 4, 8}, concatenates the                 (1)                          (2)
+                                                                            zt     = W1 ut + c1 ,        zt     = W2 ut + c2 .   (5)
+branch outputs along the channel dimension, and applies batch
+normalization with ReLU activation. For temporal kernel size                               (1)
+                                                                  The primary branch zt is trained against one-hot boundary
+K=3, the cumulative receptive field after block k grows as        labels and is the only branch used at inference. The auxiliary
+                                                                            (2)
+    Rk = Rk−1 + 2 (K − 1)
+                                X
+                                      d = Rk−1 + 60, (2)          branch zt can be supervised with boundary-aware many-hot
+                                                                  targets to supply denser gradients around each transition. Fig. 2
+                            d∈{1,2,4,8}
+                                                                  illustrates the head.
+with R0 =1. Six stacked blocks yield a theoretical receptive
+field of up to 361 frames; since inference uses sliding windows
+                                                                  G. Training Objectives as a Design Space
+of 100 frames, the effective context is capped by the window
+but remains wide enough for long dissolves and fades.               Boundary frames are exceptionally rare (< 1% of frames),
+                                                                  so the training loss is a natural design axis. The baseline
+                                                                  objective is binary cross-entropy on the primary branch,
+D. Similarity Branch
+                                                                                          (1)                       (1) 
+   A parallel similarity branch complements the convolutional       LBCE = −yt log σ(zt ) − (1 − yt ) log 1 − σ(zt ) . (6)
+features with two forms of visual consistency: (i) a 512-         We explore two alternatives. First, Focal Loss [9] down-
+bin RGB histogram per frame, whose cosine distances be-           weights easy negatives,
+tween consecutive frames yield a 101-dimensional color-shift
+descriptor, and (ii) learned similarity, the cosine similarity                     Lfocal = −αt (1 − p∗t )γ log(p∗t ),           (7)
+between normalized deep features from intermediate convo-         where p∗t = pt for a positive target and 1 − pt otherwise,
+lutional layers. Both are fused through a fully connected layer   and αt = αyt + (1 − α)(1 − yt ); grid search on validation
+with 128 units and ReLU activation, and the result is concate-    selects γ = 1.0 and α = 0.5. Second, boundary-aware many-
+nated with the convolutional features before classification.      hot supervision [25] expands each ground-truth boundary tb
+                                                                  to its ±1 frame neighborhood,
+E. AutoShot Backbone Search                                                              (
+                                                                                           1, ∃ tb s.t. |t − tb | ≤ 1,
+   While TransNetV2 fixes a configuration of identical DD-                     ymh [t] =                                 (8)
+                                                                                           0, otherwise,
+CNN blocks, AutoShot searches the backbone configuration
+for short-form video with neural architecture search [4], [8],    and supervises the auxiliary branch with weight 0.3: Ltotal =
+[11], [12]. The space covers four DDCNN block variants            L(ŷ (1) , yoh ) + 0.3 L(ŷ (2) , ymh ). The small auxiliary weight
+AUTOSHOTV2, JUNE 2026                                                                                                                                                      4
+
+
+
+                                                                                                                                                         Shot boundaries
+   Video frames            Frozen AutoShot        Cached features       Classification    Temperature scaling   Gaussian smoothing     Threshold          F1 = 0.8545
+  48 × 27 RGB                 backbone               4864-D                 head            T ∗ = 0.3878            σ = 2.0            θ = 0.10              (SHOT)
+
+
+
+Fig. 1. AutoShotV2 inference pipeline. The searched AutoShot backbone is frozen; AutoShotV2 trains the classification head and applies calibration and
+temporal smoothing before thresholding. The controlled replication of Section III-I re-fits its own temperature on its validation pool under the frozen validation-
+only protocol.
+
+
+
+                                       Feature vector                                                                  TABLE I
+                                          4864-D                                                   DATASET C HARACTERISTICS U SED FOR SBD E VALUATION
+
+                                                                                         Property                          BBC           ClipShots          SHOT
+                                    Linear 4864→1024
+                                           ReLU                                          Content type                Documentary      Open-world video   Short video
+                                                                                         Total videos                      11              4,039             853
+                                                                                         Evaluation videos                 11               500              200
+                                                                                         Avg. video length              2,945 s            237 s           39.5 s
+                                     Dropout p = 0.5
+                                                                                         Avg. shot length                6.57 s           15.34 s          2.59 s
+                                                                                         Hard cuts                       Many            128,000+           8,890
+                                                                                         Gradual transitions             Many             38,000+           2,716
+                  Primary branch                         Auxiliary branch                Main challenge              Gradual trans.    Diverse effects   Fast editing
+                   one-hot target                        many-hot target
+
+
+                             Ltotal = L(1) + 0.3 L(2)                                    stratified by source dataset. For each held-out fold, tem-
+                                                                                         perature is fitted on the other four folds by minimizing
+Fig. 2. AutoShotV2 classification head. The primary branch preserves sharp               binary cross-entropy. We search σ ∈ {0, 1, 2, 3} and θ ∈
+boundary localization; the auxiliary branch can supply denser supervision                {0.05, 0.10, . . . , 0.50}. Each pair is scored by first computing
+around each boundary. The controlled ablation selects plain BCE on the
+primary branch.
+                                                                                         F1 per source dataset within each held-out fold, averaging
+                                                                                         those per-source values into a fold-level macro-F1, and then
+                                                                                         averaging the macro-F1 over the five folds. Ties prefer lower
+limits the influence of dense targets on the primary branch’s                            smoothing and then the threshold nearest 0.10. After selecting
+frame-level localization.                                                                σ and θ, the final temperature is fitted on all validation
+   These objectives are evaluated as a design space rather than                          videos; the selected values are listed in Table V. The manifest
+assumed beneficial: the controlled ablation of Section IV-G                              containing folds, key hashes, search space, and selected values
+shows that plain BCE matches both alternatives once post-                                is written before test evaluation. We denote the resulting BCE
+processing is applied, so the analytic track of this paper                               plus temperature plus Gaussian configuration B4.
+anchors on the BCE configuration.
+                                                                                         J. Cache and Run Provenance
+H. Probability Calibration and Temporal Smoothing
+   SBD decisions rely directly on thresholding model scores,                                The revised pipeline separates a fixed data seed from the
+so probability quality matters as much as ranking. Temperature                           training seed. Before feature extraction, it deterministically
+scaling [10] rescales the primary logit without changing its                             selects the training-video list and hashes that selected list.
+ranking:                                                                                 A sample cache is reusable only when its schema version,
+                 !                                                                       metadata hash, base-checkpoint hash, selected-key hash, video
+             (1)                                (1)  
+  cal      zt               ∗                      z                                     budget, sampling parameters, boundary width, and data seed
+pt = σ             ,       T = arg min LBCE σ             ,y ,
+             T                       T              T                                    all match. Each run writes the selected video IDs, per-video
+                                                             (9)                         sample counts, skipped inputs, configuration, checkpoint hash,
+with T ∗ fitted on validation data. Calibration cannot remove                            and logit-key hash. These identity checks replace the earlier
+isolated temporal peaks caused by flashes or camera shakes,                              path-tolerant cache check, which recorded the cache size but
+so a one-dimensional Gaussian filter smooths the calibrated                              not the selected video IDs that produced the historical cache.
+sequence:
+        X                                 1
+                                                   
+                                                        k2
+                                                                                                                     IV. E XPERIMENTS
+  p̃t =    Gσ (k) pcal
+                     t−k ,    G σ (k) = √      exp   −        .
+                                          2πσ          2σ 2                              A. Datasets and Training Setup
+         k
+                                                            (10)                            We evaluate on the 200-video SHOT test split [4], all 11
+The deployed checkpoint fits T ∗ = 0.3878 on its validation                              BBC Planet Earth videos [20], and the 500-video ClipShots
+pool; the controlled replication re-fits its own temperature                             test split [7]. SHOT is the primary short-video benchmark;
+under the frozen protocol below. Both use σ = 2.0 and                                    BBC tests long documentary footage with many smooth grad-
+θ = 0.10.                                                                                ual transitions; ClipShots tests open-world transfer. Table I
+                                                                                         summarizes their characteristics.
+I. Validation-Only Protocol Selection                                                       AutoShotV2 trains only the classification head with Adam at
+   For the controlled track, we select the complete post-                                a constant learning rate; Table II lists the hyperparameters and
+processing configuration using five-fold validation. Folds are                           how each was selected. Performance is measured by precision,
+AUTOSHOTV2, JUNE 2026                                                                                                                                        5
+
+
+
+                               TABLE II                                                                        TABLE III
+                   AUTO S HOT V2 H YPERPARAMETERS                                         F1 S CORE C OMPARISON ACROSS E VALUATION DATASETS
+
+   Component                           Value          Selection                  Method                                       SHOT      BBC      ClipShots
+                                                                                 Deep Structured Models (DSM)                    –      0.8920    0.7030
+   Focal Loss γ                          1.0          Grid search                TransNet (V1)                                   –      0.9290    0.7350
+   Focal Loss α                          0.5          Grid search                TransNetV2, reproduced                          –      0.9593    0.7454
+                                                                                 AutoShot, reproduced                         0.8405    0.9554    0.7649
+   Learning rate                        10−5          Adam, constant             AutoShotV2 (ours), fixed deploy              0.8545    0.9656    0.7529
+   Weight decay                         10−4          Fixed                      AutoShotV2 (ours), per-dataset operating     0.8607    0.9656    0.7706
+   Batch size                            512          Frame-level                point†
+                                                                                  † Oracle upper-bound result under per-dataset best selection across the
+   Maximum epochs                         20          Fixed budget
+   Dropout                               0.5          Fixed                         evaluated AutoShotV2 configurations. SHOT and ClipShots use the
+   Many-hot weight                       0.3          Validation                supplemental configuration; BBC uses the primary deployment configuration
+   Gaussian σ                            2.0          Validation                because it exceeds the supplemental BBC peak. Fixed-threshold deployment
+   Deploy temperature T ∗              0.3878         Validation BCE                             results are reported in the preceding row.
+    Note: Focal Loss and many-hot parameters are training-loss options
+evaluated in the ablation study (Section IV-G); the controlled B4 replication                                TABLE IV
+            uses binary cross-entropy (BCE) with one-hot labels.                  P EAK F1 S CORES U NDER O RACLE U PPER -B OUND A NALYSIS OF THE
+                                                                                                  S UPPLEMENTAL C ONFIGURATION
+
+
+recall, and F1, micro-averaged from transition-level TP/FP/FN                     Dataset          Best Threshold           Precision   Recall   Peak F1
+counts with a matching tolerance of ±2 frames.                                    SHOT                    0.12               0.8408     0.8816   0.8607
+                                                                                  ClipShots               0.19               0.7011     0.8554   0.7706
+                                                                                  BBC                     0.12               0.9668     0.9628   0.9648
+B. Evaluation Tracks and Reproducibility Tiers
+   The paper separates deployment evaluation from controlled
+component analysis. Track 1 (deployed checkpoint) provides                         On ClipShots, the peak F1 score of 0.7706 (Table IV) also
+the fixed-threshold deployment results: the head trained for de-                outperforms the reported literature scores of DSM (0.7030) by
+ployment with the fixed configuration T ∗ = 0.3878, σ = 2.0,                    6.76 percentage points and TransNet (V1) (0.7350) by 3.56
+and θ = 0.10. We regenerated its test logits from the local                     percentage points, and exceeds the reproduced TransNetV2
+video splits with full coverage (200/200 SHOT, 11/11 BBC,                       baseline (0.7454) by 2.52 percentage points. To distin-
+and 500/500 ClipShots videos) and checksum the resulting                        guish protocol sources, baseline labels indicate whether they
+logits and result JSON files. Track 2 (controlled replication)                  are cited from literature or evaluated within our pipeline.
+retrains the head under the frozen validation-only protocol of                  Specifically, reproduced baselines are evaluated using our
+Section III-I (configuration B4) with full logit caches. Paired                 pipeline, whereas reported baselines (for DSM, TransNet, and
+bootstrap intervals, calibration diagnostics, ablations, and the                TransNetV2 on SHOT) are cited from their original publica-
+seed study are anchored on this controlled track. Because                       tions. Note that the TransNetV2 model was not evaluated on
+the replication was trained in a separate environment with its                  SHOT in the original work; the reported SHOT score of 0.7993
+own validation pool, its absolute scores differ slightly from                   is cited from [4].
+the deployed checkpoint. To avoid mixing absolute scales,                             a) Fixed-threshold deployment: Under a single fixed de-
+replication analyses are reported as differences against the                    ployment threshold (θ = 0.10), AutoShotV2 achieves 0.8545
+internal BCE control (A1), while absolute F1 values for                         on SHOT, 0.9656 on BBC, and 0.7529 on ClipShots. Perfor-
+deployment in the paper refer to the deployed checkpoint.                       mance on SHOT and BBC remains strong, but the ClipShots
+                                                                                drop from 0.7706 to 0.7529 highlights that domain-specific
+C. Main Results and Deployment Analysis                                         operating-point selection accounts for the remaining gap.
+   Table III reports the main comparison under oracle upper-
+bound configuration and operating-point selection. This pro-
+                                                                                D. Supplemental Oracle Analysis
+tocol selects the best configuration and decision threshold for
+each evaluation dataset to estimate the best attainable perfor-                    A supplemental configuration (T ∗ = 0.2413, σ = 2.0, Focal
+mance of the frozen-feature refinement pipeline. Because this                   Loss γ = 2.0, α = 0.6, many-hot weight 0.3, learning rate
+protocol is not a single-threshold deployment setting, we report                7 × 10−6 ) investigates whether stronger focusing and a lower
+the fixed deployment results separately below.                                  learning rate improve peak F1 under a per-dataset upper-bound
+   Under this oracle protocol, AutoShotV2 reaches peak F1                       threshold sweep.
+scores of 0.8607 on SHOT, 0.9656 on BBC, and 0.7706                                Table IV shows that the supplemental configuration yields
+on ClipShots. These outcomes outperform the reproduced                          higher peaks on SHOT (+0.62 pp) and ClipShots (+1.77 pp)
+AutoShot baseline (0.8405 on SHOT, 0.9554 on BBC, and                           than the primary configuration. The “per-dataset best” row
+0.7649 on ClipShots) by 2.02, 1.02, and 0.57 percentage                         in Table III selects the best source per dataset: SHOT and
+points, respectively. On BBC, this configuration outperforms                    ClipShots from the supplemental configuration, BBC from the
+the reproduced TransNetV2 baseline (0.9593) by 0.63 percent-                    primary (0.9656 vs. 0.9648). However, under a unified thresh-
+age points.                                                                     old (θ = 0.17) the supplemental average F1 (0.8566) falls
+AUTOSHOTV2, JUNE 2026                                                                                                                                      6
+
+
+
+                            TABLE V                                                                TABLE VII
+F IXED R EPRODUCIBLE E VALUATION P ROTOCOL (C ONTROLLED T RACK )              F RAME -L EVEL VALIDATION C ALIBRATION D IAGNOSTICS
+
+  Item                           Setting                            Variant                    NLL         Brier          ECE        AECE        B-ECE
+                                                                    Before temperature     0.013006      0.002194      0.007149    0.007149     0.080506
+  Training objective             BCE, one-hot labels                scaling
+  Training / data seed           42 / 42                            After temperature      0.009591      0.001911      0.002214    0.002243     0.070405
+  Training budget                20 epochs, batch size 512          scaling
+  Sampling                       At most 160 frames/video, 3
+                                 negatives/positive
+                                                                                               TABLE VIII
+  Validation size                200 videos                           T EST C ALIBRATION AT THE VALIDATION -S ELECTED T EMPERATURE
+  Validation selection           5 source-stratified folds
+  Selection criterion            Mean macro-F1 across                  Dataset           NLL          Brier         ECE           AECE        B-ECE
+                                 sources/folds
+                                                                       SHOT          0.021689        0.004808      0.003014     0.002844    0.133525
+  Selected temperature           0.6618                                BBC           0.013305        0.001662      0.000851     0.001651    0.092471
+  Gaussian smoothing             σ = 2.0                               ClipShots     0.007654        0.001565      0.002520     0.002521    0.156939
+  Decision threshold             θ = 0.10
+  Matching tolerance             ±2 frames
+  Bootstrap                      10,000 video resamples, seed                                   TABLE IX
+                                 42                                     C ONTROLLED P HASE 2 A BLATION : ∆F1 AGAINST THE A1 BCE
+                                                                                     C ONTROL (P ERCENTAGE P OINTS )
+
+                            TABLE VI                                   Configuration                                   SHOT         BBC     ClipShots
+  PAIRED V IDEO B OOTSTRAP D IFFERENCE , B4 M INUS A1 (A BSOLUTE       A2 – Focal only                                  -0.00      -0.03       -0.17
+                       P ERCENTAGE P OINTS )                           A3 – Many-hot only                               -0.03      -0.08       +0.21
+                                                                       P1 – Gaussian only                               +0.54      -1.34       +5.36
+ Dataset         ∆F1 (pp)         95% CI (pp)          Excl. 0         P2 – Temperature only                            +0.00      +0.00       +0.00
+                                                                       B1 – Focal + many-hot                            +0.06      -0.11       +0.23
+ SHOT              +1.62          [+0.93, +2.36]         Yes           B4 – Temperature + Gaussian (selected)           +1.62      -0.00       +4.57
+ BBC               -0.00          [-0.33, +0.41]         No            B5 – Full candidate                              +1.64      -0.19       +4.25
+ ClipShots         +4.57          [+2.67, +6.70]         Yes
+
+
+                                                                   temperature, these values are used as diagnostics rather than
+below the primary deployment average (0.8577), so we retain        as untouched calibration estimates.
+the primary configuration for fixed-threshold deployment.             A reliability diagram is provided in the supplementary
+                                                                   artifacts.
+E. Controlled Component Analysis                                      Table VIII reports test-set calibration using the temperature
+   All remaining analyses use Track 2: the controlled B4           selected on validation. ClipShots has the largest B-ECE despite
+replication whose protocol is summarized in Table V.               a small aggregate ECE, consistent with domain-shifted false
+   Relative to the A1 control, the selected B4 configuration       positives.
+improves SHOT by 1.62 percentage points and ClipShots by
+4.57 percentage points in F1, while BBC is unchanged after         G. Controlled Training Ablation
+rounding. Temperature scaling alone preserves the validation-
+selected decision threshold; Gaussian smoothing is the com-           Table IX reports the outcome of the design space of Sec-
+ponent that changes boundary decisions.                            tion III-G as F1 differences against the A1 control. A2, A3,
+   Table VI bootstraps the per-video difference between A1 at      and B1 show that Focal Loss and many-hot supervision do
+its validation-selected threshold and B4 at its frozen configu-    not improve the control. B5 combines these training changes
+ration (10,000 paired video resamples). The intervals support      with B4 post-processing and is numerically similar on SHOT
+positive B4 deltas on SHOT and ClipShots. The BBC interval         but slightly weaker on BBC and ClipShots. The observed
+contains zero, so we make no improvement claim for that            gain therefore comes from calibrated post-processing rather
+dataset; BBC also has only 11 sampling units, so its interval      than from the more complex training objective. A0 is omitted
+should be interpreted cautiously.                                  because its per-dataset best-threshold protocol is not a direct
+                                                                   controlled comparison.
+
+F. Calibration Diagnostics
+  We evaluate frame probabilities on the combined 200-             H. Efficiency and Reproducibility
+video validation split using negative log-likelihood (NLL),           The backbone remains frozen, so only the Phase 2 head is
+Brier score, expected calibration error with 15 equal-width        optimized. Table X reports parameter and run-artifact statistics.
+bins (ECE), equal-mass adaptive ECE (AECE), and class-             The CPU post-processing measurement covers temperature
+balanced ECE (B-ECE). Table VII shows that temperature             scaling and Gaussian smoothing on cached logits. End-to-
+scaling improves all diagnostics on this split. The much larger    end video decoding and backbone inference are excluded. The
+B-ECE reveals that aggregate frame metrics are dominated           original run artifact did not retain elapsed training time, so we
+by negative frames. Because the same validation split fits         do not estimate or reconstruct it.
+AUTOSHOTV2, JUNE 2026                                                                                                               7
+
+
+
+                            TABLE X                                  post-processing—Gaussian smoothing to change boundary
+            E FFICIENCY AND RUN -A RTIFACT S TATISTICS               decisions and temperature scaling to improve probability
+                                                                     quality—provides the measured improvement. Because post-
+   Item                                    Value
+                                                                     processing operates on cached logits, it can be re-tuned for a
+   Frozen backbone parameters              14,299,202                new deployment domain without retraining the representation.
+   Trainable Phase 2 head parameters       4,983,810                 The fixed-deployment ClipShots result is limited primarily
+   Deployed primary-path parameters        4,982,785                 by aggregate precision (0.6661): open-world content produces
+   Training videos / sampled frames        400 / 33,174
+   Training epochs / seed                  20 / 42
+                                                                     false-positive peaks that survive smoothing. A frozen represen-
+   Post-process CPU cost                   21.1 ms / 106             tation cannot adapt to this distribution shift by construction,
+                                           frames                    so closing the gap likely requires domain-adaptive components
+                                                                     rather than further tuning of the present loss-design space.
+                                                                        After temperature scaling, the equal-width ECE falls to
+I. Training-Seed Robustness                                          0.002214, yet the class-balanced ECE remains 0.070405.
+   To quantify optimization variability, we retrained the BCE        Boundary sparsity explains the gap: non-boundary frames
+one-hot head 3 times with training seeds 42, 43, and 44 while        dominate aggregate bins, so a low aggregate score can coexist
+holding the data seed, the training-video selection, and the         with poorer positive-class calibration. Reporting only aggre-
+sample cache identity fixed. Each run selected its own post-         gate ECE would overstate calibration quality for SBD and
+processing configuration with the frozen five-fold validation-       likely for other sparse temporal-event tasks.
+only protocol of Section III-I before any test evaluation.              The two uncertainty analyses answer complementary ques-
+Consistent with the delta-only reporting of Section IV-B, we         tions. Paired bootstrap intervals estimate how much measured
+summarize this study by its dispersion: the sample standard          deltas depend on which videos are sampled; the three-seed
+deviation of test F1 across seeds is 0.07 percentage points on       study estimates sensitivity to head-training randomness. Seed-
+SHOT, 0.08 percentage points on BBC, and 0.49 percentage             induced F1 standard deviations are below 0.5 percentage
+points on ClipShots — below 0.5 percentage points on every           points on every dataset and much smaller than the bootstrap
+dataset and an order of magnitude smaller than the paired            interval widths, indicating that video sampling is the larger
+bootstrap interval widths of Table VI. In these runs, head-          source of variation.
+training randomness is a smaller source of variation than video
+sampling. This study isolates training-seed sensitivity end to                             VI. C ONCLUSION
+end, complementing the component analysis of Table IX.
+                                                                        We presented AutoShotV2, a compact refinement frame-
+                                                                     work for short-video shot boundary detection. The method
+J. Limitations
+                                                                     freezes the NAS-searched AutoShot backbone, trains a
+   The study has four important limitations. First, the historical   lightweight classification head on cached features, and applies
+sample cache recorded 400 videos and 33,174 frames but not           temperature scaling and Gaussian smoothing before thresh-
+the selected IDs; the current manifests fix this for future runs     olding. Under oracle upper-bound selection across the eval-
+but cannot reconstruct the old cache contents. Second, vali-         uated configurations, AutoShotV2 reaches 0.8607 on SHOT,
+dation calibration diagnostics reuse the temperature-selection       0.9656 on BBC, and 0.7706 on ClipShots, improving over the
+data. Third, the frozen representation does not fully control        reproduced AutoShot baseline on all three datasets. A fixed-
+cross-domain false positives on ClipShots. An exploratory            threshold deployment analysis achieves 0.8545, 0.9656, and
+experiment that partially unfroze the layer nearest to the           0.7529, respectively, showing strong robustness on SHOT and
+classification head reached a ClipShots F1 of 0.7962 but             BBC but a remaining precision bottleneck on ClipShots.
+degraded BBC to 0.9341, confirming a multi-domain trade-                The controlled replication clarifies the source of the im-
+off that the fully-frozen regime avoids at the cost of lower         provement. Focal Loss and many-hot supervision do not pro-
+ClipShots precision. This trade-off is not analyzed further in       duce consistent practical gains over the BCE control, whereas
+the present paper, which focuses exclusively on the frozen-          calibrated post-processing yields paired-bootstrap gains on
+feature setting. Fourth, the main comparison is an oracle upper-     SHOT and ClipShots. The three-seed study observes F1 stan-
+bound analysis with domain-specific threshold tuning rather          dard deviation below 0.5 percentage points on every dataset,
+than a single unified deployment setting. In practice, finding       and the class-balanced calibration error shows why very small
+domain-specific thresholds requires labeled data from the            aggregate ECE values should not be interpreted as indicating
+target distribution, meaning that the peak F1 scores of 0.8607       uniformly calibrated boundary probabilities. Most reported
+on SHOT and 0.7706 on ClipShots should be interpreted as             tables are regenerated from tracked result artifacts; controlled
+potential estimates of frozen-feature capability rather than out-    analyses include cache identities and frozen selection mani-
+of-the-box deployment results.                                       fests.
+                                                                        Cross-domain analysis highlights a key remaining chal-
+                        V. D ISCUSSION                               lenge: on open-world ClipShots the main limitation is re-
+  The controlled ablation clarifies where the measured gains         duced precision, as visual effects and domain shift create
+come from: Focal Loss and many-hot supervision do not pro-           false-positive peaks that survive smoothing. Potential avenues
+duce consistent gains over the BCE control, whereas calibrated       for future work include reserving an independent calibra-
+AUTOSHOTV2, JUNE 2026                                                                                                                                       8
+
+
+
+tion split, extending calibration to boundary-conditional es-                    [20] L. Baraldi, C. Grana, and R. Cucchiara, “Shot and scene detection via
+timates, and exploring domain-adaptive components such as                             hierarchical clustering for re-using broadcast video,” in Proc. Computer
+                                                                                      Analysis of Images and Patterns, 2015, pp. 801–811.
+lightweight adapters on the frozen backbone or per-domain                        [21] A. Hassanien, M. Elgharib, A. Selim, S.-H. Bae, M. Hefeeda, and
+post-processing selection, together with multimodal cues such                         W. Matusik, “Large-scale, fast and accurate shot boundary detection
+as audio when visual evidence alone is ambiguous.                                     through spatio-temporal convolutional neural networks,” arXiv preprint
+                                                                                      arXiv:1705.03281, 2017.
+                                                                                 [22] A. Vaswani, N. Shazeer, N. Parmar, J. Uszkoreit, L. Jones, A. N. Gomez,
+                                                                                      L. Kaiser, and I. Polosukhin, “Attention is all you need,” in Proc.
+                         ACKNOWLEDGMENT                                               Advances in Neural Information Processing Systems, 2017, pp. 5998–
+                                                                                      6008.
+  The authors thank the Faculty of Information Technology,                       [23] Z. Guo, X. Zhang, H. Mu, W. Heng, Z. Liu, Y. Wei, and J. Sun, “Single
+University of Science, Vietnam National University Ho Chi                             path one-shot neural architecture search with uniform sampling,” in
+Minh City, for supporting this research.                                              Proc. European Conference on Computer Vision, 2020, pp. 544–560.
+                                                                                 [24] H. Liu, K. Simonyan, and Y. Yang, “DARTS: Differentiable architecture
+                                                                                      search,” in Proc. International Conference on Learning Representations,
+                                                                                      2019.
+                              R EFERENCES                                        [25] R. Müller, S. Kornblith, and G. E. Hinton, “When does label smoothing
+                                                                                      help?” in Proc. Advances in Neural Information Processing Systems,
+ [1] H. Seridi, M. Kurulay, Z. Kouahla, B. Farou, M. N. Kouahla, M. A.
+                                                                                      2019, pp. 4694–4703.
+     Ferrag, and M. A. Boudia, “Shot boundary detection: Fundamental
+     concepts and survey,” in CEUR Workshop Proceedings, vol. 2589, 2020.
+ [2] T. Kar, P. Kanungo, S. N. Mohanty, S. Groppe, and J. Groppe, “Video
+     shot-boundary detection: Issues, challenges and solutions,” Artificial
+     Intelligence Review, vol. 57, no. 104, 2024.
+ [3] S. H. Abdulhussain, “Methods and challenges in shot boundary detec-
+     tion,” Entropy, vol. 20, no. 4, p. 214, 2018.
+ [4] W. Zhu, Y. Yu, W. Huang, J. Huang, W. Feng, X. Wang, X. Yang, C. Hu,
+     C. Liu, B. Fan, and T. He, “AutoShot: A short video dataset and state-of-
+     the-art shot boundary detection,” in Proc. IEEE/CVF CVPR Workshops,
+     2023.
+ [5] T. Soucek and J. Moravec, “TransNet V2: An effective deep net-
+     work architecture for fast shot transition detection,” arXiv preprint
+     arXiv:2008.04838, 2020.
+ [6] T. Soucek, J. Moravec, and J. Lokoc, “TransNet: A deep network for fast
+     detection of common shot transitions,” arXiv preprint arXiv:1906.03363,
+     2019.
+ [7] S. Tang, L. Feng, Z. Kuang, Y. Chen, and W. Zhang, “Fast video
+     shot transition localization with deep structured models,” arXiv preprint
+     arXiv:1808.04234, 2018.
+ [8] T. Elsken, J. H. Metzen, and F. Hutter, “Neural architecture search: A
+     survey,” Journal of Machine Learning Research, vol. 20, no. 55, pp.
+     1–21, 2019.
+ [9] T.-Y. Lin, P. Goyal, R. Girshick, K. He, and P. Dollar, “Focal loss
+     for dense object detection,” in Proc. IEEE International Conference on
+     Computer Vision, 2017, pp. 2980–2988.
+[10] C. Guo, G. Pleiss, Y. Sun, and K. Q. Weinberger, “On calibration of
+     modern neural networks,” in Proc. International Conference on Machine
+     Learning, 2017, pp. 1321–1330.
+[11] C. White, M. Safari, R. Sukthanker, B. Ru, T. Elsken, A. Zela, D. Dey,
+     and F. Hutter, “Neural architecture search: Insights from 1000 papers,”
+     arXiv preprint arXiv:2301.08727, 2023.
+[12] P. Ren, Y. Xiao, X. Chang, P.-Y. Huang, Z. Li, X. Chen, and X. Wang,
+     “A comprehensive survey of neural architecture search: Challenges and
+     solutions,” arXiv preprint arXiv:2006.02903, 2020.
+[13] A. Esteve et al., “Shot boundary detection with 3D depthwise convolu-
+     tions and visual attention,” Sensors, vol. 23, no. 12, p. 5620, 2023.
+[14] D. Tran, L. Bourdev, R. Fergus, L. Torresani, and M. Paluri, “Learning
+     spatiotemporal features with 3D convolutional networks,” in Proc. IEEE
+     International Conference on Computer Vision, 2015, pp. 4489–4497.
+[15] J. C. Platt, “Probabilistic outputs for support vector machines and
+     comparisons to regularized likelihood methods,” in Advances in Large
+     Margin Classifiers. Cambridge, MA, USA: MIT Press, 1999, pp. 61–74.
+[16] B. Zadrozny and C. Elkan, “Transforming classifier scores into accurate
+     multiclass probability estimates,” in Proc. ACM SIGKDD International
+     Conference on Knowledge Discovery and Data Mining, 2002, pp. 694–
+     699.
+[17] J. Nixon, M. W. Dusenberry, L. Zhang, G. Jerfel, and D. Tran, “Measur-
+     ing calibration in deep learning,” in Proc. IEEE/CVF CVPR Workshops,
+     2019.
+[18] N. Houlsby, A. Giurgiu, S. Jastrzebski, B. Morrone, Q. de Laroussilhe,
+     A. Gesmundo, M. Attariyan, and S. Gelly, “Parameter-efficient transfer
+     learning for NLP,” in Proc. International Conference on Machine
+     Learning, 2019, pp. 2790–2799.
+[19] E. J. Hu, Y. Shen, P. Wallis, Z. Allen-Zhu, Y. Li, S. Wang, L. Wang,
+     and W. Chen, “LoRA: Low-rank adaptation of large language models,”
+     in Proc. International Conference on Learning Representations, 2022.
+

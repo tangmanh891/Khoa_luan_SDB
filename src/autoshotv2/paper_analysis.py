@@ -1,9 +1,9 @@
 """Reproducible analysis artifacts for the AutoShotV2 paper.
 
 The analysis uses the controlled A1 logits with the selected B4 post-process
-configuration. It produces video-level bootstrap intervals, validation-set
-calibration diagnostics, a ClipShots transition-type breakdown, and a
-reliability diagram without retraining the model.
+configuration. It produces video-level bootstrap intervals, validation- and
+test-set calibration diagnostics, and a reliability diagram without retraining
+the model.
 """
 
 from __future__ import annotations

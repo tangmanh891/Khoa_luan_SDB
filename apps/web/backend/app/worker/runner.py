@@ -2,8 +2,8 @@ import asyncio
 from datetime import datetime, timezone
 from pathlib import Path
 
-from app.db.mongo import get_database
 from app.core.config import get_settings
+from app.db.mongo import get_database
 from app.ml.scene_detector import VideoAnalysisSettings, analyze_video
 from app.services.export_service import write_exports
 

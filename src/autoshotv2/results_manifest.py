@@ -40,25 +40,25 @@ ABLATION_LABELS = {
     "P2_temperature_only": "P2 -- Temperature only",
     "B1_focal_manyhot": "B1 -- Focal + many-hot",
     "B4_temperature_gaussian": "B4 -- Temperature + Gaussian",
-    "B5_full_candidate": "B5 -- Full candidate",
+    "B5_full_candidate": "B5 -- Ứng viên đầy đủ",
 }
 
 ABLATION_NOTES = {
-    "A0_autoshot_original": "AutoShot gốc, best threshold từng dataset.",
-    "A1_phase2_bce_onehot": "Control Phase2 tối giản.",
+    "A0_autoshot_original": "AutoShot gốc, ngưỡng tốt nhất theo từng bộ dữ liệu.",
+    "A1_phase2_bce_onehot": "Đối chứng Pha 2 tối giản.",
     "A2_focal_only": "Chỉ thêm Focal Loss.",
     "A3_manyhot_only": "Chỉ thêm nhãn many-hot.",
     "P1_gaussian_only": "Tăng ClipShots nhưng giảm BBC.",
-    "P2_temperature_only": "Gần như trùng control.",
-    "B1_focal_manyhot": "Tác động train-time nhỏ.",
+    "P2_temperature_only": "Gần như trùng đối chứng.",
+    "B1_focal_manyhot": "Tác động của thành phần huấn luyện nhỏ.",
     "B4_temperature_gaussian": "Cấu hình hậu xử lý được ưu tiên.",
     "B5_full_candidate": "Focal + many-hot + hậu xử lý.",
 }
 
 CALIBRATION_LABELS = {
-    "A0_autoshot_baseline": "A0 -- AutoShot baseline",
-    "A1_phase2_control": "A1 -- Phase2 control",
-    "B5_phase2_full": "B5 -- Phase2 đầy đủ",
+    "A0_autoshot_baseline": "A0 -- AutoShot cơ sở",
+    "A1_phase2_control": "A1 -- Đối chứng Pha 2",
+    "B5_phase2_full": "B5 -- Pha 2 đầy đủ",
 }
 
 LEGACY_DEPLOY_RESULT_PATHS = {
@@ -95,7 +95,7 @@ def deploy_result_sources() -> tuple[dict[str, Path], str, str]:
         return (
             REGENERATED_DEPLOY_RESULT_PATHS,
             "logits",
-            "Regenerated deploy-checkpoint logits; T=0.3878, sigma=2.0, threshold=0.10.",
+            "Logits triển khai được tính lại; T=0.3878, sigma=2.0, threshold=0.10.",
         )
     return LEGACY_DEPLOY_RESULT_PATHS, "result_json", "T=0.3878, sigma=2.0, threshold=0.10."
 
@@ -108,14 +108,14 @@ def build_deploy_experiments() -> list[dict[str, Any]]:
         (
             "deploy",
             "phase2_deploy_threshold",
-            "Phase2 deploy checkpoint, deploy threshold",
+            "Pha 2, ngưỡng triển khai",
             deploy_note,
         ),
         (
             "best_sweep",
             "phase2_best_sweep",
-            "Phase2 deploy checkpoint, best sweep",
-            "ClipShots tốt nhất tại threshold 0.15; SHOT/BBC trùng deploy.",
+            "Pha 2, quét ngưỡng tốt nhất",
+            "ClipShots tốt nhất tại ngưỡng 0.15; SHOT/BBC trùng với cấu hình triển khai.",
         ),
     ):
         metrics = {
@@ -125,7 +125,7 @@ def build_deploy_experiments() -> list[dict[str, Any]]:
         experiments.append(
             {
                 "id": identifier,
-                "group": "Deploy checkpoint",
+                "group": "Triển khai",
                 "label": label,
                 "protocol": mode,
                 "reproducibility": reproducibility,
@@ -159,7 +159,7 @@ def build_ablation_experiments() -> list[dict[str, Any]]:
         experiments.append(
             {
                 "id": experiment_id,
-                "group": "Ablation Phase 2",
+                "group": "Phân rã thành phần Pha 2",
                 "label": ABLATION_LABELS[experiment_id],
                 "protocol": "controlled_phase2",
                 "reproducibility": "logits",
@@ -190,29 +190,29 @@ def build_calibration_experiments() -> list[dict[str, Any]]:
         experiments.append(
             {
                 "id": f"calibration_cv_{model}",
-                "group": "Calibration CV",
+                "group": "Hiệu chỉnh CV",
                 "label": f"{CALIBRATION_LABELS[model]}, 5-fold CV",
                 "protocol": "five_fold_cross_validation",
                 "reproducibility": "logits",
                 "sources": ["reports/postprocess_calibration_results.json"],
                 "metrics": cv_metrics,
                 "note": (
-                    "Honest 5-fold CV; baseline mạnh nhất trên ClipShots."
+                    "Kiểm định chéo 5 lớp khách quan; mô hình cơ sở mạnh nhất trên ClipShots."
                     if model == "A0_autoshot_baseline"
-                    else "Honest 5-fold CV; Phase2 mạnh trên SHOT/BBC."
+                    else "Kiểm định chéo 5 lớp khách quan; mô hình Pha 2 mạnh trên SHOT/BBC."
                 ),
             }
         )
         experiments.append(
             {
                 "id": f"calibration_ceiling_{model}",
-                "group": "Calibration ceiling",
-                "label": f"{CALIBRATION_LABELS[model]}, tune trên test",
+                "group": "Mức trần hiệu chỉnh",
+                "label": f"{CALIBRATION_LABELS[model]}, tinh chỉnh trên tập kiểm tra",
                 "protocol": "test_tuned_ceiling",
                 "reproducibility": "logits",
                 "sources": ["reports/postprocess_calibration_results.json"],
                 "metrics": ceiling_metrics,
-                "note": "Mức trần lạc quan; không dùng làm deploy honest.",
+                "note": "Mức trần lạc quan; không dùng làm kết quả triển khai trung thực.",
             }
         )
     return experiments
@@ -252,7 +252,7 @@ def build_manifest() -> dict[str, Any]:
         + build_ablation_experiments()
         + build_calibration_experiments()
     )
-    deploy_best = next(item for item in experiments if item["id"] == "phase2_best_sweep")
+    deploy_real = next(item for item in experiments if item["id"] == "phase2_deploy_threshold")
     comparison_models = literature + [
         {
             "id": "autoshotv2_deploy",
@@ -260,7 +260,7 @@ def build_manifest() -> dict[str, Any]:
             "source_kind": deploy_reproducibility,
             "source": str(deploy_paths["shot"].parent.relative_to(ROOT)).replace("\\", "/") + "/*.json",
             "metrics": {
-                dataset: deploy_best["metrics"][dataset]["f1"]
+                dataset: deploy_real["metrics"][dataset]["f1"]
                 for dataset in DATASET_ORDER
             },
         }
