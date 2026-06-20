@@ -67,8 +67,8 @@ Deploy temperature $T^{*}$ & \PaperDeployTemperature{} & Validation BCE \\
 \subsection{Evaluation Tracks and Reproducibility Tiers}
 \label{sec:tracks}
 
-The paper separates headline reporting from controlled component analysis.
-\emph{Track 1 (deployed checkpoint)} provides the headline numbers: the head
+The paper separates deployment evaluation from controlled component analysis.
+\emph{Track 1 (deployed checkpoint)} provides the fixed-threshold deployment results: the head
 trained for deployment with the fixed configuration
 $T^{*}=\PaperDeployTemperature$, $\sigma=\PaperGaussianSigma$, and
 $\theta=\PaperDeployThreshold$. We regenerated its test logits from the local
@@ -82,7 +82,7 @@ the replication was trained in a separate environment with its own validation
 pool, its absolute scores differ slightly from the deployed checkpoint. To
 avoid mixing absolute scales, replication analyses are reported as
 \emph{differences} against the internal BCE control (A1), while absolute F1
-values in the paper refer to the deployed checkpoint.
+values for deployment in the paper refer to the deployed checkpoint.
 
 \subsection{Main Results Under Per-Dataset Operating-Point Selection}
 \label{subsec:main_results}
@@ -109,7 +109,7 @@ On ClipShots, the peak F1 score of 0.7706 (Table~\ref{tab:extra_sweep_peaks}) al
 \end{tabular}
 }
 \vspace{0.5ex}
-\noindent{\footnotesize $^\dagger$ Main result under per-dataset operating-point selection. Thresholds are optimized separately for each dataset to estimate dataset-specific attainable performance. Fixed-threshold deployment results are reported in the preceding row.}
+\noindent{\footnotesize $^\dagger$ Main result under per-dataset operating-point selection. Thresholds are optimized separately for each dataset to estimate dataset-specific attainable performance. BBC uses the primary deployment configuration because it exceeds the supplemental BBC peak. Fixed-threshold deployment results are reported in the preceding row.}
 \end{table}
 
 \begin{figure}[!t]
@@ -133,10 +133,9 @@ On ClipShots, the peak F1 score of 0.7706 (Table~\ref{tab:extra_sweep_peaks}) al
 }
 \draw (0,0) -- (0,2.7);
 \end{tikzpicture}
-\caption{F1 score comparison on SHOT. AutoShotV2 improves the reproduced
-AutoShot baseline by \PaperBestVsAutoShotPP{} percentage points and the
-TransNetV2 (reported) baseline by \PaperBestVsTransNetPP{} percentage
-points in F1.}
+\caption{F1 comparison on SHOT. AutoShotV2 outperforms the reproduced
+AutoShot baseline by \PaperBestVsAutoShotPP{} pp and the reported
+TransNetV2 baseline by \PaperBestVsTransNetPP{} pp.}
 \label{fig:bars}
 \end{figure}
 
@@ -400,7 +399,7 @@ Table~\ref{tab:ablation}.
 
 \subsection{Limitations}
 
-The study has five important limitations. First, although the headline
+The study has five important limitations. First, although the deployment
 checkpoint logits have been regenerated from complete local video splits, the
 three-seed study of Section~\ref{sec:seed_robustness} measures optimization
 variability for the controlled pipeline and does not reproduce either

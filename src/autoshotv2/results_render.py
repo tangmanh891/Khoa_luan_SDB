@@ -293,7 +293,7 @@ def render_paper_tex_macros(manifest: dict[str, Any]) -> str:
     b4 = experiments["B4_temperature_gaussian"]["metrics"]
     a1 = experiments["A1_phase2_bce_onehot"]["metrics"]
     deploy = experiments["phase2_deploy_threshold"]["metrics"]
-    best = experiments["phase2_best_sweep"]["metrics"]
+    best = comparisons["autoshotv2_best_sweep"]["metrics"]
     deployment = manifest["deployment_config"]
     autoshot = comparisons["autoshot_reproduced_legacy"]["metrics"]
     transnet = comparisons["transnetv2_reported"]["metrics"]
@@ -310,7 +310,7 @@ def render_paper_tex_macros(manifest: dict[str, Any]) -> str:
         "PaperDeployShotFOne": f4(deploy["shot"]["f1"]),
         "PaperDeployBBCFOne": f4(deploy["bbc"]["f1"]),
         "PaperDeployClipFOne": f4(deploy["clipshots"]["f1"]),
-        "PaperDeployClipBestFOne": f4(best["clipshots"]["f1"]),
+        "PaperDeployClipBestFOne": f4(best["clipshots"]),
         "PaperDeployShotPrecision": f4(deploy["shot"]["precision"]),
         "PaperDeployShotRecall": f4(deploy["shot"]["recall"]),
         "PaperDeployClipPrecision": f4(deploy["clipshots"]["precision"]),
@@ -322,9 +322,9 @@ def render_paper_tex_macros(manifest: dict[str, Any]) -> str:
         "PaperBFourVsAOneClipPP": f"{(b4['clipshots']['f1'] - a1['clipshots']['f1']) * 100:.2f}",
         "PaperAutoShotShotFOne": f4(autoshot["shot"]),
         "PaperTransNetShotFOne": f4(transnet["shot"]),
-        "PaperBestShotFOne": f4(best["shot"]["f1"]),
-        "PaperBestVsAutoShotPP": f"{(best['shot']['f1'] - autoshot['shot']) * 100:.2f}",
-        "PaperBestVsTransNetPP": f"{(best['shot']['f1'] - transnet['shot']) * 100:.2f}",
+        "PaperBestShotFOne": f4(best["shot"]),
+        "PaperBestVsAutoShotPP": f"{(best['shot'] - autoshot['shot']) * 100:.2f}",
+        "PaperBestVsTransNetPP": f"{(best['shot'] - transnet['shot']) * 100:.2f}",
     }
     seed_study = manifest["supplemental_results"]["journal_seed_study"]
     definitions["PaperSeedCount"] = str(len(seed_study["training_seeds"]))
