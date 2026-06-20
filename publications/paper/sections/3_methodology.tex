@@ -3,7 +3,9 @@
 
 This section formulates the shot boundary detection problem, summarizes the
 TransNetV2 and AutoShot components needed to define the frozen backbone, and
-presents the AutoShotV2 decision-stage pipeline built on top of it.
+presents the AutoShotV2 decision-stage pipeline built on top of it. Note that
+the convolutional blocks and search spaces are inherited from prior work;
+AutoShotV2 modifies only the decision stage described from Section~\ref{sec:head} onward.
 
 \subsection{Problem Formulation}
 \label{sec:problem}
@@ -18,7 +20,7 @@ obtained by thresholding:
     \hat b_t=\begin{cases}1, & p_t > \theta,\\ 0, & p_t \le \theta,\end{cases}
     \label{eq:threshold}
 \end{equation}
-where $\theta$ is selected on validation data. Following standard practice,
+where $\theta$ is a fixed operating point selected before test evaluation. Following standard practice,
 a predicted boundary counts as correct when it falls within
 \PaperMatchTolerance{} frames of a ground-truth boundary, and consecutive
 positive predictions are grouped into one transition.
@@ -239,7 +241,7 @@ $\theta=\PaperDeployThreshold$.
 \subsection{Validation-Only Protocol Selection}
 \label{sec:protocol}
 
-For the controlled track, we select the complete operating point using
+For the controlled track, we select the complete post-processing configuration using
 five-fold validation. Folds are stratified by source dataset. For each
 held-out fold, temperature is fitted on the other four folds by minimizing
 binary cross-entropy. We search $\sigma\in\{0,1,2,3\}$ and

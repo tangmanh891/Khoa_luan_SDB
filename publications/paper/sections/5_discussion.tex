@@ -1,9 +1,9 @@
 \section{Discussion}
 \label{sec:discussion}
 
-\textbf{Where the gain comes from.} The controlled ablation reframes the
-training design space of Section~\ref{sec:objectives}. Focal Loss and
-many-hot supervision leave the BCE control statistically unchanged, whereas
+\textbf{Sources of Performance Gain.} The controlled ablation study reframes the
+training design space presented in Section~\ref{sec:objectives}. Focal Loss and
+many-hot supervision do not produce consistent practical gains over the BCE control, whereas
 post-processing changes the operating point: Gaussian smoothing changes
 boundary decisions, and temperature scaling improves probability quality
 without changing the ranking. For a frozen-feature pipeline, this ordering
@@ -11,18 +11,18 @@ is practically important. The post-processing search runs on cached logits
 and can be repeated for a deployment domain without retraining the
 representation.
 
-\textbf{What aggregate calibration hides.} After temperature scaling, the
+\textbf{Limitations of Aggregate Calibration Metrics.} After temperature scaling, the
 equal-width ECE falls to 0.002214, yet the class-balanced ECE remains
 0.070405. The gap follows from boundary sparsity: non-boundary frames
 dominate aggregate confidence bins, so a low aggregate score can coexist
 with poorer calibration on the rare positive class. Reporting only
 aggregate ECE would therefore overstate calibration quality for SBD and
 likely for other sparse temporal-event tasks. Event-conditional calibration,
-such as fitting a separate temperature on boundary-adjacent frames, is a
-natural next step, but it requires an independent calibration split that the
+such as fitting a separate temperature on boundary-adjacent frames, represents a
+promising direction for future research, but it requires an independent calibration split that the
 present protocol does not reserve.
 
-\textbf{Sources of uncertainty.} The two uncertainty analyses answer
+\textbf{Analysis of Uncertainty Sources.} The two uncertainty analyses answer
 complementary questions. Paired video bootstrap intervals
 (Table~\ref{tab:paired_delta}) estimate how much the measured deltas depend
 on which videos are sampled. The three-seed study estimates the sensitivity
@@ -34,7 +34,7 @@ because
 the frozen five-fold selection is itself a function of the validation
 videos.
 
-\textbf{The ClipShots gap is a precision problem.} The transition-type
+\textbf{Precision Bottleneck on ClipShots.} The transition-type
 breakdown shows gradual-transition recall (0.8089) trailing cut recall
 (0.8991), but the dominant loss is aggregate precision
 (\PaperDeployClipPrecision): open-world content produces false-positive

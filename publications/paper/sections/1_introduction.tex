@@ -39,7 +39,7 @@ calibration and temporal smoothing. Temperature scaling
 and a one-dimensional Gaussian filter suppresses isolated peaks caused by
 flashes, camera motion, or short-lived visual effects.
 
-With a fixed deployment configuration, AutoShotV2 achieves an F1 score of \PaperDeployShotFOne{} on the SHOT test set, improving over the reproduced AutoShot baseline by \PaperDeployVsAutoShotPP{} percentage points in F1 (a supplemental configuration with a different checkpoint reaches 0.8607 under oracle per-dataset threshold; see Section~\ref{sec:extra_param_sweep}). A controlled replication under a frozen,
+With a fixed deployment configuration, AutoShotV2 achieves an F1 score of \PaperDeployShotFOne{} on the SHOT test set, corresponding to an improvement of \PaperDeployVsAutoShotPP{} percentage points over the reproduced AutoShot baseline. For comparison, an oracle threshold configuration reaches an F1 score of 0.8607 on SHOT (see Section~\ref{sec:oracle_sweep}). A controlled replication under a frozen,
 validation-only
 five-fold protocol separates training choices from post-processing choices:
 the training-loss alternatives change F1 only marginally, whereas calibrated
@@ -56,9 +56,9 @@ short-video boundary detection without the computational burden of
 updating the NAS-searched backbone, reaching an F1 score of
 \PaperDeployShotFOne{} on SHOT with a fixed deployment configuration.
 \item We evaluate compact head variants and a loss-design space, including
-Focal Loss and boundary-aware many-hot supervision, and show that the
-measured gain is driven by calibrated post-processing rather than by more
-complex training objectives.
+Focal Loss and boundary-aware many-hot supervision, and show that most of the
+performance gain is attributable to calibrated post-processing, while
+alternative training losses do not add consistent gains.
 \item We define a validation-only, source-stratified selection protocol that
 fixes temperature, smoothing, and threshold before test evaluation, and we
 quantify uncertainty with paired video bootstrap intervals and calibration
@@ -68,7 +68,7 @@ checks, split/run manifests, a three-seed robustness study, and
 checksum-based artifact packaging.
 \end{itemize}
 
-The paper uses two complementary evaluation tracks. The deployed checkpoint
+This paper employs two complementary evaluation tracks. The deployed checkpoint
 supplies the headline numbers and is preserved through tracked,
 checksummed result files. A controlled replication with full logit caches
 anchors the logit-level confidence intervals, calibration diagnostics,
