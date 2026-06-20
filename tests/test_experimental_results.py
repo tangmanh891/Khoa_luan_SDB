@@ -60,12 +60,12 @@ def test_paper_snapshot_generated_tables_and_release_are_present():
     assert r"\newcommand{\PaperBFourVsAOneClipPP}{4.57}" in macros
     assert r"\PaperMainResultRows" in tables
     assert (
-        r"AutoShotV2 (ours), fixed deploy threshold & "
+        r"AutoShotV2 (ours), fixed deployment & "
         r"0.8545 & \textbf{0.9656} & 0.7529 \\"
         in tables
     )
     assert (
-        r"AutoShotV2 (ours), per-dataset oracle best$^{\dagger}$ & "
+        r"AutoShotV2 (ours), per-dataset operating point$^{\dagger}$ & "
         r"\textbf{0.8607} & \textbf{0.9656} & \textbf{0.7706} \\"
         in tables
     )

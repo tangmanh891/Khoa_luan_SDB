@@ -3,9 +3,7 @@
 We presented AutoShotV2, a compact refinement framework for short-video shot
 boundary detection. The method freezes the NAS-searched AutoShot backbone,
 trains a lightweight classification head on cached features, and applies
-temperature scaling and Gaussian smoothing before thresholding. Under per-dataset oracle threshold optimization, AutoShotV2 reaches peak F1 scores
-of 0.8607 on SHOT, 0.9656 on BBC, and 0.7706 on ClipShots without repeating the architecture
-search.
+temperature scaling and Gaussian smoothing before thresholding. Under per-dataset operating-point selection, AutoShotV2 reaches 0.8607 on SHOT, 0.9656 on BBC, and 0.7706 on ClipShots, improving over the reproduced AutoShot baseline on all three datasets. A fixed-threshold deployment analysis achieves 0.8545, 0.9656, and 0.7529, respectively, showing strong robustness on SHOT and BBC but a remaining precision bottleneck on ClipShots.
 
 The controlled replication clarifies the source of the improvement. Focal
 Loss and many-hot supervision do not produce consistent practical gains over

@@ -322,6 +322,9 @@ def render_paper_tex_macros(manifest: dict[str, Any]) -> str:
         "PaperBFourVsAOneClipPP": f"{(b4['clipshots']['f1'] - a1['clipshots']['f1']) * 100:.2f}",
         "PaperAutoShotShotFOne": f4(autoshot["shot"]),
         "PaperTransNetShotFOne": f4(transnet["shot"]),
+        "PaperBestShotFOne": f4(best["shot"]["f1"]),
+        "PaperBestVsAutoShotPP": f"{(best['shot']['f1'] - autoshot['shot']) * 100:.2f}",
+        "PaperBestVsTransNetPP": f"{(best['shot']['f1'] - transnet['shot']) * 100:.2f}",
     }
     seed_study = manifest["supplemental_results"]["journal_seed_study"]
     definitions["PaperSeedCount"] = str(len(seed_study["training_seeds"]))
@@ -364,11 +367,11 @@ def render_paper_tex_tables(manifest: dict[str, Any]) -> str:
     deploy = comparisons["autoshotv2_deploy"]["metrics"]
     best_sweep = comparisons["autoshotv2_best_sweep"]["metrics"]
     comparison_rows += [
-        "AutoShotV2 (ours), fixed deploy threshold & "
+        "AutoShotV2 (ours), fixed deployment & "
         f"{paper_metric(deploy['shot'])} & "
         f"{paper_metric(deploy['bbc'], True)} & "
         f"{paper_metric(deploy['clipshots'])} " r"\\",
-        "AutoShotV2 (ours), per-dataset oracle best$^{\\dagger}$ & "
+        "AutoShotV2 (ours), per-dataset operating point$^{\\dagger}$ & "
         f"{paper_metric(best_sweep['shot'], True)} & "
         f"{paper_metric(best_sweep['bbc'], True)} & "
         f"{paper_metric(best_sweep['clipshots'], True)} \\\\",
