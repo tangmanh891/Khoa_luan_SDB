@@ -36,10 +36,11 @@ FN & False Negative & Số chuyển cảnh có thật nhưng bị bỏ sót. \\
 BCE & Binary Cross-Entropy & Hàm mất mát nhị phân cho bài toán phân loại hai lớp. \\
 FL & Focal Loss & Biến thể của BCE, giảm trọng số mẫu dễ phân loại để tập trung vào mẫu khó. \\
 KD & chưng cất tri thức (\textit{knowledge distillation}) & Chưng cất tri thức từ mô hình giáo viên sang mô hình học sinh. \\
-EMA & Exponential Moving Average & Trung bình động mũ cho trọng số mô hình trong quá trình huấn luyện. \\
 LS & Label Smoothing & Kỹ thuật làm mượt nhãn \textit{one-hot} để giảm quá khớp (\textit{overfitting}). \\
 TS & Temperature Scaling & Hiệu chỉnh nhiệt độ để hiệu chuẩn (\textit{calibrate}) phân phối xác suất đầu ra. \\
 LR & Learning Rate & Tốc độ học của thuật toán tối ưu. \\
+CV & Cross-Validation & Kiểm định chéo; trong khóa luận dùng kiểm định chéo 5 phần để kiểm tra xu hướng kết quả. \\
+NLL & Negative Log-Likelihood & Hàm mục tiêu thường dùng khi hiệu chỉnh xác suất bằng temperature scaling. \\
 F1-score & Harmonic Mean of Precision and Recall & Chỉ số tổng hợp đánh giá cân bằng giữa Precision và Recall. \\
 \bottomrule
 \end{longtable}
@@ -72,8 +73,11 @@ Temporal modeling & Quá trình mô hình hóa các biến đổi theo thời gi
 Soft Label & Nhãn mềm mang giá trị xác suất (thay vì nhãn cứng 0 hoặc 1), thường dùng trong KD. \\
 Knowledge Distillation & Kỹ thuật chuyển giao tri thức từ mô hình giáo viên sang mô hình học sinh, thường dùng nhãn mềm (\textit{soft label}) để ổn định huấn luyện. \\
 Temperature Scaling & Kỹ thuật hiệu chỉnh xác suất đầu ra sau huấn luyện: chia logit cho hệ số $T^*$ duy nhất, được tìm bằng cách tối thiểu hóa NLL trên validation; giữ nguyên thứ tự xếp hạng dự đoán nên không ảnh hưởng F1 trước/sau ngưỡng hóa nếu ngưỡng cũng được chọn lại. \\
+Calibration & Hiệu chuẩn xác suất, nhằm làm cho xác suất đầu ra của mô hình phản ánh tốt hơn độ tin cậy thực tế của dự đoán. \\
+Logit & Giá trị đầu ra trước khi chuyển thành xác suất bằng sigmoid hoặc softmax. \\
 Gaussian Smoothing & Phép làm mượt chuỗi xác suất theo thời gian để giảm đỉnh nhiễu cô lập. \\
-Threshold & Quá trình quét nhiều ngưỡng để chọn giá trị tối ưu cho Precision, Recall và F1. \\
+Threshold & Ngưỡng quyết định dùng để chuyển xác suất đầu ra thành nhãn có/không có ranh giới cảnh quay. \\
+Threshold Sweep & Quá trình quét nhiều ngưỡng để chọn giá trị tối ưu cho Precision, Recall và F1. \\
 SuperNet & Mạng lớn chứa nhiều kiến trúc con trong NAS, cho phép các kiến trúc chia sẻ trọng số khi đánh giá nhanh. \\
 Bayesian Optimization & Phương pháp tối ưu hóa hộp đen dùng mô hình xác suất để chọn ứng viên kiến trúc tiếp theo. \\
 Weight Grafting & Kỹ thuật ghép trọng số từ nhiều mô hình theo tiêu chí entropy nhằm tận dụng biểu diễn tốt ở từng lớp. \\

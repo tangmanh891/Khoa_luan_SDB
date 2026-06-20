@@ -1,5 +1,5 @@
 import asyncio
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from pathlib import Path
 from uuid import uuid4
 
@@ -17,35 +17,51 @@ from app.services.storage_service import (
     safe_video_extension,
     upload_dir,
 )
+from app.api.routes_health import PRESETS, DEFAULT_PRESET
 from app.worker.runner import process_job
 
 router = APIRouter(prefix="/jobs", tags=["jobs"])
 
+MAX_HISTORY = 7
 
-def _clamp_opt(value: float | None, lo: float, hi: float) -> float | None:
-    if value is None:
-        return None
-    return max(lo, min(float(value), hi))
+
+async def _enforce_history_limit(db) -> None:
+    total = await db.jobs.count_documents({})
+    if total > MAX_HISTORY:
+        oldest = await db.jobs.find(
+            {}, {"_id": 1, "cloudinary": 1}
+        ).sort("created_at", 1).limit(total - MAX_HISTORY).to_list(length=total - MAX_HISTORY)
+        for old in oldest:
+            await asyncio.to_thread(delete_cloudinary_assets, old)
+            await db.jobs.delete_one({"_id": old["_id"]})
+            remove_job_files(old["_id"])
+
+
+@router.get("/")
+async def list_jobs() -> dict:
+    db = get_database()
+    cursor = db.jobs.find(
+        {},
+        {"_id": 1, "status": 1, "stage": 1, "progress": 1, "created_at": 1,
+         "input": 1, "processing": 1, "summary": 1, "error": 1}
+    ).sort("created_at", -1).limit(MAX_HISTORY)
+    jobs = await cursor.to_list(length=MAX_HISTORY)
+    return {"jobs": [serialize_job(j) for j in jobs]}
 
 
 @router.post("/from-upload")
 async def create_job_from_upload(
     background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
-    sensitivity: str = Form("medium"),
-    min_scene_duration_sec: float = Form(0.5),
-    backend: str = Form("auto"),
-    temperature: float | None = Form(None),
-    sigma: float | None = Form(None),
-    threshold: float | None = Form(None),
+    preset: str = Form(DEFAULT_PRESET),
 ) -> dict:
     settings = get_settings()
-    sensitivity = sensitivity if sensitivity in {"low", "medium", "high"} else settings.default_sensitivity
-    min_scene_duration_sec = max(0.1, min(float(min_scene_duration_sec), 10.0))
-    backend = backend if backend in {"auto", "phase2", "baseline"} else "auto"
-    temperature = _clamp_opt(temperature, 0.05, 5.0)
-    sigma = _clamp_opt(sigma, 0.0, 10.0)
-    threshold = _clamp_opt(threshold, 0.0, 1.0)
+    if preset not in PRESETS:
+        raise HTTPException(status_code=400, detail=f"Unknown preset '{preset}'")
+    preset_cfg = PRESETS[preset]
+    model_path = settings.autoshot_models_dir / preset_cfg["filename"]
+    if not model_path.is_file():
+        raise HTTPException(status_code=400, detail=f"Model file for preset '{preset}' not found")
 
     try:
         extension = safe_video_extension(file.filename or "")
@@ -81,7 +97,6 @@ async def create_job_from_upload(
         "created_at": now,
         "started_at": None,
         "finished_at": None,
-        "expires_at": now + timedelta(hours=settings.job_ttl_hours),
         "input": {
             "original_name": Path(file.filename or "video").name,
             "size_bytes": size_bytes,
@@ -89,12 +104,10 @@ async def create_job_from_upload(
         },
         "processing": {
             "model": "pending",
-            "sensitivity": sensitivity,
-            "min_scene_duration_sec": min_scene_duration_sec,
-            "backend": backend,
-            "temperature": temperature,
-            "sigma": sigma,
-            "threshold": threshold,
+            "preset": preset,
+            "display_name": preset_cfg["display_name"],
+            "model_path": str(model_path),
+            "threshold": preset_cfg["threshold"],
         },
         "storage": {
             "video_url": video_asset["url"],
@@ -117,6 +130,7 @@ async def create_job_from_upload(
 
     db = get_database()
     await db.jobs.insert_one(document)
+    await _enforce_history_limit(db)
     background_tasks.add_task(process_job, job_id)
     return serialize_job(document)
 

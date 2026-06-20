@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "training_seed": 43,
+  "data_seed": 42,
+  "selected_keys_hash": "a429e3f69b1edbf26b1db1c6c48efd2acde1dccb512d34ed9add07df9715de20",
+  "state_fingerprint": "b4a3802d938d81eb19226724282200276320ca88354644c9b52cc7e010226d98",
+  "configuration": {
+    "meta": "D:\\Khoa luan tot nghiep\\Github AutoShot\\AutoShotV2\\AutoShotV2\\artifacts\\experiments\\ablation_full\\resolved_meta.pickle",
+    "base_ckpt": "D:\\Khoa luan tot nghiep\\Github AutoShot\\AutoShotV2\\AutoShotV2\\artifacts\\models\\ckpt_0_200_0.pth",
+    "out_ckpt": "D:\\Khoa luan tot nghiep\\Github AutoShot\\AutoShotV2\\AutoShotV2\\artifacts\\experiments\\journal_study\\seed_43\\checkpoint.pth",
+    "sample_cache": "D:\\Khoa luan tot nghiep\\Github AutoShot\\AutoShotV2\\AutoShotV2\\artifacts\\experiments\\journal_study\\shared\\sample_cache.pkl",
+    "results": "D:\\Khoa luan tot nghiep\\Github AutoShot\\AutoShotV2\\AutoShotV2\\artifacts\\experiments\\journal_study\\seed_43\\train_results.pkl",
+    "eval_cache_dir": "D:\\Khoa luan tot nghiep\\Github AutoShot\\AutoShotV2\\AutoShotV2\\artifacts\\experiments\\journal_study\\seed_43\\eval_cache",
+    "resume_state": "D:\\Khoa luan tot nghiep\\Github AutoShot\\AutoShotV2\\AutoShotV2\\artifacts\\experiments\\journal_study\\seed_43\\resume.pt",
+    "checkpoint_dir": "D:\\Khoa luan tot nghiep\\Github AutoShot\\AutoShotV2\\AutoShotV2\\artifacts\\experiments\\journal_study\\seed_43\\checkpoints",
+    "data_manifest": "D:\\Khoa luan tot nghiep\\Github AutoShot\\AutoShotV2\\AutoShotV2\\artifacts\\experiments\\journal_study\\seed_43\\training_data_manifest.json",
+    "run_manifest": "D:\\Khoa luan tot nghiep\\Github AutoShot\\AutoShotV2\\AutoShotV2\\artifacts\\experiments\\journal_study\\seed_43\\run_manifest.json",
+    "epochs": 20,
+    "batch_size": 512,
+    "loss": "bce",
+    "lr": 1e-05,
+    "gamma": 1.0,
+    "alpha": 0.5,
+    "weight_decay": 0.0001,
+    "manyhot_weight": 0.0,
+    "sigma": 0.0,
+    "temperature_mode": "off",
+    "use_ema": false,
+    "ema_decay": 0.999,
+    "boundary_window": 0,
+    "max_samples_per_video": 160,
+    "max_total_samples": 0,
+    "neg_per_pos": 3,
+    "min_neg_per_video": 32,
+    "seed": 43,
+    "data_seed": 42,
+    "max_train_videos": 400,
+    "max_val_videos": 200,
+    "max_test_videos": 0,
+    "max_cache_video_frames": 180000,
+    "max_cache_video_seconds": 7200.0,
+    "save_every_videos": 50,
+    "save_every_epochs": 1,
+    "log_every_batches": 100,
+    "stop_after_minutes": 0.0,
+    "rebuild_sample_cache": false,
+    "no_resume": false,
+    "ignore_resume_config": false,
+    "no_eval_cache": false,
+    "skip_test_eval": true
+  },
+  "artifacts": {
+    "checkpoint": {
+      "path": "D:\\Khoa luan tot nghiep\\Github AutoShot\\AutoShotV2\\AutoShotV2\\artifacts\\experiments\\journal_study\\seed_43\\checkpoint.pth",
+      "sha256": "2ce8786f6814503f2b9ef08fc9aaf64b6edab7483f08384fda48b5944d7b5750"
+    },
+    "results": {
+      "path": "D:\\Khoa luan tot nghiep\\Github AutoShot\\AutoShotV2\\AutoShotV2\\artifacts\\experiments\\journal_study\\seed_43\\train_results.pkl",
+      "sha256": "4b503d88d0bbc3a79fbebeed664dd1970ba465b8b35b767de1f97b3538a9f786"
+    },
+    "data_manifest": {
+      "path": "D:\\Khoa luan tot nghiep\\Github AutoShot\\AutoShotV2\\AutoShotV2\\artifacts\\experiments\\journal_study\\seed_43\\training_data_manifest.json",
+      "sha256": "aa547840ff56a9627eb88627f62fc6bf09329c4532bce23e26b71b9191eece82"
+    }
+  },
+  "validation": {
+    "videos": 33,
+    "logits_keys_hash": "811552a26b2f9b2e73a05d0afc6bc85787b63bf0116d86fcf7971552bdb3568b",
+    "no_temperature": {
+      "f1": 0.7575757575757576,
+      "precision": 0.7726269315673289,
+      "recall": 0.7430997876857749,
+      "threshold": 0.9,
+      "n_videos": 33
+    },
+    "temperature_candidate": null
+  },
+  "training_elapsed_seconds_this_invocation": 16.703158799999073,
+  "test_evaluated": false
+}

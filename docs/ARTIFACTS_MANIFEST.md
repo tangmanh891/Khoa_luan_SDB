@@ -72,23 +72,6 @@ Reproduce: `python -m autoshotv2.postprocess_calibration` (cần các logit cach
 
 Reproduce: chạy `research/notebooks/` trên Kaggle (cần GPU). Xem `docs/KAGGLE_AUTOSHOT_PHASE2.md`.
 
-## 6. Nghiên cứu EMA (fine-tune toàn model)
-
-Số: AutoShot D-EMA 0.8417 | BBC shot 0.9604 | ClipShots 0.7860 (best threshold). Đây là **chế độ train khác**
-Phase2 (fine-tune toàn model trên ClipShots, không phải train head trên cache). **Tier: JSON-only** — chỉ tái
-lập tới mức result JSON; sinh lại bảng so sánh bằng `python -m autoshotv2.ema_report`.
-
-| Artifact | Vai trò | In Git | Có trong bundle? |
-|---|---|:--:|:--:|
-| `reports/ema_study/results_{autoshot,bbc,clipshots}_{alpha999,noema}.json` | Kết quả EMA/no-EMA (đã chốt) | ✅ | ✅ |
-| `reports/ema_study/report_ema_vs_noema.md`, `report_ema_alpha999.md` | Phân tích | ✅ | ✅ |
-| `ckpt_ema_alpha999.pth`, `ckpt_baseline_noema.pth` (+ `_epoch*`) | Checkpoint EMA / control | ❌ | có (archive local) |
-| prediction pickle EMA/noEMA, log train/eval | Cache dự đoán + log | ❌ | có (archive local) |
-| `ckpt_0_200_0.pth` + `data/ClipShots` | Init backbone + dữ liệu fine-tune | ❌ | có (local) |
-
-Reproduce từ đầu (cần GPU + ClipShots): `python -m autoshotv2.train_ema ...` (xem README mục "Nghiên Cứu EMA").
-Reproduce bảng (không cần GPU): `python -m autoshotv2.ema_report`.
-
 ## Tóm tắt: cần gì để chạy lại không cần GPU
 
 Chỉ cần 2 nhóm logit cache + GT là chạy được toàn bộ calibration/ablation-eval trên CPU:

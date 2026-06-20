@@ -1,5 +1,7 @@
-import numpy as np
 import subprocess
+from collections.abc import Iterator
+
+import numpy as np
 
 try:
     import ffmpeg
@@ -10,16 +12,18 @@ except ImportError:
 # instead of keeping a second copy of the matching algorithm (which risked silent divergence).
 from autoshotv2.eval import (
     evaluate_scenes as _evaluate_scenes_core,
+)
+from autoshotv2.eval import (
     predictions_to_scenes,
 )
 
 
-def get_frames(fn, width=48, height=27):
+def get_frames(fn: str, width: int = 48, height: int = 27) -> np.ndarray:
     if ffmpeg is not None:
         video_stream, err = (
             ffmpeg
             .input(fn)
-            .output('pipe:', format='rawvideo', pix_fmt='rgb24', s='{}x{}'.format(width, height))
+            .output('pipe:', format='rawvideo', pix_fmt='rgb24', s=f'{width}x{height}')
             .run(capture_stdout=True, capture_stderr=True)
         )
     else:
@@ -32,12 +36,12 @@ def get_frames(fn, width=48, height=27):
             "-pix_fmt", "rgb24",
             "pipe:1",
         ]
-        proc = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
+        proc = subprocess.run(cmd, capture_output=True, check=True)
         video_stream = proc.stdout
     video = np.frombuffer(video_stream, np.uint8).reshape([-1, height, width, 3])
     return video
 
-def get_batches(frames):
+def get_batches(frames: np.ndarray) -> Iterator[np.ndarray]:
     reminder = 50 - len(frames) % 50
     if reminder == 50:
         reminder = 0
@@ -49,7 +53,7 @@ def get_batches(frames):
 
     return func()
 
-def scenes2zero_one_representation(scenes, n_frames):
+def scenes2zero_one_representation(scenes: np.ndarray, n_frames: int) -> tuple[np.ndarray, np.ndarray]:
     prev_end = 0
     one_hot = np.zeros([n_frames], np.uint64)
     many_hot = np.zeros([n_frames], np.uint64)
@@ -91,7 +95,12 @@ def scenes2zero_one_representation(scenes, n_frames):
 
     return one_hot, many_hot
 
-def evaluate_scenes(gt_scenes, pred_scenes, return_mistakes=False, n_frames_miss_tolerance=2):
+def evaluate_scenes(
+    gt_scenes: np.ndarray,
+    pred_scenes: np.ndarray,
+    return_mistakes: bool = False,
+    n_frames_miss_tolerance: int = 2,
+) -> tuple:
     """Precision/recall/F1 (+ tp/fp/fn) for scene boundaries.
 
     Thin wrapper over :func:`autoshotv2.eval.evaluate_scenes` (the single source of the
@@ -107,13 +116,20 @@ def evaluate_scenes(gt_scenes, pred_scenes, return_mistakes=False, n_frames_miss
 
     p = tp / (tp + fp) if tp + fp != 0 else 0
     r = tp / (tp + fn) if tp + fn != 0 else 0
+    # NOT common.f1_pr: (p * r * 2) has a different float operation order than
+    # 2 * p * r and can differ in the last bit; historical numbers are pinned to it.
     f1 = (p * r * 2) / (p + r) if p + r != 0 else 0
 
     if return_mistakes:
         return p, r, f1, (tp, fp, fn), fp_mistakes, fn_mistakes
     return p, r, f1, (tp, fp, fn)
 
-def mAP_f1_p_fix_r(one_hot_pred, gt_scenes, fixed_r=0.70654, skip_map_miou=True):
+def mAP_f1_p_fix_r(
+    one_hot_pred: dict[str, np.ndarray],
+    gt_scenes: dict[str, np.ndarray],
+    fixed_r: float = 0.70654,
+    skip_map_miou: bool = True,
+) -> tuple:
     if fixed_r > 0:
         assert skip_map_miou
         eps = 0.001
@@ -171,9 +187,9 @@ def mAP_f1_p_fix_r(one_hot_pred, gt_scenes, fixed_r=0.70654, skip_map_miou=True)
         return 0, f1, precision, recall, cur_thr, 0
 
     # f1 p r threshold
-    thresholds = np.array([0.02, 0.06, 0.1, 0.15, 0.2, 0.21, 0.22, 0.23, 0.24, 0.25, 0.255, 0.26, 0.265, 0.27, 0.275, 0.28, 0.2833, 0.2867, 0.29, 0.292, 0.294, 0.296, 0.298, 0.3, 0.302, 0.304, 0.306, 0.308, 0.31, 0.3133, 0.3167, 0.32, 0.325, 0.33, 0.335, 0.34, 0.345, 0.35, 0.36, 0.37, 0.38, 0.39, 0.4, 0.5, 0.6, 0.7, 0.8,
+    thresholds = np.array([0.02, 0.06, 0.1, 0.15, 0.2, 0.21, 0.22, 0.23, 0.24, 0.25, 0.255, 0.26, 0.265, 0.27, 0.275, 0.28, 0.2833, 0.2867, 0.29, 0.292, 0.294, 0.296, 0.298, 0.3, 0.302, 0.304, 0.306, 0.308, 0.31, 0.3133, 0.3167, 0.32, 0.325, 0.33, 0.335, 0.34, 0.345, 0.35, 0.36, 0.37, 0.38, 0.39, 0.4, 0.5, 0.6, 0.7, 0.8,  # noqa: E501
                            0.9])
-#     thresholds = np.array([0.02, 0.06, 0.1, 0.15, 0.2, 0.294, 0.2945, 0.295, 0.2952, 0.2954, 0.2956, 0.2958, 0.296, 0.2962, 0.2964, 0.2966, 0.2968, 0.297, 0.2975, 0.298, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8,
+#     thresholds = np.array([0.02, 0.06, 0.1, 0.15, 0.2, 0.294, 0.2945, 0.295, 0.2952, 0.2954, 0.2956, 0.2958, 0.296, 0.2962, 0.2964, 0.2966, 0.2968, 0.297, 0.2975, 0.298, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8,  # noqa: E501
 #                            0.9])
 #     thresholds = np.array([0.02, 0.06, 0.1, 0.15, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8,
 #                            0.9])
@@ -206,25 +222,7 @@ def mAP_f1_p_fix_r(one_hot_pred, gt_scenes, fixed_r=0.70654, skip_map_miou=True)
     if skip_map_miou:
         return 0, f1[best_idx], precision[best_idx], recall[best_idx], thresholds[best_idx], 0
 
-    # mAP
-    # mIOU
-    mious = []
-    y_true_scene_list, y_pred_scene_list = [], []
-    for file_name, pred in one_hot_pred.items():
-        if len(pred) == 0:
-            continue
-        pred_scenes = predictions_to_scenes((one_hot_pred[file_name] > thresholds[best_idx]).astype(np.uint8))
-        y_true_scene, y_pred_scene = evaluate_scenes_mAP(gt_scenes[file_name], pred_scenes, pred)
-        for y_true, y_pred in zip(y_true_scene, y_pred_scene):
-            y_true_scene_list.append(y_true)
-            y_pred_scene_list.append(y_pred)
-
-        mious.append(np.mean([
-            cal_miou(gt_scenes[file_name], pred_scenes),
-            cal_miou(pred_scenes, gt_scenes[file_name])
-        ]))
-
-    mAP = average_precision_score(y_true_scene_list, y_pred_scene_list)
-    if np.isnan(mAP):
-        mAP = 0
-    return mAP, f1[best_idx], precision[best_idx], recall[best_idx], thresholds[best_idx], np.mean(mious)
+    # The upstream AutoShot mAP/mIOU branch depended on evaluate_scenes_mAP,
+    # cal_miou and sklearn's average_precision_score, none of which were ported;
+    # calling it would NameError. All callers in this repo use skip_map_miou=True.
+    raise NotImplementedError("mAP/mIOU evaluation was not ported from upstream AutoShot; use skip_map_miou=True")

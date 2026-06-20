@@ -3,7 +3,6 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Literal
 
 import cv2
 
@@ -20,58 +19,22 @@ from autoshotv2.runtime import (
     probabilities_to_scenes,
 )
 
-
 logger = logging.getLogger(__name__)
-
-BackendName = Literal["auto", "phase2", "baseline"]
 
 
 @dataclass
 class VideoAnalysisSettings:
-    sensitivity: str
-    min_scene_duration_sec: float
-    backend: BackendName = "auto"
-    temperature: float | None = None
-    sigma: float | None = None
+    model_path: Path
     threshold: float | None = None
 
 
 def analyze_video(job_id: str, video_path: Path, options: VideoAnalysisSettings) -> dict:
-    settings = get_settings()
-    use_baseline = options.backend == "baseline" or (
-        options.backend == "auto" and settings.autoshot_use_baseline
-    )
-
-    if use_baseline:
-        return _analyze_with_baseline(job_id, video_path, options)
-
     try:
-        runtime = get_runtime()
+        runtime = get_runtime(options.model_path)
     except (FileNotFoundError, CheckpointLoadError) as exc:
-        if options.backend == "phase2":
-            raise RuntimeError(f"AutoShotV2 model is unavailable: {exc}") from exc
-        logger.warning("AutoShotV2 unavailable; using baseline: %s", exc)
-        return _analyze_with_baseline(job_id, video_path, options, fallback_reason=str(exc))
+        raise RuntimeError(f"Model unavailable: {exc}") from exc
 
     return _analyze_with_autoshot(job_id, video_path, options, runtime)
-
-
-def _analyze_with_baseline(
-    job_id: str,
-    video_path: Path,
-    options: VideoAnalysisSettings,
-    fallback_reason: str | None = None,
-) -> dict:
-    baseline_options = baseline_opencv.BaselineSettings(
-        sensitivity=options.sensitivity,
-        min_scene_duration_sec=options.min_scene_duration_sec,
-    )
-    result = baseline_opencv.analyze_video(job_id, video_path, baseline_options)
-    result["processing"]["requested_backend"] = options.backend
-    result["processing"]["backend"] = "baseline"
-    if fallback_reason:
-        result["processing"]["fallback_reason"] = fallback_reason
-    return result
 
 
 def _analyze_with_autoshot(
@@ -98,13 +61,9 @@ def _analyze_with_autoshot(
         raise RuntimeError(f"Video is longer than the {settings.max_duration_sec}s local limit.")
 
     defaults = runtime.defaults
-    temperature = _effective_value(
-        options.temperature, settings.autoshot_default_temperature, defaults.temperature
-    )
-    sigma = _effective_value(options.sigma, settings.autoshot_default_sigma, defaults.sigma)
-    threshold = _effective_value(
-        options.threshold, settings.autoshot_default_threshold, defaults.threshold
-    )
+    temperature = float(settings.autoshot_default_temperature or defaults.temperature)
+    sigma = float(settings.autoshot_default_sigma or defaults.sigma)
+    threshold = float(options.threshold if options.threshold is not None else (settings.autoshot_default_threshold or defaults.threshold))
 
     try:
         frames = decode_video_frames(video_path)
@@ -118,9 +77,7 @@ def _analyze_with_autoshot(
     logits = runtime.predict_logits(frames)
     probs = logits_to_probabilities(logits, temperature=temperature, sigma=sigma)
     raw_ranges = probabilities_to_scenes(probs, threshold=threshold)
-
-    min_gap_frames = max(1, int(options.min_scene_duration_sec * fps))
-    scene_ranges = merge_short_scenes(raw_ranges, min_gap_frames=min_gap_frames)
+    scene_ranges = merge_short_scenes(raw_ranges, min_gap_frames=1)
 
     scenes_payload, boundaries_payload = scene_ranges_to_payload(scene_ranges, probs, fps=fps)
 
@@ -139,16 +96,9 @@ def _analyze_with_autoshot(
             "height": height,
         },
         "processing": {
-            "model": "autoshotv2-phase2",
-            "requested_backend": options.backend,
+            "model": runtime.checkpoint_path.name,
             "backend": "phase2",
-            "sensitivity": options.sensitivity,
-            "threshold": threshold,
-            "temperature": temperature,
-            "sigma": sigma,
-            "min_scene_duration_sec": options.min_scene_duration_sec,
             "device": runtime.device,
-            "checkpoint": runtime.checkpoint_path.name,
         },
         "summary": summary,
         "boundaries": boundaries_payload,
@@ -158,14 +108,6 @@ def _analyze_with_autoshot(
             "assets": scene_assets + ([storyboard_asset] if storyboard_asset else []),
         },
     }
-
-
-def _effective_value(job_value: float | None, env_value: float | None, default: float) -> float:
-    if job_value is not None:
-        return float(job_value)
-    if env_value is not None:
-        return float(env_value)
-    return float(default)
 
 
 def _attach_thumbnails(

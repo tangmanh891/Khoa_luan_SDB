@@ -38,16 +38,16 @@ def _skip(msg: str):
 
 
 def test_predictions_to_scenes_empty():
-    from autoshotv2 import utils
     from autoshotv2 import eval as rie
+    from autoshotv2 import utils
 
     assert utils.predictions_to_scenes(np.array([])).tolist() == [[0, 0]]
     assert rie.predictions_to_scenes(np.array([])).tolist() == [[0, 0]]
 
 
 def test_predictions_to_scenes_normal():
-    from autoshotv2 import utils
     from autoshotv2 import eval as rie
+    from autoshotv2 import utils
 
     pred = np.array([0, 0, 1, 1, 0, 0, 1, 1, 0, 0], dtype=np.uint8)
     expected = [[0, 2], [4, 6], [8, 9]]
@@ -102,47 +102,6 @@ def test_eval_graceful_missing_checkpoint():
     assert rie.load_checkpoint_config(Path("definitely_missing_ckpt.pth")) == {}
 
 
-def test_ema_update_math():
-    # ModelEMA must apply theta_ema <- decay*theta_ema + (1-decay)*theta_train on floats
-    # and copy integer buffers directly.
-    import torch
-
-    from autoshotv2.ema import ModelEMA
-
-    class Tiny(torch.nn.Module):
-        def __init__(self):
-            super().__init__()
-            self.w = torch.nn.Parameter(torch.zeros(3))
-            self.register_buffer("cnt", torch.zeros(1, dtype=torch.long))
-
-    model = Tiny()
-    ema = ModelEMA(model, decay=0.9)  # shadow starts at zeros / cnt=0
-    with torch.no_grad():
-        model.w.fill_(1.0)
-    model.cnt += 5
-    ema.update(model)
-    assert torch.allclose(ema.module.w, torch.full((3,), 0.1), atol=1e-6), ema.module.w
-    assert int(ema.module.cnt.item()) == 5, ema.module.cnt
-
-
-def test_ema_imports():
-    import importlib
-
-    for mod in ("autoshotv2.ema", "autoshotv2.clipshots_dataset", "autoshotv2.train_ema", "autoshotv2.ema_report"):
-        importlib.import_module(mod)
-
-
-def test_ema_report_numbers():
-    # The JSON-tier report generator must reproduce the bundled EMA-vs-no-EMA numbers.
-    from autoshotv2 import ema_report
-
-    if not (ema_report.DEFAULT_DIR / "results_autoshot_alpha999.json").exists():
-        _skip("reports/ema_study JSONs not present")
-    report = ema_report.build_report(ema_report.DEFAULT_DIR)
-    assert "0.9604" in report, "BBC D-EMA F1 missing"
-    assert "+0.0046" in report, "AutoShot EMA-noEMA delta missing"
-
-
 def _main() -> int:
     tests = [
         test_predictions_to_scenes_empty,
@@ -150,9 +109,6 @@ def _main() -> int:
         test_restem_key_matching,
         test_single_frame_edge_case,
         test_eval_graceful_missing_checkpoint,
-        test_ema_update_math,
-        test_ema_imports,
-        test_ema_report_numbers,
         test_reproduce_calibration,
     ]
     failed = 0

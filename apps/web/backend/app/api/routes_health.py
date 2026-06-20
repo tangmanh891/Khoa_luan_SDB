@@ -6,6 +6,52 @@ from autoshotv2.runtime import resolve_device
 
 router = APIRouter()
 
+DEFAULT_PRESET = "autoshotv2"
+
+PRESETS: dict[str, dict] = {
+    "autoshotv2": {
+        "display_name": "AutoShotV2",
+        "filename": "autoshotv2.pth",
+        "threshold": None,
+    },
+    "best_shot": {
+        "display_name": "AutoShotV2-SHOT",
+        "filename": "ckpt_phase2_shot_f1_sweep_best.pth",
+        "threshold": 0.12,
+    },
+    "best_clipshot": {
+        "display_name": "AutoShotV2-ClipShot",
+        "filename": "ckpt_phase2_shot_f1_sweep_best.pth",
+        "threshold": 0.19,
+    },
+    "best_bbc": {
+        "display_name": "AutoShotV2-BBC",
+        "filename": "autoshotv2.pth",
+        "threshold": None,
+    },
+    "autoshot": {
+        "display_name": "AutoShot",
+        "filename": "autoshot.pth",
+        "threshold": None,
+    },
+}
+
+
+@router.get("/models")
+async def list_models() -> dict:
+    settings = get_settings()
+    models_dir = settings.autoshot_models_dir
+    available = [
+        {
+            "preset": key,
+            "display_name": p["display_name"],
+            "is_default": key == DEFAULT_PRESET,
+            "available": (models_dir / p["filename"]).is_file(),
+        }
+        for key, p in PRESETS.items()
+    ]
+    return {"models": available, "default": DEFAULT_PRESET}
+
 
 @router.get("/health")
 async def health() -> dict:

@@ -27,17 +27,18 @@ services:
       CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY:-}
       CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET:-}
       CLOUDINARY_FOLDER: ${CLOUDINARY_FOLDER:-autoshot}
-      AUTOSHOT_MODEL_PATH: ${AUTOSHOT_MODEL_PATH:-/app/models/deploy.pth}
+      AUTOSHOT_MODEL_PATH: ${AUTOSHOT_MODEL_PATH:-/app/models/ckpt_phase2_shot_f1_sweep_best.pth}
+      AUTOSHOT_MODELS_DIR: ${AUTOSHOT_MODELS_DIR:-/app/models}
       AUTOSHOT_DEVICE: ${AUTOSHOT_DEVICE:-cpu}
-      AUTOSHOT_DEFAULT_TEMPERATURE: ${AUTOSHOT_DEFAULT_TEMPERATURE:-}
-      AUTOSHOT_DEFAULT_SIGMA: ${AUTOSHOT_DEFAULT_SIGMA:-}
-      AUTOSHOT_DEFAULT_THRESHOLD: ${AUTOSHOT_DEFAULT_THRESHOLD:-}
       AUTOSHOT_USE_BASELINE: ${AUTOSHOT_USE_BASELINE:-false}
     ports:
       - "${BACKEND_PORT:-8000}:8000"
     volumes:
       - ./apps/web/backend/storage:/app/storage
       - ./artifacts/models:/app/models:ro
+      - ./apps/web/backend:/app/apps/web/backend
+      - ./src:/app/src
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
     depends_on:
       - mongo
 
@@ -51,6 +52,9 @@ services:
       VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:8000}
     ports:
       - "5173:5173"
+    volumes:
+      - ./apps/web/frontend:/app
+      - /app/node_modules
     depends_on:
       - backend
 

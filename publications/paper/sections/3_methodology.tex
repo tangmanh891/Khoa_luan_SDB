@@ -1,0 +1,268 @@
+\section{Methodology}
+\label{sec:method}
+
+This section formulates the shot boundary detection problem, summarizes the
+TransNetV2 and AutoShot components needed to define the frozen backbone, and
+presents the AutoShotV2 decision-stage pipeline built on top of it. Note that
+the convolutional blocks and search spaces are inherited from prior work;
+AutoShotV2 modifies only the decision stage described from Section~\ref{sec:head} onward.
+
+\subsection{Problem Formulation}
+\label{sec:problem}
+
+Given a video represented as an ordered sequence of $T$ frames
+$\{x_t\}_{t=1}^{T}$, SBD predicts a binary sequence $\{b_t\}_{t=1}^{T}$,
+where $b_t{=}1$ denotes a shot boundary (an abrupt cut or a gradual
+transition) at frame $t$. A model outputs a boundary probability sequence
+$\{p_t\}_{t=1}^{T}$ with $p_t\in[0,1]$, and the final boundary set is
+obtained by thresholding:
+\begin{equation}
+    \hat b_t=\begin{cases}1, & p_t > \theta,\\ 0, & p_t \le \theta,\end{cases}
+    \label{eq:threshold}
+\end{equation}
+where $\theta$ is a fixed operating point selected before test evaluation. Following standard practice,
+a predicted boundary counts as correct when it falls within
+\PaperMatchTolerance{} frames of a ground-truth boundary, and consecutive
+positive predictions are grouped into one transition.
+
+\subsection{Spatial-Temporal Factorized Convolution}
+
+Full 3-D convolutional kernels of size $k\times k\times k$ are expensive on
+frame sequences. The TransNetV2 family therefore factorizes
+each 3-D convolution into a 2-D spatial convolution ($1\times k\times k$,
+learning edges, textures, and color regions per frame) followed by a 1-D
+temporal convolution ($k\times 1\times 1$, capturing motion patterns along
+the temporal axis). With $C$ input/output channels and $k{=}3$, the
+parameter count drops from $27C^2$ to $9C^2+3C^2=12C^2$, a reduction of
+roughly 56\% that also imposes a useful inductive bias separating spatial
+content from temporal motion.
+
+\subsection{Dilated DDCNN Blocks}
+
+The backbone stacks Dilated Convolutional Neural Network (DDCNN) blocks.
+Each block splits its input features into four parallel temporal-convolution
+branches with exponentially increasing dilation rates $d\in\{1,2,4,8\}$,
+concatenates the branch outputs along the channel dimension, and applies
+batch normalization with ReLU activation. For temporal kernel size $K{=}3$,
+the cumulative receptive field after block $k$ grows as
+\begin{equation}
+    R_k = R_{k-1} + 2\,(K-1)\!\!\sum_{d\in\{1,2,4,8\}}\!\! d \;=\; R_{k-1} + 60,
+    \label{eq:receptive}
+\end{equation}
+with $R_0{=}1$. Six stacked blocks yield a theoretical receptive field of up
+to 361 frames; since inference uses sliding windows of 100 frames, the
+effective context is capped by the window but remains wide enough for long
+dissolves and fades.
+
+\subsection{Similarity Branch}
+
+A parallel similarity branch complements the convolutional features with two
+forms of visual consistency: (i) a 512-bin RGB histogram per frame, whose
+cosine distances between consecutive frames yield a 101-dimensional
+color-shift descriptor, and (ii) learned similarity, the cosine similarity
+between normalized deep features from intermediate convolutional layers.
+Both are fused through a fully connected layer with 128 units and ReLU
+activation, and the result is concatenated with the convolutional features
+before classification.
+
+\subsection{AutoShot Backbone Search}
+
+While TransNetV2 fixes a configuration of identical DDCNN blocks, AutoShot
+searches the backbone configuration for short-form video with neural
+architecture search~\cite{zhu2023autoshot,elsken2019nas,white2023_nas1000,ren2020_nas_survey}.
+The space covers four DDCNN block variants (differing in channel
+configuration and spatial feature sharing) across six layers plus a choice
+of zero to four Transformer layers~\cite{vaswani2017attention} at the
+seventh, about $83.9\times10^6$ candidate architectures in total. The search
+trains a single-path one-shot supernet~\cite{guo2020spos} explored with
+Bayesian optimization (differentiable alternatives such as
+DARTS~\cite{liu2019darts} were considered by the original authors), and the
+selected model is refined with knowledge distillation and weight grafting.
+The architecture found under the F1 criterion uses DDCNNV2 blocks of 4--12
+filters with shared spatial convolutions in layers 2--4 and no Transformer
+layer. Its penultimate stage exposes a 4864-dimensional feature vector,
+which we freeze and cache:
+\begin{equation}
+    h_t \in \mathbb{R}^{4864}.
+    \label{eq:features}
+\end{equation}
+All AutoShotV2 components operate on $h_t$ without updating the backbone.
+
+AutoShotV2 improves the decision stage of SBD: it trains a new
+classification head on the frozen features of Eq.~\eqref{eq:features} and
+adds probability calibration and temporal smoothing before thresholding.
+Fig.~\ref{fig:pipeline} shows the deployed inference pipeline.
+
+\begin{figure*}[!t]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tikzpicture}[
+    node distance=0.75cm and 1.0cm,
+    font=\footnotesize,
+    block/.style={draw, rounded corners=2pt, thick, align=center, minimum height=0.9cm, text width=2.45cm},
+    arr/.style={-{Stealth[length=5pt]}, thick}
+]
+\node[block, fill=blue!10] (in) {Video frames\\$48\times27$ RGB};
+\node[block, fill=green!12, right=of in] (backbone) {Frozen AutoShot\\backbone};
+\node[block, fill=green!8, right=of backbone] (feat) {Cached features\\4864-D};
+\node[block, fill=orange!15, right=of feat] (head) {Classification\\head};
+\node[block, fill=purple!12, right=of head] (temp) {Temperature scaling\\$T^{*}=\PaperDeployTemperature$};
+\node[block, fill=pink!14, right=of temp] (smooth) {Gaussian smoothing\\$\sigma=\PaperGaussianSigma$};
+\node[block, fill=blue!8, right=of smooth] (out) {Threshold\\$\theta=\PaperDeployThreshold$};
+\node[block, fill=teal!12, right=of out] (bound) {Shot boundaries\\F1 $=\PaperDeployShotFOne$ (SHOT)};
+\draw[arr] (in) -- (backbone);
+\draw[arr] (backbone) -- (feat);
+\draw[arr] (feat) -- (head);
+\draw[arr] (head) -- (temp);
+\draw[arr] (temp) -- (smooth);
+\draw[arr] (smooth) -- (out);
+\draw[arr] (out) -- (bound);
+\end{tikzpicture}
+}
+\caption{AutoShotV2 inference pipeline. The searched AutoShot backbone is
+frozen; AutoShotV2 trains the classification head and applies calibration
+and temporal smoothing before thresholding. The controlled replication of
+Section~\ref{sec:protocol} re-fits its own temperature on its validation
+pool under the frozen validation-only protocol.}
+\label{fig:pipeline}
+\end{figure*}
+
+\subsection{Classification Head Architecture}
+\label{sec:head}
+
+The head maps each cached feature vector $h_t$ to a shared hidden state
+\begin{equation}
+    u_t = \mathrm{Dropout}\bigl(\mathrm{ReLU}(W_f h_t + c_f)\bigr),
+    \label{eq:hidden}
+\end{equation}
+with $W_f\in\mathbb{R}^{1024\times4864}$ and dropout probability $0.5$. Two
+parallel linear branches then produce logits
+\begin{equation}
+    z^{(1)}_t = W_1 u_t + c_1, \qquad z^{(2)}_t = W_2 u_t + c_2.
+    \label{eq:branches}
+\end{equation}
+The primary branch $z^{(1)}_t$ is trained against one-hot boundary labels
+and is the only branch used at inference. The auxiliary branch
+$z^{(2)}_t$ can be supervised with boundary-aware many-hot targets to supply
+denser gradients around each transition. Fig.~\ref{fig:head} illustrates
+the head.
+
+\begin{figure}[!t]
+\centering
+\begin{tikzpicture}[
+    node distance=0.45cm and 0.55cm,
+    font=\footnotesize,
+    block/.style={draw, rounded corners=2pt, thick, align=center, minimum height=0.7cm, text width=2.5cm},
+    arr/.style={-{Stealth[length=4pt]}, thick}
+]
+\node[block, fill=green!8] (feat) {Feature vector\\4864-D};
+\node[block, fill=orange!12, below=of feat] (fc) {Linear $4864{\to}1024$\\ReLU};
+\node[block, fill=orange!8, below=of fc] (drop) {Dropout $p=0.5$};
+\node[block, fill=blue!10, below left=0.55cm and -0.7cm of drop] (b1) {Primary branch\\one-hot target};
+\node[block, fill=pink!14, below right=0.55cm and -0.7cm of drop] (b2) {Auxiliary branch\\many-hot target};
+\node[block, fill=purple!10, below=1.6cm of drop, text width=4.6cm] (loss)
+    {$\mathcal{L}_{\mathrm{total}}=\mathcal{L}^{(1)}+0.3\,\mathcal{L}^{(2)}$};
+\draw[arr] (feat) -- (fc);
+\draw[arr] (fc) -- (drop);
+\draw[arr] (drop) -- (b1);
+\draw[arr] (drop) -- (b2);
+\draw[arr] (b1) -- (loss);
+\draw[arr] (b2) -- (loss);
+\end{tikzpicture}
+\caption{AutoShotV2 classification head. The primary branch preserves sharp
+boundary localization; the auxiliary branch can supply denser supervision
+around each boundary. The controlled ablation selects plain BCE on the
+primary branch.}
+\label{fig:head}
+\end{figure}
+
+\subsection{Training Objectives as a Design Space}
+\label{sec:objectives}
+
+Boundary frames are exceptionally rare ($<1\%$ of frames), so the training
+loss is a natural design axis. The baseline objective is binary
+cross-entropy on the primary branch,
+\begin{equation}
+    \mathcal{L}_{\mathrm{BCE}}
+    = -y_t\log\sigma(z^{(1)}_t)-(1-y_t)\log\bigl(1-\sigma(z^{(1)}_t)\bigr).
+    \label{eq:bce}
+\end{equation}
+We explore two alternatives. First, Focal Loss~\cite{lin2017focal}
+down-weights easy negatives,
+\begin{equation}
+    \mathcal{L}_{\mathrm{focal}} = -\alpha_t\,(1-p^{*}_t)^{\gamma}\log(p^{*}_t),
+    \label{eq:focal}
+\end{equation}
+where $p^{*}_t=p_t$ for a positive target and $1-p_t$ otherwise, and
+$\alpha_t=\alpha y_t+(1-\alpha)(1-y_t)$; grid search on validation selects
+$\gamma=1.0$ and $\alpha=0.5$. Second, boundary-aware many-hot
+supervision~\cite{muller2019label} expands each ground-truth boundary $t_b$
+to its $\pm1$ frame neighborhood,
+\begin{equation}
+    y_{\mathrm{mh}}[t]=\begin{cases}1, & \exists\, t_b\ \text{s.t.}\ |t-t_b|\le 1,\\ 0, & \text{otherwise},\end{cases}
+    \label{eq:manyhot}
+\end{equation}
+and supervises the auxiliary branch with weight 0.3:
+$\mathcal{L}_{\mathrm{total}}=\mathcal{L}(\hat y^{(1)}, y_{\mathrm{oh}})
++0.3\,\mathcal{L}(\hat y^{(2)}, y_{\mathrm{mh}})$. The small auxiliary
+weight limits the influence of dense targets on the primary branch's
+frame-level localization.
+
+These objectives are evaluated as a design space rather than assumed
+beneficial: the controlled ablation of Section~\ref{sec:ablation} shows that
+plain BCE matches both alternatives once post-processing is applied, so the
+analytic track of this paper anchors on the BCE configuration.
+
+\subsection{Probability Calibration and Temporal Smoothing}
+\label{sec:postprocess}
+
+SBD decisions rely directly on thresholding model scores, so probability
+quality matters as much as ranking. Temperature
+scaling~\cite{guo2017calibration} rescales the primary logit without
+changing its ranking:
+\begin{equation}
+    p^{\mathrm{cal}}_t=\sigma\!\left(\frac{z^{(1)}_t}{T}\right),\qquad
+    T^{*}=\arg\min_{T}\ \mathcal{L}_{\mathrm{BCE}}\!\left(\sigma\!\left(\frac{z^{(1)}}{T}\right),\,y\right),
+    \label{eq:temperature}
+\end{equation}
+with $T^{*}$ fitted on validation data. Calibration cannot remove isolated
+temporal peaks caused by flashes or camera shakes, so a one-dimensional
+Gaussian filter smooths the calibrated sequence:
+\begin{equation}
+    \tilde p_t=\sum_k G_{\sigma}(k)\,p^{\mathrm{cal}}_{t-k},\qquad
+    G_{\sigma}(k)=\frac{1}{\sqrt{2\pi}\sigma}\exp\!\left(-\frac{k^2}{2\sigma^2}\right).
+    \label{eq:gaussian}
+\end{equation}
+The deployed checkpoint fits $T^{*}=\PaperDeployTemperature$ on its
+validation pool; the controlled replication re-fits its own temperature
+under the frozen protocol below. Both use $\sigma=\PaperGaussianSigma$ and
+$\theta=\PaperDeployThreshold$.
+
+\subsection{Validation-Only Protocol Selection}
+\label{sec:protocol}
+
+For the controlled track, we select the complete post-processing configuration using
+five-fold validation. Folds are stratified by source dataset. For each
+held-out fold, temperature is fitted on the other four folds by minimizing
+binary cross-entropy. We search $\sigma\in\{0,1,2,3\}$ and
+$\theta\in\{0.05,0.10,\ldots,0.50\}$. Each pair is scored by first computing
+F1 per source dataset within each held-out fold, averaging those per-source
+values into a fold-level macro-F1, and then averaging the macro-F1 over the
+five folds. Ties prefer lower smoothing and then the threshold nearest 0.10.
+After selecting $\sigma$ and $\theta$, the final temperature is fitted on
+all validation videos; the selected values are listed in
+Table~\ref{tab:protocol}. The manifest containing folds, key hashes, search
+space, and selected values is written before test evaluation. We denote the
+resulting BCE plus temperature plus Gaussian configuration B4.
+
+\subsection{Cache and Run Provenance}
+
+The revised pipeline separates a fixed data seed from the training seed.
+Before feature extraction, it deterministically selects the training-video
+list and hashes that selected list. A sample cache is reusable only when its schema
+version, metadata hash, base-checkpoint hash, selected-key hash, video budget,
+sampling parameters, boundary width, and data seed all match. Each run writes
+the selected video IDs, per-video sample counts, skipped inputs, configuration,
+checkpoint hash, and logit-key hash. These identity checks replace the earlier
+path-tolerant cache check, which recorded the cache size but not the selected
+video IDs that produced the historical cache.

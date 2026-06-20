@@ -21,7 +21,7 @@ python scripts/sync_experimental_results.py --write
 python scripts/sync_experimental_results.py --check
 ```
 
-Script đọc JSON deploy, ablation, calibration, EMA và
+Script đọc JSON deploy, ablation, calibration và
 `reports/literature_results.json`, sau đó tạo:
 
 - `reports/experimental_results.json`

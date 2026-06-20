@@ -1,9 +1,10 @@
 import asyncio
+import shutil
 from datetime import datetime, timezone
 from pathlib import Path
 
-from app.db.mongo import get_database
 from app.core.config import get_settings
+from app.db.mongo import get_database
 from app.ml.scene_detector import VideoAnalysisSettings, analyze_video
 from app.services.export_service import write_exports
 
@@ -23,11 +24,7 @@ async def process_job(job_id: str) -> None:
             video_path = Path(job["internal"]["video_path"])
             processing = job.get("processing", {})
             options = VideoAnalysisSettings(
-                sensitivity=processing.get("sensitivity", "medium"),
-                min_scene_duration_sec=float(processing.get("min_scene_duration_sec", 0.5)),
-                backend=processing.get("backend", "auto"),
-                temperature=processing.get("temperature"),
-                sigma=processing.get("sigma"),
+                model_path=Path(processing["model_path"]),
                 threshold=processing.get("threshold"),
             )
 
@@ -47,6 +44,11 @@ async def process_job(job_id: str) -> None:
                 "finished_at": datetime.now(timezone.utc).isoformat(),
             }
             exports = await asyncio.to_thread(write_exports, job_id, result)
+
+            # Xóa video local sau khi đã có Cloudinary URL (tiết kiệm disk)
+            if get_settings().use_cloudinary and video_path.exists():
+                await asyncio.to_thread(shutil.rmtree, video_path.parent, True)
+
             export_assets = exports.pop("assets", [])
             artifact_assets = analysis["artifacts"].pop("assets", [])
             asset_refs = job.get("cloudinary", {}).get("assets", []) + artifact_assets + export_assets

@@ -1,0 +1,29 @@
+\section{Discussion}
+\label{sec:discussion}
+
+The controlled ablation clarifies where the measured gains come from: Focal Loss and
+many-hot supervision do not produce consistent gains over the BCE control,
+whereas calibrated post-processing---Gaussian smoothing to change boundary
+decisions and temperature scaling to improve probability quality---provides
+the measured improvement. Because post-processing operates on cached logits,
+it can be re-tuned for a new deployment domain without retraining the
+representation. The fixed-deployment ClipShots result is limited primarily by
+aggregate precision (\PaperDeployClipPrecision): open-world content produces
+false-positive peaks that survive smoothing. A frozen representation cannot
+adapt to this distribution shift by construction, so closing the gap likely
+requires domain-adaptive components rather than further tuning of the present
+loss-design space.
+
+After temperature scaling, the equal-width ECE falls to 0.002214, yet the
+class-balanced ECE remains 0.070405. Boundary sparsity explains the gap:
+non-boundary frames dominate aggregate bins, so a low aggregate score can
+coexist with poorer positive-class calibration. Reporting only aggregate ECE
+would overstate calibration quality for SBD and likely for other sparse
+temporal-event tasks.
+
+The two uncertainty analyses answer complementary questions. Paired bootstrap
+intervals estimate how much measured deltas depend on which videos are
+sampled; the three-seed study estimates sensitivity to head-training
+randomness. Seed-induced F1 standard deviations are below 0.5 percentage
+points on every dataset and much smaller than the bootstrap interval widths,
+indicating that video sampling is the larger source of variation.

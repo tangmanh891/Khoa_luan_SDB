@@ -1,0 +1,592 @@
+{
+  "schema_version": 1,
+  "method": "ClipShots-specific video-level cross-validation of post-processing on cached deploy logits",
+  "sources": {
+    "logits": "artifacts/experiments/deploy_regen/clipshots_test_logits.pkl",
+    "ground_truth": "artifacts/experiments/journal_study/shared/clipshots_test_gt.pkl"
+  },
+  "coverage": {
+    "predicted_videos": 500,
+    "gt_videos": 500,
+    "matched_videos": 500,
+    "missing_prediction_count": 0,
+    "extra_prediction_count": 0,
+    "missing_prediction_keys": [],
+    "extra_prediction_keys": []
+  },
+  "protocol": {
+    "folds": 5,
+    "seed": 42,
+    "modes": [
+      "segment",
+      "peak"
+    ],
+    "thresholds": [
+      0.1,
+      0.118,
+      0.121,
+      0.134,
+      0.135,
+      0.136,
+      0.137,
+      0.138,
+      0.139,
+      0.15
+    ],
+    "temperatures": [
+      0.35,
+      0.38780461844336944,
+      0.5
+    ],
+    "sigmas": [
+      1.5,
+      2.0,
+      2.5
+    ],
+    "min_distances": [
+      0,
+      16,
+      24
+    ],
+    "prominences": [
+      0.0,
+      0.001
+    ],
+    "param_count": 630,
+    "selection_tie_break": "F1, precision, recall, lower complexity, lower threshold, lower min_distance, lower prominence"
+  },
+  "references": {
+    "deploy_threshold": {
+      "f1": 0.7528801495868266,
+      "precision": 0.6660618996798292,
+      "recall": 0.8657234013039257,
+      "tp": 6241,
+      "fp": 3129,
+      "fn": 968,
+      "mode": "segment",
+      "temperature": 0.38780461844336944,
+      "sigma": 2.0,
+      "threshold": 0.1,
+      "min_distance": 0,
+      "prominence": 0.0
+    },
+    "locked_cv_param": {
+      "selection_count": 2,
+      "rank": 1,
+      "mode": "segment",
+      "temperature": 0.5,
+      "sigma": 2.5,
+      "threshold": 0.15,
+      "min_distance": 0,
+      "prominence": 0.0,
+      "f1": 0.7736454849498327,
+      "precision": 0.7470611032166387,
+      "recall": 0.8021917048134276,
+      "tp": 5783,
+      "fp": 1958,
+      "fn": 1426,
+      "key": "segment|T=0.5|sigma=2.5|thr=0.15|dist=0|prom=0"
+    },
+    "full_set_oracle": {
+      "rank": 1,
+      "mode": "segment",
+      "temperature": 0.5,
+      "sigma": 2.5,
+      "threshold": 0.15,
+      "min_distance": 0,
+      "prominence": 0.0,
+      "f1": 0.7736454849498327,
+      "precision": 0.7470611032166387,
+      "recall": 0.8021917048134276,
+      "tp": 5783,
+      "fp": 1958,
+      "fn": 1426,
+      "key": "segment|T=0.5|sigma=2.5|thr=0.15|dist=0|prom=0"
+    }
+  },
+  "cv_selected": {
+    "fold_count": 5,
+    "aggregate": {
+      "f1": 0.7715048512079182,
+      "precision": 0.7270495827196858,
+      "recall": 0.8217505895408517,
+      "tp": 5924,
+      "fp": 2224,
+      "fn": 1285
+    },
+    "folds": [
+      {
+        "fold": 1,
+        "calibration_videos": 400,
+        "heldout_videos": 100,
+        "selected_param": {
+          "mode": "segment",
+          "temperature": 0.5,
+          "sigma": 2.5,
+          "threshold": 0.15,
+          "min_distance": 0,
+          "prominence": 0.0
+        },
+        "selected_key": "segment|T=0.5|sigma=2.5|thr=0.15|dist=0|prom=0",
+        "calibration": {
+          "f1": 0.7682445759368837,
+          "precision": 0.7458113930110101,
+          "recall": 0.7920691408235893,
+          "tp": 4674,
+          "fp": 1593,
+          "fn": 1227
+        },
+        "heldout": {
+          "f1": 0.7972681524083391,
+          "precision": 0.7523744911804613,
+          "recall": 0.8478593272171254,
+          "tp": 1109,
+          "fp": 365,
+          "fn": 199
+        }
+      },
+      {
+        "fold": 2,
+        "calibration_videos": 400,
+        "heldout_videos": 100,
+        "selected_param": {
+          "mode": "segment",
+          "temperature": 0.5,
+          "sigma": 2.5,
+          "threshold": 0.15,
+          "min_distance": 0,
+          "prominence": 0.0
+        },
+        "selected_key": "segment|T=0.5|sigma=2.5|thr=0.15|dist=0|prom=0",
+        "calibration": {
+          "f1": 0.7889552992676151,
+          "precision": 0.7464160560688117,
+          "recall": 0.83663631494376,
+          "tp": 4686,
+          "fp": 1592,
+          "fn": 915
+        },
+        "heldout": {
+          "f1": 0.7144252686421362,
+          "precision": 0.7498291182501708,
+          "recall": 0.6822139303482587,
+          "tp": 1097,
+          "fp": 366,
+          "fn": 511
+        }
+      },
+      {
+        "fold": 3,
+        "calibration_videos": 400,
+        "heldout_videos": 100,
+        "selected_param": {
+          "mode": "segment",
+          "temperature": 0.5,
+          "sigma": 2.5,
+          "threshold": 0.138,
+          "min_distance": 0,
+          "prominence": 0.0
+        },
+        "selected_key": "segment|T=0.5|sigma=2.5|thr=0.138|dist=0|prom=0",
+        "calibration": {
+          "f1": 0.7693809485072806,
+          "precision": 0.7225362872421696,
+          "recall": 0.8227209464161448,
+          "tp": 4729,
+          "fp": 1816,
+          "fn": 1019
+        },
+        "heldout": {
+          "f1": 0.7892625732798519,
+          "precision": 0.7185393258426966,
+          "recall": 0.8754277891854894,
+          "tp": 1279,
+          "fp": 501,
+          "fn": 182
+        }
+      },
+      {
+        "fold": 4,
+        "calibration_videos": 400,
+        "heldout_videos": 100,
+        "selected_param": {
+          "mode": "segment",
+          "temperature": 0.5,
+          "sigma": 2.5,
+          "threshold": 0.137,
+          "min_distance": 0,
+          "prominence": 0.0
+        },
+        "selected_key": "segment|T=0.5|sigma=2.5|thr=0.137|dist=0|prom=0",
+        "calibration": {
+          "f1": 0.7768503060656651,
+          "precision": 0.732094695834582,
+          "recall": 0.8274343776460626,
+          "tp": 4886,
+          "fp": 1788,
+          "fn": 1019
+        },
+        "heldout": {
+          "f1": 0.7576061517886995,
+          "precision": 0.6716064018968583,
+          "recall": 0.8688650306748467,
+          "tp": 1133,
+          "fp": 554,
+          "fn": 171
+        }
+      },
+      {
+        "fold": 5,
+        "calibration_videos": 400,
+        "heldout_videos": 100,
+        "selected_param": {
+          "mode": "segment",
+          "temperature": 0.5,
+          "sigma": 2.5,
+          "threshold": 0.138,
+          "min_distance": 0,
+          "prominence": 0.0
+        },
+        "selected_key": "segment|T=0.5|sigma=2.5|thr=0.138|dist=0|prom=0",
+        "calibration": {
+          "f1": 0.7669221986625346,
+          "precision": 0.7144810819024464,
+          "recall": 0.8276711846505896,
+          "tp": 4702,
+          "fp": 1879,
+          "fn": 979
+        },
+        "heldout": {
+          "f1": 0.7982885085574571,
+          "precision": 0.7488532110091743,
+          "recall": 0.8547120418848168,
+          "tp": 1306,
+          "fp": 438,
+          "fn": 222
+        }
+      }
+    ]
+  },
+  "top_full_set_params": [
+    {
+      "rank": 1,
+      "mode": "segment",
+      "temperature": 0.5,
+      "sigma": 2.5,
+      "threshold": 0.15,
+      "min_distance": 0,
+      "prominence": 0.0,
+      "f1": 0.7736454849498327,
+      "precision": 0.7470611032166387,
+      "recall": 0.8021917048134276,
+      "tp": 5783,
+      "fp": 1958,
+      "fn": 1426,
+      "key": "segment|T=0.5|sigma=2.5|thr=0.15|dist=0|prom=0"
+    },
+    {
+      "rank": 2,
+      "mode": "segment",
+      "temperature": 0.5,
+      "sigma": 2.5,
+      "threshold": 0.138,
+      "min_distance": 0,
+      "prominence": 0.0,
+      "f1": 0.7735290330887086,
+      "precision": 0.7216816816816817,
+      "recall": 0.8334026910805937,
+      "tp": 6008,
+      "fp": 2317,
+      "fn": 1201,
+      "key": "segment|T=0.5|sigma=2.5|thr=0.138|dist=0|prom=0"
+    },
+    {
+      "rank": 3,
+      "mode": "segment",
+      "temperature": 0.5,
+      "sigma": 2.5,
+      "threshold": 0.137,
+      "min_distance": 0,
+      "prominence": 0.0,
+      "f1": 0.7731535003211304,
+      "precision": 0.7198899653151537,
+      "recall": 0.8349285615203218,
+      "tp": 6019,
+      "fp": 2342,
+      "fn": 1190,
+      "key": "segment|T=0.5|sigma=2.5|thr=0.137|dist=0|prom=0"
+    },
+    {
+      "rank": 4,
+      "mode": "segment",
+      "temperature": 0.5,
+      "sigma": 2.5,
+      "threshold": 0.139,
+      "min_distance": 0,
+      "prominence": 0.0,
+      "f1": 0.7730821343312471,
+      "precision": 0.7226779252110977,
+      "recall": 0.8310445276737412,
+      "tp": 5991,
+      "fp": 2299,
+      "fn": 1218,
+      "key": "segment|T=0.5|sigma=2.5|thr=0.139|dist=0|prom=0"
+    },
+    {
+      "rank": 5,
+      "mode": "segment",
+      "temperature": 0.5,
+      "sigma": 2.5,
+      "threshold": 0.136,
+      "min_distance": 0,
+      "prominence": 0.0,
+      "f1": 0.7729078559528387,
+      "precision": 0.7182327021555317,
+      "recall": 0.8365931474545707,
+      "tp": 6031,
+      "fp": 2366,
+      "fn": 1178,
+      "key": "segment|T=0.5|sigma=2.5|thr=0.136|dist=0|prom=0"
+    },
+    {
+      "rank": 6,
+      "mode": "segment",
+      "temperature": 0.5,
+      "sigma": 2.5,
+      "threshold": 0.135,
+      "min_distance": 0,
+      "prominence": 0.0,
+      "f1": 0.7727418014447357,
+      "precision": 0.7166231918425421,
+      "recall": 0.8383964488833403,
+      "tp": 6044,
+      "fp": 2390,
+      "fn": 1165,
+      "key": "segment|T=0.5|sigma=2.5|thr=0.135|dist=0|prom=0"
+    },
+    {
+      "rank": 7,
+      "mode": "segment",
+      "temperature": 0.5,
+      "sigma": 2.5,
+      "threshold": 0.134,
+      "min_distance": 0,
+      "prominence": 0.0,
+      "f1": 0.7724753106084741,
+      "precision": 0.7143530520857884,
+      "recall": 0.8408933277847136,
+      "tp": 6062,
+      "fp": 2424,
+      "fn": 1147,
+      "key": "segment|T=0.5|sigma=2.5|thr=0.134|dist=0|prom=0"
+    },
+    {
+      "rank": 8,
+      "mode": "peak",
+      "temperature": 0.5,
+      "sigma": 2.5,
+      "threshold": 0.138,
+      "min_distance": 16,
+      "prominence": 0.0,
+      "f1": 0.7680997702658353,
+      "precision": 0.7290057313730376,
+      "recall": 0.8116243584408378,
+      "tp": 5851,
+      "fp": 2175,
+      "fn": 1358,
+      "key": "peak|T=0.5|sigma=2.5|thr=0.138|dist=16|prom=0"
+    },
+    {
+      "rank": 9,
+      "mode": "peak",
+      "temperature": 0.5,
+      "sigma": 2.5,
+      "threshold": 0.137,
+      "min_distance": 16,
+      "prominence": 0.0,
+      "f1": 0.7676794133053955,
+      "precision": 0.7270246806399603,
+      "recall": 0.813150228880566,
+      "tp": 5862,
+      "fp": 2201,
+      "fn": 1347,
+      "key": "peak|T=0.5|sigma=2.5|thr=0.137|dist=16|prom=0"
+    },
+    {
+      "rank": 10,
+      "mode": "peak",
+      "temperature": 0.5,
+      "sigma": 2.5,
+      "threshold": 0.139,
+      "min_distance": 16,
+      "prominence": 0.0,
+      "f1": 0.7674801026113268,
+      "precision": 0.7297973480110083,
+      "recall": 0.8092661950339853,
+      "tp": 5834,
+      "fp": 2160,
+      "fn": 1375,
+      "key": "peak|T=0.5|sigma=2.5|thr=0.139|dist=16|prom=0"
+    },
+    {
+      "rank": 11,
+      "mode": "peak",
+      "temperature": 0.5,
+      "sigma": 2.5,
+      "threshold": 0.135,
+      "min_distance": 16,
+      "prominence": 0.0,
+      "f1": 0.7673464069320477,
+      "precision": 0.7234643734643734,
+      "recall": 0.8168955472326259,
+      "tp": 5889,
+      "fp": 2251,
+      "fn": 1320,
+      "key": "peak|T=0.5|sigma=2.5|thr=0.135|dist=16|prom=0"
+    },
+    {
+      "rank": 12,
+      "mode": "peak",
+      "temperature": 0.5,
+      "sigma": 2.5,
+      "threshold": 0.136,
+      "min_distance": 16,
+      "prominence": 0.0,
+      "f1": 0.7672610882487425,
+      "precision": 0.7250617283950618,
+      "recall": 0.8146760993202941,
+      "tp": 5873,
+      "fp": 2227,
+      "fn": 1336,
+      "key": "peak|T=0.5|sigma=2.5|thr=0.136|dist=16|prom=0"
+    },
+    {
+      "rank": 13,
+      "mode": "peak",
+      "temperature": 0.5,
+      "sigma": 2.5,
+      "threshold": 0.134,
+      "min_distance": 16,
+      "prominence": 0.0,
+      "f1": 0.7672424990258476,
+      "precision": 0.7213334961533765,
+      "recall": 0.8193924261339992,
+      "tp": 5907,
+      "fp": 2282,
+      "fn": 1302,
+      "key": "peak|T=0.5|sigma=2.5|thr=0.134|dist=16|prom=0"
+    },
+    {
+      "rank": 14,
+      "mode": "peak",
+      "temperature": 0.5,
+      "sigma": 2.5,
+      "threshold": 0.15,
+      "min_distance": 0,
+      "prominence": 0.0,
+      "f1": 0.7672122457093631,
+      "precision": 0.7344582593250444,
+      "recall": 0.8030239977805521,
+      "tp": 5789,
+      "fp": 2093,
+      "fn": 1420,
+      "key": "peak|T=0.5|sigma=2.5|thr=0.15|dist=0|prom=0"
+    },
+    {
+      "rank": 15,
+      "mode": "segment",
+      "temperature": 0.5,
+      "sigma": 2.0,
+      "threshold": 0.15,
+      "min_distance": 0,
+      "prominence": 0.0,
+      "f1": 0.7669229326832927,
+      "precision": 0.6979522184300341,
+      "recall": 0.8510195588847275,
+      "tp": 6135,
+      "fp": 2655,
+      "fn": 1074,
+      "key": "segment|T=0.5|sigma=2|thr=0.15|dist=0|prom=0"
+    },
+    {
+      "rank": 16,
+      "mode": "segment",
+      "temperature": 0.5,
+      "sigma": 2.5,
+      "threshold": 0.121,
+      "min_distance": 0,
+      "prominence": 0.0,
+      "f1": 0.7668297516566546,
+      "precision": 0.6926605504587156,
+      "recall": 0.8587876265778888,
+      "tp": 6191,
+      "fp": 2747,
+      "fn": 1018,
+      "key": "segment|T=0.5|sigma=2.5|thr=0.121|dist=0|prom=0"
+    },
+    {
+      "rank": 17,
+      "mode": "peak",
+      "temperature": 0.5,
+      "sigma": 2.5,
+      "threshold": 0.15,
+      "min_distance": 16,
+      "prominence": 0.0,
+      "f1": 0.7665306122448979,
+      "precision": 0.7521025230276331,
+      "recall": 0.7815230961298377,
+      "tp": 5634,
+      "fp": 1857,
+      "fn": 1575,
+      "key": "peak|T=0.5|sigma=2.5|thr=0.15|dist=16|prom=0"
+    },
+    {
+      "rank": 18,
+      "mode": "peak",
+      "temperature": 0.5,
+      "sigma": 2.5,
+      "threshold": 0.138,
+      "min_distance": 0,
+      "prominence": 0.0,
+      "f1": 0.7662825491818934,
+      "precision": 0.708166627441751,
+      "recall": 0.8347898460258011,
+      "tp": 6018,
+      "fp": 2480,
+      "fn": 1191,
+      "key": "peak|T=0.5|sigma=2.5|thr=0.138|dist=0|prom=0"
+    },
+    {
+      "rank": 19,
+      "mode": "peak",
+      "temperature": 0.5,
+      "sigma": 2.5,
+      "threshold": 0.139,
+      "min_distance": 0,
+      "prominence": 0.0,
+      "f1": 0.7658433850277618,
+      "precision": 0.7092198581560284,
+      "recall": 0.8322929671244278,
+      "tp": 6000,
+      "fp": 2460,
+      "fn": 1209,
+      "key": "peak|T=0.5|sigma=2.5|thr=0.139|dist=0|prom=0"
+    },
+    {
+      "rank": 20,
+      "mode": "segment",
+      "temperature": 0.5,
+      "sigma": 2.5,
+      "threshold": 0.118,
+      "min_distance": 0,
+      "prominence": 0.0,
+      "f1": 0.7657896358370817,
+      "precision": 0.6889135254988914,
+      "recall": 0.8619780829518657,
+      "tp": 6214,
+      "fp": 2806,
+      "fn": 995,
+      "key": "segment|T=0.5|sigma=2.5|thr=0.118|dist=0|prom=0"
+    }
+  ]
+}

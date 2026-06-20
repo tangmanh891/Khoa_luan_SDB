@@ -1,5 +1,25 @@
-\section{Conclusion and Discussion}
+\section{Conclusion}
 
-In this paper, we presented AutoShotV2, a compact refinement framework for short-video shot boundary detection. By freezing the AutoShot backbone and optimizing a two-branch classification head with Focal Loss and many-hot supervision, the method addresses the extreme class imbalance characteristic of short videos. Temperature scaling and Gaussian smoothing provide the calibrated decision pipeline used at deployment. AutoShotV2 raises SHOT F1 from \PaperAutoShotShotFOne{} for the reproduced AutoShot baseline to \PaperASVTwoShotFOne, the best result among the evaluated methods, without repeating the computationally expensive neural architecture search.
+We presented AutoShotV2, a compact refinement framework for short-video shot
+boundary detection. The method freezes the NAS-searched AutoShot backbone,
+trains a lightweight classification head on cached features, and applies
+temperature scaling and Gaussian smoothing before thresholding. Under oracle upper-bound selection across the evaluated configurations, AutoShotV2 reaches 0.8607 on SHOT, 0.9656 on BBC, and 0.7706 on ClipShots, improving over the reproduced AutoShot baseline on all three datasets. A fixed-threshold deployment analysis achieves 0.8545, 0.9656, and 0.7529, respectively, showing strong robustness on SHOT and BBC but a remaining precision bottleneck on ClipShots.
 
-Despite these advancements, several challenges remain. Cross-domain analysis revealed a noticeable performance degradation on diverse open-world datasets like ClipShots, primarily due to missed gradual transitions. This emphasizes that SBD systems should treat calibration, loss balancing, and temporal windows as domain-sensitive parameters rather than fixed constants. Fast camera motion and game-like visual effects can still trigger false positives, indicating a limit to purely visual features. In the future, we aim to explore domain-adaptive calibration techniques and multimodal SBD architectures that integrate audio cues to further improve cross-domain robustness.
+The controlled replication clarifies the source of the improvement. Focal
+Loss and many-hot supervision do not produce consistent practical gains over
+the BCE control, whereas calibrated post-processing yields paired-bootstrap gains on SHOT and
+ClipShots. The three-seed study observes F1 standard deviation below
+0.5 percentage points on every dataset, and the class-balanced calibration
+error shows why very
+small aggregate ECE values should not be interpreted as indicating uniformly calibrated
+boundary probabilities. Most reported tables are regenerated from tracked
+result artifacts; controlled analyses include cache identities and
+frozen selection manifests.
+
+Cross-domain analysis highlights a key remaining challenge: on open-world
+ClipShots the main limitation is reduced precision, as visual effects and domain shift
+create false-positive peaks that survive smoothing. Potential avenues for future work include reserving an independent calibration split,
+extending calibration to boundary-conditional estimates, and exploring
+domain-adaptive components such as lightweight adapters on the frozen backbone
+or per-domain post-processing selection, together with multimodal cues such as
+audio when visual evidence alone is ambiguous.

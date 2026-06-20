@@ -6,22 +6,14 @@
 \end{center}
 
 Đề cương chi tiết của khóa luận được tóm lược như sau:
-\phantomsection
-\addcontentsline{toc}{chapter}{ĐỀ CƯƠNG CHI TIẾT}
-
-\begin{center}
-{\large\bfseries{ĐỀ CƯƠNG CHI TIẾT}}
-\end{center}
-
-Đề cương chi tiết của khóa luận được tóm lược như sau:
 
 \begin{enumerate}
     \item \textbf{Bối cảnh nghiên cứu:} sự bùng nổ của video ngắn làm gia tăng nhu cầu phân đoạn video theo thời gian một cách tự động và chính xác.
     \item \textbf{Bài toán đặt ra:} xác định ranh giới giữa các shot trong video, bao gồm cả chuyển cảnh đột ngột và chuyển cảnh dần dần.
     \item \textbf{Khó khăn chính:} nhịp cắt nhanh, nội dung biến đổi mạnh trong nội bộ shot, nhiều hiệu ứng biên tập và thiếu dữ liệu chuyên biệt cho video ngắn.
-    \item \textbf{Dữ liệu nghiên cứu:} bộ dữ liệu SHOT được dùng làm tập trung tâm, đồng thời tham chiếu thêm các bộ dữ liệu BBC Planet Earth, RAI và ClipShots để đối chiếu.
-    \item \textbf{Phương pháp:} khảo sát TransNetV2 và AutoShot; phân tích cơ chế NAS; triển khai hướng cải tiến AutoShotV2 dựa trên tầng phân loại mới, Focal Loss, nhãn many-hot, hiệu chỉnh nhiệt độ và làm mượt Gaussian.
+    \item \textbf{Dữ liệu nghiên cứu:} bộ dữ liệu SHOT được dùng làm tập trung tâm, đồng thời tham chiếu thêm các bộ dữ liệu BBC Planet Earth và ClipShots để đối chiếu.
+    \item \textbf{Phương pháp:} khảo sát TransNetV2 và AutoShot; phân tích cơ chế NAS; triển khai hướng cải tiến AutoShotV2 dựa trên tầng phân loại mới, hàm mất mát Focal (Focal Loss), nhãn nhiều điểm dương (many-hot labels), hiệu chỉnh nhiệt độ (temperature scaling) và làm mượt Gaussian (Gaussian smoothing).
     \item \textbf{Thực nghiệm:} đánh giá bằng các chỉ số Precision, Recall, F1-score; so sánh mô hình cơ sở TransNetV2, AutoShot gốc và AutoShotV2 trên tập SHOT.
-    \item \textbf{Kết quả chính:} AutoShotV2 đạt F1 = 0.8545, cao hơn AutoShot gốc và vượt đáng kể so với mô hình cơ sở TransNetV2 trên tập kiểm tra SHOT.
+    \item \textbf{Kết quả chính:} Theo lựa chọn tốt nhất theo từng bộ dữ liệu trong quy trình đánh giá so sánh chính, AutoShotV2 đạt F1 = \ASVTwoBestShotFOne{} trên tập kiểm tra SHOT (lưu ý đây là mức trần lạc quan (oracle) khi tối ưu hóa ngưỡng quyết định riêng cho từng bộ dữ liệu, không phải cấu hình triển khai duy nhất), cao hơn AutoShot tự chạy lại và vượt đáng kể mô hình cơ sở TransNetV2. Cấu hình triển khai với ngưỡng cố định đạt F1 = \ASVTwoShotFOne{} và được dùng để phân tích độ ổn định khi triển khai.
     \item \textbf{Kết cấu báo cáo:} gồm năm chương, lần lượt trình bày tổng quan, công trình liên quan, phương pháp, dữ liệu và thực nghiệm, kết luận và hướng phát triển.
 \end{enumerate}

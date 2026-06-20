@@ -84,14 +84,10 @@ Source nằm trong package `autoshotv2` (cài bằng `pip install -e .`). Các p
 ├── requirements.txt
 ├── src/autoshotv2/
 │   ├── train_phase2.py                         # Train phase2 head (python -m autoshotv2.train_phase2)
-│   ├── train_ema.py                            # Fine-tune toàn model + EMA (python -m autoshotv2.train_ema)
-│   ├── ema.py                                  # ModelEMA (full-model weight EMA)
-│   ├── clipshots_dataset.py                    # ClipShots train windows cho train_ema
 │   ├── prepare_metadata.py                     # Chuẩn bị metadata train/val
 │   ├── eval.py                                 # Inference/eval (python -m autoshotv2.eval)
 │   ├── ablation.py                             # Runner ablation có kiểm soát
 │   ├── postprocess_calibration.py             # Calibration hậu xử lý (K-fold CV, không train lại)
-│   ├── ema_report.py                           # Sinh bảng EMA-vs-noEMA từ JSON (python -m autoshotv2.ema_report)
 │   ├── utils.py                                # Evaluation + scene conversion utils
 │   ├── model/
 │   │   ├── supernet.py                         # Model definition (TransNetV2Supernet)
@@ -112,8 +108,7 @@ Source nằm trong package `autoshotv2` (cài bằng `pip install -e .`). Các p
 ├── research/
 │   └── notebooks/                              # 4 notebook Kaggle (train/resume/smoke)
 ├── reports/                                    # Ablation + calibration analysis
-│   ├── deploy_results/                         # Result JSON deploy (SHOT/ClipShots/BBC)
-│   └── ema_study/                              # Nghiên cứu EMA (result JSON + report, tier JSON-only)
+│   └── deploy_results/                         # Result JSON deploy (SHOT/ClipShots/BBC)
 ├── publications/
 │   ├── paper/                                  # Bài báo IEEE, source + PDF phát hành
 │   └── thesis/                                 # Khóa luận, slide và bản phát hành
@@ -218,32 +213,6 @@ Ba kết luận chính, có kiểm chứng:
 Lưu ý: đây là calibration trên A0 + các run Phase2 ablation (A1/B5) có cache trong bundle, không phải
 checkpoint deploy (logits của nó không kèm theo). Mục đích là phương pháp luận calibration + trả lời
 câu hỏi A0-vs-Phase2 trên ClipShots, không phải thay thế bảng deploy ở trên.
-
-## Nghiên Cứu EMA (Fine-tune Toàn Model)
-
-Bên cạnh Phase2 (train head trên feature cache), bundle còn gồm một nghiên cứu **Weight EMA** khi
-**fine-tune toàn bộ model** trên ClipShots train (gộp từ pipeline EMA cũ). Đây là **chế độ train khác**
-Phase2 và **không so trực tiếp** với bảng deploy/ablation ở trên; baseline A/B của nó gần như trùng A0
-(ClipShots 0.7648 vs 0.7649; BBC 0.9554 trùng). Chi tiết + caveat: `reports/ema_study/`.
-
-A = Phase 1 raw · B = Phase 1 + Gaussian · D-EMA = fine-tune + EMA α=0.999 · D-noEMA = fine-tune control (tắt EMA).
-
-| Dataset | A raw | B +Gauss | D-EMA | D-noEMA | ΔEMA−noEMA |
-|---|---:|---:|---:|---:|---:|
-| AutoShot test (n=200) | 0.8412 | **0.8477** | 0.8417 | 0.8371 | **+0.0046** |
-| BBC shot-level (n=11) | 0.9554 | 0.9515 | **0.9604** | 0.9494 | **+0.0110** |
-| ClipShots test (n=500) | 0.7648 | **0.7899** | 0.7860 | 0.7638 | **+0.0222** |
-
-Kết luận trung thực: EMA cho ΔF1 dương so với control no-EMA trên **cả 3 dataset** và **vượt mọi baseline trên
-BBC**; nhưng **thua Phase 1 + Gauss trên AutoShot/ClipShots** (≤0.004). Số ở **tier JSON-only**
-(`reports/ema_study/results_*.json`); sinh lại bảng bằng `python -m autoshotv2.ema_report`.
-
-Train lại (cần ClipShots + `ckpt_0_200_0.pth`, xem `docs/ARTIFACTS_MANIFEST.md` mục 6):
-
-```powershell
-python -m autoshotv2.train_ema --clipshots-root data/ClipShots --base-ckpt artifacts/models/ckpt_0_200_0.pth --ema-decay 0.999
-python -m autoshotv2.train_ema --clipshots-root data/ClipShots --base-ckpt artifacts/models/ckpt_0_200_0.pth --no-ema   # control
-```
 
 ## Cài Đặt
 
@@ -355,8 +324,6 @@ python scripts/run_ablation_experiments.py `
   --reuse-sample-cache shot_clipshots_phase2_sample_cache_local.pkl
 ```
 
-Mặc định `--experiments all` hiện bỏ EMA khỏi matrix chính. Các ID EMA cũ (`A4_ema_only`, `B2_focal_ema`, `B3_manyhot_ema`) vẫn có thể chạy lại khi chỉ định trực tiếp bằng `--experiments`, nhưng không dùng cho candidate deploy mặc định.
-
 Smoke test nhanh:
 
 ```powershell
@@ -386,7 +353,6 @@ Các option ablation mới trong train script:
 
 - `--loss bce|focal`
 - `--temperature-mode off|auto`
-- `--use-ema --ema-decay 0.999` chỉ dùng để tái lập/so sánh các run EMA cũ
 
 ## Artifact Và Dung Lượng
 
@@ -476,7 +442,7 @@ Build và phát hành PDF:
 ```
 
 Artifact chuẩn: `publications/paper/releases/AutoShotV2_Paper.pdf`. Chi tiết
-protocol ClipShots và phạm vi EMA xem `publications/paper/README.md`.
+protocol ClipShots xem `publications/paper/README.md`.
 
 ## Nguồn Gốc AutoShot
 

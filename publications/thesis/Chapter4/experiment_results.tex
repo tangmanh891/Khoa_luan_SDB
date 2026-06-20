@@ -1,0 +1,167 @@
+\section{Kết quả chính trên SHOT và các bộ dữ liệu bổ sung}
+
+Trước khi đi vào phân tích chi tiết từng nhóm thí nghiệm, khóa luận phân biệt hai cách đọc kết quả AutoShotV2: cấu hình triển khai cố định dùng một ngưỡng chung cho mọi tập dữ liệu, còn cấu hình tốt nhất theo từng bộ dữ liệu chỉ đóng vai trò mức trần lạc quan. Bảng~\ref{tab:autoshotv2_results} là bảng so sánh chính, trong đó đặt cạnh nhau cấu hình triển khai cố định và mức trần lạc quan của AutoShotV2 để tránh nhầm lẫn giữa kết quả triển khai và kết quả oracle. Các bảng tiếp theo lần lượt phân tích Precision/Recall/F1, quét tham số bổ sung và phân rã thành phần.
+
+\textbf{Mục đích thí nghiệm:} Thí nghiệm này nhằm so sánh hiệu năng tổng thể (đo bằng F1-score) của phương pháp đề xuất AutoShotV2 với các mô hình thế hệ trước (TransNetV2, AutoShot gốc) và các công trình kinh điển trên ba bộ dữ liệu SHOT (video ngắn), BBC (video dài truyền thống) và ClipShots (môi trường thế giới mở) để kiểm chứng giả thuyết nghiên cứu RQ1 và RQ3.
+
+Bảng~\ref{tab:autoshotv2_results} tổng hợp F1-score của AutoShot, TransNetV2 và biến thể AutoShotV2 khi đánh giá trên ba tập dữ liệu SHOT, BBC và ClipShots.
+
+\begin{table}[H]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.2}
+
+\begin{tabular}{L{4.2cm}L{3.5cm}C{1.6cm}C{1.6cm}C{1.8cm}}
+\toprule
+\textbf{Phương pháp / cấu hình} & \textbf{Quy trình đánh giá} & \textbf{SHOT} & \textbf{BBC} & \textbf{ClipShots} \\
+\midrule
+\MainComparisonRows
+\bottomrule
+\end{tabular}
+\caption[So sánh F1-score các mô hình trên SHOT, BBC và ClipShots]{So sánh F1-score của các mô hình trên SHOT, BBC và ClipShots. Hàng ``triển khai cố định'' là cấu hình cuối cùng phục vụ suy luận trực tuyến với một ngưỡng chung. Hàng ``tốt nhất theo từng bộ dữ liệu'' là mức trần lạc quan khi chọn cấu hình/ngưỡng riêng cho từng tập, không đại diện cho một chính sách triển khai duy nhất.}
+\label{tab:autoshotv2_results}
+\end{table}
+
+\textbf{Kết quả minh chứng:} Số liệu so sánh F1-score tổng thể giữa các phương pháp trên ba bộ dữ liệu được thống kê chi tiết tại Bảng~\ref{tab:autoshotv2_results}.
+
+\textbf{Thảo luận:} Trong Bảng~\ref{tab:autoshotv2_results}, các hàng ``theo báo cáo'' lấy từ công trình gốc~\cite{zhu2023autoshot}, còn các hàng ``tự chạy lại'' là kết quả tái lập trong môi trường thực nghiệm của khóa luận. AutoShotV2 được báo cáo theo hai cách: cấu hình triển khai cố định dùng cùng ngưỡng 0.10 trên cả ba bộ dữ liệu, còn cấu hình tốt nhất theo từng bộ dữ liệu là mức trần lạc quan dùng để đánh giá tiềm năng của mô hình. Do đó, kết quả oracle không được hiểu là chính sách triển khai duy nhất. Dấu ``--'' chỉ ra cấu hình đó không được đánh giá lại trên tập tương ứng.
+
+Nhận xét chi tiết từ kết quả đo lường:
+\begin{itemize}
+    \item \textbf{So sánh với các công trình kinh điển:} Các mô hình thế hệ đầu như Deep Structured Models (DSM -- F1 đạt $0.7030$ trên ClipShots, $0.8920$ trên BBC) và TransNet (V1) (F1 đạt $0.7350$ trên ClipShots, $0.9290$ trên BBC) cho hiệu năng thấp hơn đáng kể so với các kiến trúc thế hệ sau. Điều này minh chứng cho sự phát triển mạnh mẽ của các mô hình học sâu không-thời gian trong giai đoạn từ sau năm 2020.
+    \item Biến thể \textbf{AutoShotV2 với các kỹ thuật cải tiến} đạt kết quả chính theo lựa chọn tốt nhất là $\ASVTwoBestShotFOne$ trên SHOT, $\ASVTwoBestBBCFOne$ trên BBC và $\ASVTwoBestClipFOne$ trên ClipShots. So với AutoShot tự chạy lại, mức cải thiện lần lượt là $+\ASVTwoBestVsAutoShotShotPP{}$ điểm phần trăm trên SHOT và $+\ASVTwoBestVsAutoShotClipPP{}$ điểm phần trăm trên ClipShots. Ở cấu hình triển khai ngưỡng cố định, ClipShots đạt $\ASVTwoClipFOne$ tại ngưỡng $0.10$, thấp hơn AutoShot tự chạy lại; điều này cho thấy lợi ích trên ClipShots phụ thuộc nhiều hơn vào lựa chọn ngưỡng hoặc cấu hình theo miền.
+\end{itemize}
+
+\section{So sánh Precision, Recall và F1-score}
+
+\textbf{Mục đích thí nghiệm:} Thí nghiệm này nhằm báo cáo chi tiết các chỉ số Precision, Recall và các giá trị True Positive (TP), False Positive (FP), False Negative (FN) của giải pháp triển khai AutoShotV2 dưới một chính sách ngưỡng quyết định cố định duy nhất ($\theta=0.10$), qua đó giúp đánh giá xu hướng thiên lệch (bias) về hướng bỏ sót hay dự đoán thừa ranh giới shot trên từng miền dữ liệu.
+
+Bảng~\ref{tab:autoshotv2_prf} trình bày chi tiết Precision, Recall và F1 của AutoShotV2 tại ngưỡng triển khai trên từng bộ dữ liệu, kèm theo số liệu TP/FP/FN tuyệt đối để làm rõ hành vi của mô hình. Bảng dưới dùng ngưỡng triển khai cố định 0.10 cho cả ba bộ dữ liệu để báo cáo một chính sách suy luận đồng bộ; các ngưỡng tốt nhất theo từng tập dữ liệu được trình bày riêng như mức trần lạc quan và không được hiểu là một cấu hình triển khai duy nhất.
+
+\begin{table}[H]
+\centering
+\caption[Precision, Recall, F1 của AutoShotV2 trên ba bộ dữ liệu]{Precision, Recall, F1 của AutoShotV2 trên ba bộ dữ liệu với ngưỡng $\theta = 0.10$.}
+\label{tab:autoshotv2_prf}
+\small
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{L{2.8cm}C{1.6cm}C{1.8cm}C{1.8cm}C{1.4cm}C{1.2cm}C{1.2cm}C{1.2cm}}
+\toprule
+\textbf{Bộ dữ liệu} & \textbf{Ngưỡng} & \textbf{Precision} & \textbf{Recall} & \textbf{F1} & \textbf{TP} & \textbf{FP} & \textbf{FN} \\
+\midrule
+\DeployPRFRows
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Kết quả minh chứng:} Số liệu đo lường chi tiết được ghi nhận tại Bảng~\ref{tab:autoshotv2_prf}.
+
+\textbf{Thảo luận:} Ở ngưỡng triển khai chung, AutoShotV2 giữ cân bằng Precision--Recall tốt trên SHOT và BBC, nhưng ClipShots có Precision thấp hơn rõ rệt ($0.6661$) dù Recall vẫn cao ($0.8657$). Điều này cho thấy vấn đề chính trên ClipShots không chỉ là bỏ sót chuyển cảnh mà còn là số lượng dự đoán dư thừa lớn, thể hiện qua $3129$ false positives.
+
+\section{Thí nghiệm quét tham số (sweep) bổ sung}
+\label{sec:extra_param_sweep}
+
+\textbf{Mục đích thí nghiệm:} Thí nghiệm này (quét tham số bổ sung) nhằm khảo sát giới hạn hiệu năng cao nhất (mức trần oracle) của kiến trúc AutoShotV2 khi được tối ưu hóa riêng biệt theo từng bộ dữ liệu thông qua việc tìm kiếm bộ siêu tham số và ngưỡng quyết định tối ưu cục bộ, nhằm trả lời câu hỏi nghiên cứu về tiềm năng tối đa của giải pháp trên các phân phối dữ liệu khác nhau.
+
+Sau cấu hình triển khai ngưỡng cố định, khóa luận thử thêm một lượt quét tham số (sweep) rút gọn với cấu hình mới: $T^*=0.2413$, $\sigma=2.0$, $\gamma=2.0$, $\alpha=0.6$, trọng số nhãn nhiều điểm dương bằng $0.3$, tốc độ học bằng $7\times10^{-6}$ và suy giảm trọng số bằng $10^{-4}$. Mục tiêu của thí nghiệm này là kiểm tra xem việc tăng độ tập trung của hàm mất mát Focal và giảm tốc độ học có tạo ra các đỉnh F1 tốt hơn sau khi quét ngưỡng (quét ngưỡng quyết định) hay không.
+
+\begin{table}[H]
+\centering
+\caption[Đỉnh F1 của cấu hình quét tham số bổ sung]{Đỉnh F1 của cấu hình quét tham số bổ sung khi chọn ngưỡng quyết định tốt nhất riêng cho từng bộ dữ liệu. Cột cuối so sánh với cấu hình AutoShotV2 triển khai ngưỡng cố định ở Bảng~\ref{tab:autoshotv2_prf}.}
+\label{tab:extra_sweep_peaks}
+\small
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{L{3.0cm}C{1.8cm}C{2.0cm}C{1.8cm}C{1.5cm}C{1.9cm}}
+\toprule
+\textbf{Bộ dữ liệu} & \textbf{Ngưỡng} & \textbf{Precision} & \textbf{Recall} & \textbf{F1} & \textbf{Chênh lệch} \\
+\midrule
+SHOT & 0.12 & 0.8408 & 0.8816 & \textbf{0.8607} & $+0.0062$ \\
+ClipShots & 0.19 & 0.7011 & 0.8554 & \textbf{0.7706} & $+0.0177$ \\
+BBC & 0.12 & 0.9668 & 0.9628 & 0.9648 & $-0.0008$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Kết quả minh chứng:} Các đỉnh F1 tìm được cùng các giá trị Precision/Recall tương ứng được ghi nhận chi tiết tại Bảng~\ref{tab:extra_sweep_peaks}.
+
+\textbf{Thảo luận:} Bảng~\ref{tab:extra_sweep_peaks} cho thấy cấu hình bổ sung tạo ra các đỉnh tốt hơn trên SHOT và ClipShots khi mỗi bộ dữ liệu được chọn ngưỡng riêng. Đây là kết quả oracle theo tập kiểm tra, nên chỉ dùng để ước lượng tiềm năng của từng miền dữ liệu. Hàng ``AutoShotV2 tốt nhất theo từng bộ dữ liệu'' trong Bảng~\ref{tab:autoshotv2_results} lấy SHOT và ClipShots từ cấu hình bổ sung ở Bảng~\ref{tab:extra_sweep_peaks}, còn BBC từ cấu hình triển khai cố định vì đạt F1 cao hơn. Khi xét một chính sách triển khai chung cho cả ba bộ dữ liệu, cấu hình bổ sung không ổn định bằng cấu hình triển khai ngưỡng cố định: ngưỡng chung tốt nhất nằm quanh $0.17$, với F1 lần lượt là $0.8518$ trên SHOT, $0.7581$ trên ClipShots và $0.9598$ trên BBC, trung bình khoảng $0.8566$, thấp hơn trung bình của cấu hình triển khai ngưỡng cố định $0.8577$.
+
+\section{Thực nghiệm phân rã thành phần}
+\label{sec:ablation}
+
+\textbf{Mục đích thí nghiệm:} Thực nghiệm phân rã thành phần (ablation study) này nhằm kiểm chứng độc lập và làm rõ đóng góp thực tế của từng đề xuất cải tiến (gồm hàm mất mát Focal, nhãn nhiều điểm dương ở giai đoạn huấn luyện; hiệu chỉnh nhiệt độ - temperature scaling, làm mượt Gaussian - Gaussian smoothing ở giai đoạn hậu xử lý) trên quy trình (pipeline) Pha 2 (đóng băng mạng xương sống) đối với hiệu năng cuối cùng của hệ thống, trả lời cho câu hỏi nghiên cứu RQ2.
+
+Bảng~\ref{tab:ablation_controlled} phân tách đóng góp của từng thành phần trên quy trình triển khai Pha 2 --- chỉ huấn luyện lại tầng phân loại trên đặc trưng đã trích sẵn (đóng băng mạng xương sống) --- theo một ma trận đối chứng có kiểm soát. Lưu ý hệ số nhiệt độ ở ma trận này khác cấu hình triển khai ngưỡng cố định (do chạy trên tập con metadata) nên F1 không so trực tiếp được; điểm nhất quán là SHOT gần như bằng nhau ($\BFourShotFOne$ ở $B4$ so với $\ASVTwoShotFOne$ của cấu hình triển khai ngưỡng cố định).
+
+\begin{table}[H]
+\centering
+\caption[Ablation thành phần có kiểm soát trên Pha 2]{Ablation thành phần có kiểm soát trên Pha 2: $\Delta$F1 so với đối chứng A1 (điểm phần trăm). Số đậm đánh dấu cấu hình $B4$ được chọn làm cấu hình hậu xử lý chính.}
+\label{tab:ablation_controlled}
+\small
+\begin{tabular}{L{5.0cm}C{2.2cm}C{2.2cm}C{2.4cm}}
+\toprule
+\textbf{Cấu hình} & \textbf{SHOT} & \textbf{BBC} & \textbf{ClipShots} \\
+\midrule
+\AblationRows
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Kết quả minh chứng:} Ma trận kết quả ablation có kiểm soát được chi tiết hóa tại Bảng~\ref{tab:ablation_controlled}.
+
+\textbf{Thảo luận:} Trong ma trận đối chứng có kiểm soát ở Bảng~\ref{tab:ablation_controlled}, quá trình ablation được thực hiện trên quy trình Pha 2 bằng cách huấn luyện tầng phân loại trên đặc trưng đã trích sẵn (đóng băng mạng xương sống). Cấu hình đối chứng (control) là $A1$ (huấn luyện với hàm BCE và nhãn một điểm dương (one-hot)). Quá trình hậu xử lý trong thí nghiệm này sử dụng hệ số nhiệt độ $T^*=0.6618$ (khác hệ số $T^*=0.3878$ của cấu hình triển khai ngưỡng cố định do chạy trên tập con metadata dùng cho cross-validation). Mô hình AutoShot gốc $A0$ đóng vai trò mốc tham chiếu. Số đậm trong bảng đánh dấu cấu hình $B4$ được chọn làm cấu hình hậu xử lý chính trong ma trận đối chứng chứ không phải giá trị lớn nhất của cột.
+
+Trong ma trận đối chứng này, hậu xử lý là đòn bẩy lớn nhất: $B4$ (Hiệu chỉnh nhiệt độ + Làm mượt Gaussian) nâng F1 rõ rệt so với đối chứng $A1$ trên SHOT ($+1.6$ điểm phần trăm) và ClipShots ($+4.6$ điểm phần trăm), trong khi hàm mất mát Focal hay nhãn nhiều điểm dương riêng lẻ gần như không thay đổi. Cấu hình $P1$ (chỉ làm mượt Gaussian) tuy tăng mạnh ClipShots nhưng làm giảm BBC xuống dưới ngưỡng guardrail, nên không được chọn; B4 giữ BBC gần như không đổi, cung cấp bằng chứng thực nghiệm rằng hiệu chỉnh nhiệt độ kết hợp làm mượt Gaussian là hướng hậu xử lý ổn định nhất trong thí nghiệm đối chứng.
+
+Nhận xét từ bảng phân rã thành phần:
+\begin{itemize}
+    \item \textbf{Hậu xử lý là thành phần tác động lớn nhất:} Làm mượt Gaussian, đặc biệt khi kết hợp với hiệu chỉnh nhiệt độ ở $B4$, cải thiện rõ rệt trên ClipShots và SHOT; các thành phần huấn luyện như hàm mất mát Focal hay nhãn nhiều điểm dương chỉ tạo thay đổi nhỏ hoặc không ổn định khi đứng độc lập.
+    \item \textbf{ClipShots vẫn là miền thử thách cực lớn:} Việc tinh chỉnh tầng phân loại chưa thể giúp mô hình vượt qua baseline gốc một cách ổn định trên ClipShots ở các cấu hình đối chứng, củng cố nhận định rằng miền dữ liệu thế giới mở này cần các cơ chế hiệu chỉnh nhiệt độ hoặc làm mượt thích nghi miền riêng biệt.
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[font=\small]
+% Horizontal bar chart comparing F1 scores
+% Scale: display_x = (value - 0.70) * 20
+% [0.70, 0.95] → [0, 5] cm
+
+% Bar heights (y centers) and half-height
+\def\yA{2.4}  % AutoShotV2
+\def\yB{1.4}  % AutoShot
+\def\yC{0.4}  % TransNetV2
+\def\hh{0.35}
+
+% Bars
+% TransNetV2 F1=0.7993 → (0.7993-0.7)*20=1.986
+\fill[blue!50, opacity=0.8]        (0,\yC-\hh) rectangle (1.986,\yC+\hh);
+% AutoShot F1=0.8405 → 2.810
+\fill[green!55!black, opacity=0.75](0,\yB-\hh) rectangle (2.810,\yB+\hh);
+% AutoShotV2 best F1=0.8607 -> 3.214
+\fill[red!60!orange, opacity=0.85] (0,\yA-\hh) rectangle (3.214,\yA+\hh);
+
+% Value labels
+\node[anchor=west, font=\scriptsize]        at (2.036, \yC) {0.7993};
+\node[anchor=west, font=\scriptsize]        at (2.860, \yB) {0.8405};
+\node[anchor=west, font=\scriptsize\bfseries] at (3.264, \yA) {\textbf{\ASVTwoBestShotFOne{}}};
+
+% Model name labels
+\node[anchor=east, font=\scriptsize] at (-0.1, \yC) {TransNetV2};
+\node[anchor=east, font=\scriptsize] at (-0.1, \yB) {AutoShot};
+\node[anchor=east, font=\scriptsize] at (-0.1, \yA) {AutoShotV2};
+
+% X-axis and ticks
+\draw[->] (0,-0.1) -- (5.3,-0.1) node[right, font=\scriptsize] {F1};
+\draw     (0,-0.1) -- (0,3.1);
+\foreach \v/\x in {0.70/0, 0.75/1, 0.80/2, 0.85/3, 0.90/4} {
+  \draw[gray!40, thin] (\x, -0.1) -- (\x, 3.0);
+  \draw (\x,-0.1) -- (\x,-0.2);
+  \node[below, font=\scriptsize] at (\x,-0.25) {\v};
+}
+\end{tikzpicture}
+\caption[So sánh F1 trên tập SHOT]{So sánh F1 giữa các mô hình trên tập SHOT (200 video kiểm tra). AutoShotV2 đạt F1 = \ASVTwoBestShotFOne{} theo lựa chọn tốt nhất trong protocol so sánh chính, cải thiện $+\ASVTwoBestVsAutoShotShotPP{}$ điểm phần trăm so với AutoShot tự chạy lại và $+\ASVTwoBestVsTransNetShotPP{}$ điểm phần trăm so với TransNetV2 mô hình cơ sở.}
+\label{fig:f1_comparison}
+\end{figure}
+\FloatBarrier
+
+

@@ -1,23 +1,64 @@
 import { API_BASE, AutoShotJob } from "./client";
 
-export type UploadSettings = {
-  sensitivity: "low" | "medium" | "high";
-  minSceneDurationSec: number;
-  backend: "auto" | "phase2" | "baseline";
-  temperature: number | null;
-  sigma: number | null;
-  threshold: number | null;
+export type ModelInfo = {
+  preset: string;
+  display_name: string;
+  is_default: boolean;
+  available: boolean;
 };
 
-export async function createJobFromUpload(file: File, settings: UploadSettings): Promise<AutoShotJob> {
+export type JobSummaryItem = {
+  id: string;
+  status: string;
+  stage: string;
+  progress: number;
+  created_at: string;
+  input: { original_name: string; size_bytes: number };
+  processing: { model_name?: string };
+  summary?: { scene_count: number } | null;
+  error?: string | null;
+};
+
+export async function listJobs(): Promise<JobSummaryItem[]> {
+  const response = await fetch(`${API_BASE}/api/jobs/`);
+  if (!response.ok) return [];
+  const data = await response.json();
+  return data.jobs as JobSummaryItem[];
+}
+
+export async function createCompareFromUpload(
+  file: File,
+  presetA: string,
+  presetB: string,
+): Promise<{ job_a: AutoShotJob; job_b: AutoShotJob }> {
   const form = new FormData();
   form.append("file", file);
-  form.append("sensitivity", settings.sensitivity);
-  form.append("min_scene_duration_sec", String(settings.minSceneDurationSec));
-  form.append("backend", settings.backend);
-  if (settings.temperature !== null) form.append("temperature", String(settings.temperature));
-  if (settings.sigma !== null) form.append("sigma", String(settings.sigma));
-  if (settings.threshold !== null) form.append("threshold", String(settings.threshold));
+  form.append("preset_a", presetA);
+  form.append("preset_b", presetB);
+
+  const response = await fetch(`${API_BASE}/api/compare/from-upload`, {
+    method: "POST",
+    body: form,
+  });
+
+  if (!response.ok) {
+    const error = await readError(response);
+    throw new Error(error);
+  }
+  return response.json();
+}
+
+export async function listModels(): Promise<ModelInfo[]> {
+  const response = await fetch(`${API_BASE}/api/models`);
+  if (!response.ok) return [];
+  const data = await response.json();
+  return data.models as ModelInfo[];
+}
+
+export async function createJobFromUpload(file: File, preset: string): Promise<AutoShotJob> {
+  const form = new FormData();
+  form.append("file", file);
+  form.append("preset", preset);
 
   const response = await fetch(`${API_BASE}/api/jobs/from-upload`, {
     method: "POST",

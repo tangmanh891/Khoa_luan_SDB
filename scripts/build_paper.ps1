@@ -8,7 +8,19 @@ $Paper = Join-Path $Root "publications\paper"
 $Build = Join-Path $Paper "build"
 $Releases = Join-Path $Paper "releases"
 
+if (Test-Path $Build) {
+    Remove-Item -Recurse -Force $Build | Out-Null
+}
 New-Item -ItemType Directory -Force -Path $Build, $Releases | Out-Null
+
+# Dọn dẹp các tệp phụ trợ cũ tại thư mục gốc của paper nếu tồn tại
+$LegacyFiles = @("main.aux", "main.log", "main.out", "main.toc", "main.pdf", "main.bbl", "main.bcf", "main.blg", "main.run.xml")
+foreach ($file in $LegacyFiles) {
+    $path = Join-Path $Paper $file
+    if (Test-Path $path) {
+        Remove-Item -Force $path | Out-Null
+    }
+}
 
 & python (Join-Path $PSScriptRoot "sync_experimental_results.py") --check
 if ($LASTEXITCODE -ne 0) {

@@ -1,0 +1,3814 @@
+    TRƯỜNG ĐẠI HỌC KHOA HỌC TỰ NHIÊN
+      KHOA CÔNG NGHỆ THÔNG TIN
+
+
+
+
+      Tằng Sềnh Mành - 22120202
+       Đỗ Tiến Mạnh - 22120203
+
+
+
+
+PHÁT HIỆN RANH GIỚI CẢNH QUAY
+  DỰA TRÊN MÔ HÌNH HỌC SÂU
+
+
+
+    KHÓA LUẬN TỐT NGHIỆP CỬ NHÂN
+       CHƯƠNG TRÌNH CHÍNH QUY
+
+
+
+      GIÁO VIÊN HƯỚNG DẪN
+             TS. Trần Thái Sơn
+
+
+
+
+       Tp. Hồ Chí Minh, tháng 06/2026
+LỜI CAM ĐOAN
+
+    Chúng tôi xin cam đoan đây là công trình nghiên cứu của nhóm tác
+giả. Các số liệu và kết quả nghiên cứu trong khóa luận này là trung thực
+và không trùng lặp với các đề tài khác.
+                          LỜI CẢM ƠN
+
+    Nhóm tác giả xin gửi lời cảm ơn chân thành và sâu sắc đến TS. Trần
+Thái Sơn, giảng viên hướng dẫn đề tài, người đã tận tình định hướng, theo
+sát quá trình thực hiện và đưa ra những góp ý quý báu để nhóm hoàn
+thiện nghiên cứu. Sự hỗ trợ của thầy không chỉ giúp nhóm tháo gỡ các
+khó khăn về chuyên môn mà còn giúp nhóm rèn luyện cách tiếp cận vấn
+đề một cách nghiêm túc và có hệ thống.
+    Nhóm cũng xin trân trọng cảm ơn Ban lãnh đạo, quý thầy cô giảng viên
+và cán bộ nhân viên ngành Công nghệ thông tin đã tạo điều kiện thuận lợi
+trong suốt quá trình học tập, nghiên cứu và thực hiện đề tài. Những kiến
+thức, kinh nghiệm và sự hỗ trợ từ quý thầy cô là nền tảng quan trọng để
+nhóm có thể vận dụng vào quá trình xây dựng, thử nghiệm và hoàn thiện
+nội dung nghiên cứu.
+    Bên cạnh đó, nhóm xin gửi lời cảm ơn đến gia đình, anh chị và bạn bè
+đã luôn động viên, chia sẻ và đóng góp ý kiến trong thời gian thực hiện đề
+tài. Sự đồng hành và khích lệ của mọi người là nguồn động lực lớn giúp
+nhóm kiên trì hoàn thành công việc.
+    Mặc dù đã nỗ lực hoàn thiện báo cáo trong khả năng tốt nhất, nhóm tác
+giả nhận thức rằng nội dung vẫn khó tránh khỏi những thiếu sót. Nhóm
+rất mong nhận được sự góp ý của quý thầy cô để đề tài được hoàn thiện
+hơn. Kính chúc quý thầy cô nhiều sức khỏe, hạnh phúc và thành công
+trong công tác giảng dạy, nghiên cứu.
+    Xin chân thành cảm ơn!
+
+
+
+
+                                    i
+                 ĐỀ CƯƠNG CHI TIẾT
+
+Đề cương chi tiết của khóa luận được tóm lược như sau:
+
+1. Bối cảnh nghiên cứu: sự bùng nổ của video ngắn làm gia tăng
+   nhu cầu phân đoạn video theo thời gian một cách tự động và chính
+   xác.
+
+2. Bài toán đặt ra: xác định ranh giới giữa các shot trong video, bao
+   gồm cả chuyển cảnh đột ngột và chuyển cảnh dần dần.
+
+3. Khó khăn chính: nhịp cắt nhanh, nội dung biến đổi mạnh trong
+   nội bộ shot, nhiều hiệu ứng biên tập và thiếu dữ liệu chuyên biệt cho
+   video ngắn.
+
+4. Dữ liệu nghiên cứu: bộ dữ liệu SHOT được dùng làm tập trung
+   tâm, đồng thời tham chiếu thêm các bộ dữ liệu BBC Planet Earth
+   và ClipShots để đối chiếu.
+
+5. Phương pháp: khảo sát TransNetV2 và AutoShot; phân tích cơ
+   chế NAS; triển khai hướng cải tiến AutoShotV2 dựa trên tầng phân
+   loại mới, hàm mất mát Focal (Focal Loss), nhãn nhiều điểm dương
+   (many-hot labels), hiệu chỉnh nhiệt độ (temperature scaling) và làm
+   mượt Gaussian (Gaussian smoothing).
+
+6. Thực nghiệm: đánh giá bằng các chỉ số Precision, Recall, F1-score;
+   so sánh mô hình cơ sở TransNetV2, AutoShot gốc và AutoShotV2
+   trên tập SHOT.
+
+7. Kết quả chính: Theo lựa chọn tốt nhất theo từng bộ dữ liệu trong
+   quy trình đánh giá so sánh chính, AutoShotV2 đạt F1 = 0.8607 trên
+   tập kiểm tra SHOT (lưu ý đây là mức trần lạc quan – oracle upper-
+   bound khi tối ưu hóa ngưỡng quyết định riêng cho từng bộ dữ liệu,
+   không phải cấu hình triển khai duy nhất), cao hơn AutoShot tự chạy
+   lại và vượt đáng kể mô hình cơ sở TransNetV2. Cấu hình triển khai
+   với ngưỡng cố định đạt F1 = 0.8545 và được dùng để phân tích độ
+   ổn định khi triển khai.
+
+                                 ii
+8. Kết cấu báo cáo: gồm năm chương, lần lượt trình bày tổng quan,
+   công trình liên quan, phương pháp, dữ liệu và thực nghiệm, kết luận
+   và hướng phát triển.
+
+
+
+
+                                iii
+Mục lục
+
+LỜI CẢM ƠN                                                                                i
+
+ĐỀ CƯƠNG CHI TIẾT                                                                        ii
+
+MỤC LỤC                                                                                 iv
+
+DANH MỤC CHỮ VIẾT TẮT, THUẬT NGỮ CHUYÊN MÔN                                            viii
+
+DANH MỤC CÁC HÌNH                                                                      xii
+
+DANH MỤC CÁC BẢNG                                                                      xiii
+
+TÓM TẮT                                                                                xiv
+
+1 TỔNG QUAN ĐỀ TÀI                                                                       1
+  1.1   Bối cảnh nghiên cứu . . . . . . . . . . . . . . . . . . . . . . . . . . .        1
+  1.2   Phát biểu bài toán . . . . . . . . . . . . . . . . . . . . . . . . . . . .       2
+  1.3   Thách thức bài toán . . . . . . . . . . . . . . . . . . . . . . . . . . .        4
+  1.4   Mục tiêu nghiên cứu . . . . . . . . . . . . . . . . . . . . . . . . . . .        6
+  1.5   Phạm vi và giới hạn đề tài . . . . . . . . . . . . . . . . . . . . . . . .       6
+  1.6   Câu hỏi nghiên cứu . . . . . . . . . . . . . . . . . . . . . . . . . . . .       7
+  1.7   Hướng tiếp cận và đóng góp chính . . . . . . . . . . . . . . . . . . .           7
+        1.7.1   Hướng tiếp cận . . . . . . . . . . . . . . . . . . . . . . . . . .       7
+        1.7.2   Đóng góp . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .     9
+  1.8   Tổ chức khóa luận . . . . . . . . . . . . . . . . . . . . . . . . . . . . .      9
+  1.9   Tổng kết chương . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .     10
+
+2 CƠ SỞ LÝ THUYẾT VÀ CÔNG TRÌNH LIÊN QUAN                                               11
+  2.1   Tổng quan bài toán phát hiện ranh giới cảnh quay . . . . . . . . . .            11
+  2.2   Phương pháp cổ điển . . . . . . . . . . . . . . . . . . . . . . . . . . .       12
+        2.2.1   Biểu đồ tần suất và chênh lệch điểm ảnh . . . . . . . . . . .           12
+        2.2.2   Dựa trên biên cạnh và miền nén . . . . . . . . . . . . . . . .          13
+        2.2.3   Hạn chế của phương pháp cổ điển trên video ngắn . . . . . .             13
+
+
+                                          iv
+ 2.3   Phương pháp học sâu . . . . . . . . . . . . . . . . . . . . . . . . . . .     14
+       2.3.1   DeepSBD và biến thể C3D . . . . . . . . . . . . . . . . . . .         14
+       2.3.2   TransNet và TransNetV2 . . . . . . . . . . . . . . . . . . . .        15
+       2.3.3   Tiếp cận Transformer và multi-modal . . . . . . . . . . . . .         15
+ 2.4   Neural Architecture Search trong thị giác máy tính và SBD . . . . .           16
+       2.4.1   Tổng quan NAS . . . . . . . . . . . . . . . . . . . . . . . . . .     16
+ 2.5   AutoShot và vị trí trong dòng nghiên cứu SBD . . . . . . . . . . . .          17
+ 2.6   So sánh tổng quan các công trình liên quan . . . . . . . . . . . . . .        17
+ 2.7   Vấn đề tồn tại và khoảng trống nghiên cứu . . . . . . . . . . . . . .         18
+ 2.8   Tổng kết chương . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .   20
+
+3 PHƯƠNG PHÁP ĐỀ XUẤT                                                                21
+ 3.1   Tổng quan hướng tiếp cận . . . . . . . . . . . . . . . . . . . . . . . .      21
+ 3.2   Kỹ thuật tìm kiếm kiến trúc mạng nơ-ron . . . . . . . . . . . . . . .         22
+       3.2.1   Định nghĩa bài toán NAS . . . . . . . . . . . . . . . . . . . .       23
+       3.2.2   Không gian tìm kiếm . . . . . . . . . . . . . . . . . . . . . . .     24
+       3.2.3   Chiến lược tìm kiếm . . . . . . . . . . . . . . . . . . . . . . .     24
+       3.2.4   Chiến lược ước tính hiệu suất . . . . . . . . . . . . . . . . . .     26
+ 3.3   Nền tảng: Mô hình TransNetV2 . . . . . . . . . . . . . . . . . . . . .        27
+       3.3.1   Tổng quan và vị trí trong dòng chảy nghiên cứu SBD . . . .            27
+       3.3.2   Kiến trúc mô hình . . . . . . . . . . . . . . . . . . . . . . . .     28
+       3.3.3   Hàm mục tiêu và quy trình huấn luyện . . . . . . . . . . . .          31
+       3.3.4   Thuật toán suy diễn với cửa sổ trượt . . . . . . . . . . . . . .      32
+       3.3.5   Thông số cấu hình . . . . . . . . . . . . . . . . . . . . . . . .     33
+ 3.4   Mô hình AutoShot — nền tảng kế thừa từ TransNetV2 . . . . . . .               34
+       3.4.1   Động lực kế thừa từ TransNetV2 . . . . . . . . . . . . . . . .        34
+       3.4.2   Không gian tìm kiếm kiến trúc . . . . . . . . . . . . . . . . .       35
+       3.4.3   Quy trình tìm kiếm NAS . . . . . . . . . . . . . . . . . . . .        37
+       3.4.4   Huấn luyện lại và tinh chỉnh mô hình . . . . . . . . . . . . .        41
+       3.4.5   Kiến trúc tối ưu của AutoShot . . . . . . . . . . . . . . . . .       44
+       3.4.6   So sánh với TransNetV2 . . . . . . . . . . . . . . . . . . . . .      44
+ 3.5   Biến thể AutoShotV2 — Cải tiến tầng phân loại và hậu xử lý . . .              46
+       3.5.1   Động lực và chiến lược tổng thể . . . . . . . . . . . . . . . . .     46
+       3.5.2   Kiến trúc tầng phân loại (ClassificationHead) . . . . . . . .         47
+       3.5.3   Focal Loss – giải quyết mất cân bằng lớp . . . . . . . . . . .        48
+       3.5.4   Nhãn nhiều điểm dương (many-hot) — giám sát vùng biên .               49
+
+
+
+                                         v
+        3.5.5   Gaussian Smoothing — triệt tiêu nhiễu đơn lẻ . . . . . . . .             50
+        3.5.6   Hiệu chỉnh nhiệt độ (Temperature Scaling) — hiệu chỉnh xác
+                suất . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .   51
+        3.5.7   Quy trình huấn luyện lại và thuật toán tổng thể . . . . . . .            52
+  3.6   Tổng kết chương . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .      52
+
+4 BỘ DỮ LIỆU VÀ THỰC NGHIỆM                                                              53
+  4.1   Bộ dữ liệu SHOT . . . . . . . . . . . . . . . . . . . . . . . . . . . . .        53
+        4.1.1   Chi tiết bộ dữ liệu . . . . . . . . . . . . . . . . . . . . . . . .      53
+        4.1.2   Phân tích bộ dữ liệu . . . . . . . . . . . . . . . . . . . . . . .       54
+        4.1.3   Tóm tắt bộ dữ liệu SHOT . . . . . . . . . . . . . . . . . . . .          56
+  4.2   Các bộ dữ liệu đánh giá bổ sung . . . . . . . . . . . . . . . . . . . .          57
+        4.2.1   Bộ dữ liệu BBC Planet Earth . . . . . . . . . . . . . . . . . .          57
+        4.2.2   Bộ dữ liệu ClipShots . . . . . . . . . . . . . . . . . . . . . . .       57
+        4.2.3   So sánh tổng hợp các bộ dữ liệu . . . . . . . . . . . . . . . .          57
+  4.3   Các chỉ số đánh giá hiệu quả mô hình . . . . . . . . . . . . . . . . .           58
+  4.4   Kịch bản thực nghiệm . . . . . . . . . . . . . . . . . . . . . . . . . .         59
+        4.4.1   Giải pháp triển khai cuối cùng được chọn . . . . . . . . . . .           59
+  4.5   Kết quả chính trên SHOT và các bộ dữ liệu bổ sung . . . . . . . . .              61
+  4.6   So sánh Precision, Recall và F1-score . . . . . . . . . . . . . . . . . .        63
+  4.7   Thí nghiệm quét tham số (sweep) bổ sung . . . . . . . . . . . . . . .            64
+  4.8   Thực nghiệm phân rã thành phần . . . . . . . . . . . . . . . . . . . .           65
+  4.9   Tổng kết chương . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .      67
+
+5 KẾT LUẬN VÀ HƯỚNG PHÁT TRIỂN                                                           68
+  5.1   Trả lời các câu hỏi nghiên cứu . . . . . . . . . . . . . . . . . . . . . .       68
+        5.1.1   Các phát hiện bổ sung ngoài câu hỏi nghiên cứu . . . . . . .             70
+  5.2   Hạn chế của đề tài và thảo luận . . . . . . . . . . . . . . . . . . . . .        71
+        5.2.1   Precision thấp trên ClipShots ở ngưỡng triển khai . . . . . .            71
+        5.2.2   Các giả thuyết kỹ thuật chưa được kiểm chứng đầy đủ . . .                71
+  5.3   Hướng phát triển tương lai . . . . . . . . . . . . . . . . . . . . . . . .       72
+        5.3.1   Cải tiến mô hình phát hiện chuyển cảnh dần . . . . . . . . .             72
+        5.3.2   Tối ưu hóa hiệu chỉnh nhiệt độ đa miền (Multi-domain Cal-
+                ibration) . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .    72
+        5.3.3   Mở rộng ma trận thực nghiệm đối chứng . . . . . . . . . . .              72
+
+Danh mục công trình của tác giả                                                          74
+
+
+                                           vi
+Tài liệu tham khảo                                                                 75
+
+A Ký hiệu toán học và quy ước đánh giá                                             79
+  A.1 Ký hiệu sử dụng trong khóa luận . . . . . . . . . . . . . . . . . . . .      79
+  A.2 Quy ước đánh giá . . . . . . . . . . . . . . . . . . . . . . . . . . . . .   80
+
+B Bảng tổng hợp kết quả bổ sung                                                    82
+  B.1 Bảng đầy đủ tất cả thực nghiệm . . . . . . . . . . . . . . . . . . . .       82
+
+
+
+
+                                        vii
+    DANH MỤC CHỮ VIẾT TẮT, THUẬT NGỮ
+              CHUYÊN MÔN
+
+1. Chữ viết tắt
+
+  Ký hiệu      Cụm từ tiếng Anh               Giải thích
+
+                                              Phát hiện ranh giới cảnh quay
+  SBD          Shot Boundary Detection
+                                              trong video.
+               Short Video Shot
+                                              Bộ dữ liệu chuyên biệt cho bài
+  SHOT         Boundary Detection
+                                              toán SBD trên video ngắn.
+               Dataset
+               Neural Architecture            Kỹ thuật tự động tìm kiếm kiến
+  NAS
+               Search                         trúc mạng nơ-ron tối ưu.
+                                              Chiến lược NAS một lần bắn với
+  SPOS         Single-Path One-Shot
+                                              cơ chế lấy mẫu đường đi đơn.
+               Convolutional Neural           Mạng nơ-ron tích chập dùng để
+  CNN
+               Network                        học đặc trưng hình ảnh.
+                                              Mạng tích chập ba chiều khai thác
+  3D ConvNet   3D Convolutional Network       đồng thời thông tin không gian và
+                                              thời gian.
+               Dilated Deep
+                                              Khối tích chập giãn nở dùng trong
+  DDCNN        Convolutional Neural
+                                              TransNetV2 và AutoShot.
+               Network
+               Cut chuyển cảnh                Chuyển cảnh đột ngột giữa hai
+  CT
+               (transition)                   shot liên tiếp.
+               chuyển cảnh dần (gradual       Chuyển cảnh dần dần như fade,
+  GT
+               transition)                    dissolve hoặc wipe.
+                                              Số chuyển cảnh được phát hiện
+  TP           True Positive
+                                              đúng.
+                                              Số báo động giả (mô hình báo có
+               dương tính giả (false
+  FP                                          chuyển cảnh nhưng thực tế không
+               positive)
+                                              có).
+                                              Số chuyển cảnh có thật nhưng bị
+  FN           False Negative
+                                              bỏ sót.
+                                              Hàm mất mát nhị phân cho bài
+  BCE          Binary Cross-Entropy
+                                              toán phân loại hai lớp.
+
+
+
+                                       viii
+  Ký hiệu          Cụm từ tiếng Anh              Giải thích
+
+                                                 Biến thể của BCE, giảm trọng số
+  FL               Focal Loss                    mẫu dễ phân loại để tập trung vào
+                                                 mẫu khó.
+                   chưng cất tri thức            Chưng cất tri thức từ mô hình
+  KD
+                   (knowledge distillation)      giáo viên sang mô hình học sinh.
+                                                 Kỹ thuật làm mượt nhãn one-hot
+  LS               Label Smoothing
+                                                 để giảm quá khớp (overfitting).
+                                                 Hiệu chỉnh nhiệt độ để hiệu chuẩn
+  TS               Temperature Scaling           (calibrate) phân phối xác suất đầu
+                                                 ra.
+  LR               Learning Rate                 Tốc độ học của thuật toán tối ưu.
+                                                 Kiểm định chéo; trong khóa luận
+  CV               Cross-Validation              dùng kiểm định chéo 5 phần để
+                                                 kiểm tra xu hướng kết quả.
+                                                 Hàm mục tiêu thường dùng khi
+  NLL              Negative Log-Likelihood       hiệu chỉnh xác suất bằng
+                                                 temperature scaling.
+                   Harmonic Mean of              Chỉ số tổng hợp đánh giá cân
+  F1-score
+                   Precision and Recall          bằng giữa Precision và Recall.
+
+
+2. Thuật ngữ chuyên môn
+
+       Thuật ngữ                Giải thích ngắn gọn
+
+                                Đơn vị cảnh quay liên tục giữa hai ranh giới thời
+       Shot
+                                gian kề nhau.
+                                Tập hợp nhiều shot có cùng ngữ cảnh nội dung
+       Scene
+                                hoặc không gian thời gian.
+                                Độ tương đồng giữa các khung hình lân cận,
+       Frame Similarity
+                                dùng để hỗ trợ phát hiện chuyển cảnh.
+                                Biểu diễn phân bố màu sắc của khung hình dưới
+       Color Histogram
+                                dạng số liệu thống kê.
+                                Tách tích chập 3D thành các bước xử lý không
+       Factorized Convolution
+                                gian và thời gian để giảm tham số.
+                                Kết nối tắt giữa các tầng mạng, giúp truyền
+       Skip Connection
+                                thông tin ổn định hơn.
+
+
+
+                                          ix
+Thuật ngữ                Giải thích ngắn gọn
+
+                         Biến thể của BCE với nhân tử động (1 − pt )γ
+                         làm giảm trọng số của các mẫu dễ phân loại;
+Focal Loss               trong SBD, hai siêu tham số chính là γ (focusing
+                         parameter ) và α (balancing parameter ), thường
+                         được chọn qua grid search.
+                         Kiểu nhãn mở rộng quanh vị trí ranh giới nhằm
+Many-hot Label
+                         làm dày tín hiệu học.
+                         Mạng xương sống dùng để trích xuất đặc trưng
+Backbone
+                         cơ sở từ dữ liệu đầu vào.
+                         Quá trình mô hình hóa các biến đổi theo thời
+Temporal modeling
+                         gian giữa các khung hình.
+                         Nhãn mềm mang giá trị xác suất (thay vì nhãn
+Soft Label
+                         cứng 0 hoặc 1), thường dùng trong KD.
+                         Kỹ thuật chuyển giao tri thức từ mô hình giáo
+Knowledge Distillation   viên sang mô hình học sinh, thường dùng nhãn
+                         mềm (soft label ) để ổn định huấn luyện.
+                         Kỹ thuật hiệu chỉnh xác suất đầu ra sau huấn
+                         luyện: chia logit cho hệ số T ∗ duy nhất, được
+                         tìm bằng cách tối thiểu hóa NLL trên
+Temperature Scaling
+                         validation; giữ nguyên thứ tự xếp hạng dự đoán
+                         nên không ảnh hưởng F1 trước/sau ngưỡng hóa
+                         nếu ngưỡng cũng được chọn lại.
+                         Hiệu chuẩn xác suất, nhằm làm cho xác suất
+Calibration              đầu ra của mô hình phản ánh tốt hơn độ tin cậy
+                         thực tế của dự đoán.
+                         Giá trị đầu ra trước khi chuyển thành xác suất
+Logit
+                         bằng sigmoid hoặc softmax.
+                         Phép làm mượt chuỗi xác suất theo thời gian để
+Gaussian Smoothing
+                         giảm đỉnh nhiễu cô lập.
+                         Ngưỡng quyết định dùng để chuyển xác suất đầu
+Threshold
+                         ra thành nhãn có/không có ranh giới cảnh quay.
+                         Quá trình quét nhiều ngưỡng để chọn giá trị tối
+Threshold Sweep
+                         ưu cho Precision, Recall và F1.
+                         Mạng lớn chứa nhiều kiến trúc con trong NAS,
+SuperNet                 cho phép các kiến trúc chia sẻ trọng số khi đánh
+                         giá nhanh.
+
+
+
+                                   x
+Thuật ngữ               Giải thích ngắn gọn
+
+                        Phương pháp tối ưu hóa hộp đen dùng mô hình
+Bayesian Optimization
+                        xác suất để chọn ứng viên kiến trúc tiếp theo.
+                        Kỹ thuật ghép trọng số từ nhiều mô hình theo
+Weight Grafting         tiêu chí entropy nhằm tận dụng biểu diễn tốt ở
+                        từng lớp.
+                        Phương pháp NAS khả vi, biến lựa chọn kiến
+DARTS
+                        trúc rời rạc thành bài toán tối ưu liên tục.
+                        Nhóm kỹ thuật thích nghi miền giúp mô hình
+Domain Adaptation       hoạt động ổn định hơn khi phân phối dữ liệu
+                        thay đổi.
+                        Kỹ thuật chính quy hóa bằng cách tắt ngẫu
+Dropout                 nhiên một phần đơn vị kích hoạt trong quá
+                        trình huấn luyện.
+                        Mô hình cơ sở dùng làm điểm chuẩn để so sánh
+Baseline
+                        hiệu năng.
+                        Điểm lưu trữ trạng thái trọng số của mô hình
+Checkpoint
+                        trong quá trình huấn luyện.
+                        Suy giảm trọng số, một kỹ thuật chính quy hóa
+Weight Decay            giúp tránh quá khớp (overfitting) bằng cách
+                        phạt các trọng số lớn.
+                        Nghiên cứu phân rã/thử nghiệm loại trừ để
+Ablation                đánh giá đóng góp của từng thành phần trong
+                        mô hình.
+                        Tìm kiếm lưới, phương pháp quét qua một tập
+Grid Search             hợp các siêu tham số được định nghĩa trước để
+                        tìm cấu hình tối ưu.
+
+
+
+
+                                  xi
+Danh sách hình
+
+ 1.1   Sự tăng trưởng và phổ biến của video ngắn trong những
+       năm gần đây. . . . . . . . . . . . . . . . . . . . . . . . . .   1
+ 1.2   Phân cấp cấu trúc video: từ frames đến shots và scenes. .        3
+ 1.3   Các loại chuyển tiếp shot trong video. . . . . . . . . . . . .   4
+ 1.4   Minh họa chuyển tiếp đột ngột (Cut chuyển cảnh). . . . .         4
+ 1.5   Đặc thù video ngắn trên nền tảng TikTok. . . . . . . . . .       5
+ 1.6   Nhiễu thị giác do ánh sáng thay đổi đột ngột (Flash). . . .      5
+
+ 2.1   Phổ các phương pháp học sâu được sử dụng trong phát hiện
+       ranh giới cảnh quay. . . . . . . . . . . . . . . . . . . . . .   12
+
+ 3.1   Sơ đồ luồng xử lý tổng quan của hệ thống . . . . . . . . .       22
+ 3.2   Sơ đồ ba thành phần cốt lõi của NAS . . . . . . . . . . . .      23
+ 3.3   Tổng quan kiến trúc TransNetV2 . . . . . . . . . . . . . .       29
+ 3.4   Cấu trúc khối DDCNN trong TransNetV2 . . . . . . . . .           29
+ 3.5   Sơ đồ tổng thể mô hình AutoShot . . . . . . . . . . . . . .      35
+ 3.6   Bốn biến thể khối tích chập 3D trong AutoShot . . . . . .        36
+ 3.7   Sơ đồ 5 pha quy trình NAS trong AutoShot . . . . . . . .         38
+ 3.8   Kiến trúc tầng phân loại trong AutoShotV2 . . . . . . . .        47
+ 3.9   Minh họa nhãn một điểm dương và nhiều điểm dương . . .           50
+
+ 4.1   Minh họa các thách thức đặc thù trong SHOT . . . . . . .         55
+ 4.2   Phân bố độ dài video và shot trong SHOT . . . . . . . . .        56
+ 4.3   So sánh F1 trên tập SHOT . . . . . . . . . . . . . . . . . .     67
+
+
+
+
+                                   xii
+Danh sách bảng
+
+ 2.1   So sánh tổng quan các nhóm phương pháp SBD . . . . . .            18
+
+ 3.1  Đặc điểm của các loại không gian tìm kiếm NAS . . . . . .          24
+ 3.2  So sánh các chiến lược tìm kiếm kiến trúc . . . . . . . . .        25
+ 3.3  So sánh các chiến lược ước tính hiệu suất trong NAS . . .          26
+ 3.4  Các cải tiến chính từ TransNetV1 sang TransNetV2 . . . .           28
+ 3.5  Chiến lược dữ liệu huấn luyện của TransNetV2 . . . . . . .         32
+ 3.6  Các thông số cấu hình của TransNetV2 . . . . . . . . . . .         33
+ 3.7  Thành phần kế thừa từ TransNetV2 và đóng góp của công
+      trình AutoShot gốc . . . . . . . . . . . . . . . . . . . . . .     35
+ 3.8 So sánh bốn biến thể khối tích chập 3D phân tách của Au-
+      toShot . . . . . . . . . . . . . . . . . . . . . . . . . . . . .   36
+ 3.9 Chi phí tính toán ước tính của từng pha trong AutoShot .            41
+ 3.10 Kiến trúc tối ưu của AutoShot theo hai tiêu chí tối ưu . .         44
+ 3.11 So sánh tổng hợp TransNetV2 và AutoShot . . . . . . . .            45
+
+ 4.1   So sánh chi tiết các bộ dữ liệu đánh giá SBD . . . . . . . .      58
+ 4.2   Môi trường thực thi và cấu hình thực nghiệm . . . . . . .         59
+ 4.3   Tham số cuối cùng của AutoShotV2 bản cân bằng và bản
+       tốt nhất theo từng bộ dữ liệu . . . . . . . . . . . . . . . .     60
+ 4.4   Ngưỡng quyết định dùng cho kết quả tốt nhất theo từng bộ
+       dữ liệu . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 61
+ 4.5   So sánh F1-score các mô hình trên SHOT, BBC và ClipShots 62
+ 4.6   Precision, Recall, F1 của AutoShotV2 trên ba bộ dữ liệu .         63
+ 4.7   Đỉnh F1 của cấu hình quét tham số bổ sung . . . . . . . .         64
+ 4.8   Ablation thành phần có kiểm soát trên Pha 2 . . . . . . .         66
+
+ B.1 Bảng đầy đủ tất cả thực nghiệm . . . . . . . . . . . . . . .        82
+
+
+
+
+                                   xiii
+                             TÓM TẮT
+
+   Video ngắn đang trở thành một dạng nội dung phổ biến, nhưng việc
+phân tích tự động loại video này vẫn gặp nhiều khó khăn vì nhịp dựng
+nhanh, cảnh quay thay đổi liên tục và hiệu ứng chuyển cảnh ngày càng
+đa dạng. Trong bối cảnh đó, phát hiện ranh giới cảnh quay là bước quan
+trọng để hệ thống có thể hiểu cấu trúc video trước khi thực hiện các tác
+vụ như tóm tắt, lập chỉ mục hoặc truy hồi nội dung.
+   Nghiên cứu này tập trung vào bài toán phát hiện ranh giới cảnh quay
+cho video ngắn. Trước hết, các hướng tiếp cận tiêu biểu được tổng hợp để
+làm rõ cách bài toán đã được xử lý từ các phương pháp dựa trên đặc trưng
+thủ công đến các mô hình học sâu. Từ nền tảng đó, mô hình AutoShot
+được chọn làm cơ sở để phân tích và cải tiến, với trọng tâm là điều chỉnh
+tầng phân loại và cách xử lý xác suất đầu ra nhằm giúp mô hình nhận biết
+ranh giới cảnh quay ổn định hơn.
+   Đóng góp chính của đề tài là đưa ra một hướng cải tiến phù hợp với
+đặc điểm của video ngắn mà không cần thay đổi toàn bộ kiến trúc mô hình
+ban đầu. Cách kết hợp một mạng xương sống đã được tối ưu với các điều
+chỉnh ở tầng phân loại cho thấy tiềm năng hỗ trợ tốt cho bài toán phát
+hiện ranh giới cảnh quay, đồng thời cũng đặt ra nhu cầu tiếp tục nâng cao
+khả năng tổng quát hóa khi áp dụng sang các miền dữ liệu khác. Những
+phân tích này có thể làm cơ sở cho các nghiên cứu tiếp theo về phân đoạn
+video và xây dựng dữ liệu video ngắn tiếng Việt.
+
+
+
+
+                                  xiv
+Chương 1
+
+TỔNG QUAN ĐỀ TÀI
+       Chương này trình bày bức tranh tổng thể của khóa luận: bối cảnh của bài
+      toán phát hiện ranh giới cảnh quay (Shot Boundary Detection – SBD) cho
+      video ngắn, phát biểu bài toán dưới dạng hình thức, các thách thức đặc thù,
+      mục tiêu nghiên cứu, phạm vi giới hạn, ba câu hỏi nghiên cứu chính, đóng
+      góp và cấu trúc tổ chức của báo cáo.
+
+
+
+
+1.1     Bối cảnh nghiên cứu
+
+    Trong hơn một thập kỷ qua, video đã trở thành loại dữ liệu chiếm tỉ
+trọng lớn nhất trong lưu lượng Internet, được tiêu thụ rộng rãi trên các
+nền tảng như YouTube, Facebook và Instagram. Đáng chú ý hơn, sự bùng
+nổ của video ngắn trên TikTok, Kuaishou, YouTube Shorts và Instagram
+Reels trong những năm gần đây đã thay đổi căn bản cách người dùng tạo
+và tiêu thụ nội dung số. Cùng với hạ tầng mạng 5G, video ngắn và quảng
+cáo video tăng trưởng mạnh nhờ tính cô đọng, dễ chia sẻ và khả năng
+truyền tải thông tin hiệu quả hơn so với văn bản hay hình ảnh tĩnh.
+
+
+
+
+Hình 1.1: Sự tăng trưởng và phổ biến của video ngắn trong những năm gần đây. Nguồn:
+VietnamNet Global (2023), dữ liệu theo Sprout Social [20].
+
+
+   Khối lượng dữ liệu khổng lồ này đặt ra thách thức trong việc quản lý,
+
+                                          1
+tìm kiếm và tóm tắt nội dung video một cách thủ công. Nhu cầu về các
+hệ thống phân tích video tự động, chính xác về mặt thời gian vì thế trở
+nên cấp thiết. Phát hiện ranh giới cảnh quay là bước cơ bản và thiết yếu
+nhất của hầu hết quy trình phân tích video, đóng vai trò nền tảng cho các
+tác vụ phía sau như tóm tắt video, phân đoạn sự kiện và tạo video thông
+minh. Tuy đã có nhiều nghiên cứu trước đây, các phương pháp truyền
+thống chủ yếu hướng đến video dài (phim, tài liệu) và gặp khó khăn khi
+xử lý đặc thù động, phức tạp của video ngắn hiện đại. Vì vậy, việc xây
+dựng giải pháp SBD tối ưu cho video ngắn là một yêu cầu thực tế và cấp
+bách.
+    Theo hướng này, gần đây đã xuất hiện bộ dữ liệu chuyên biệt đầu tiên
+cho video ngắn [23] cùng các mô hình SBD học sâu được tối ưu cho miền
+dữ liệu mới. Tuy vậy, phần lớn mô hình cơ sở mạnh hiện hành vẫn được
+thiết kế cho video dài, mở ra dư địa cải thiện thông qua tìm kiếm kiến trúc
+mạng nơ-ron (NAS) và các kỹ thuật huấn luyện hiện đại — chi tiết khảo
+sát ở Chương 2. Mục tiêu cuối cùng là xây dựng một hệ thống SBD thích
+ứng tốt với sự năng động của video ngắn, đồng thời tận dụng các kiến trúc
+học sâu tiên tiến để giải quyết phần bài toán mà các phương pháp truyền
+thống còn bỏ ngỏ.
+
+
+1.2    Phát biểu bài toán
+
+    Video được tổ chức theo cấu trúc phân cấp từ lớn đến nhỏ: scene
+(cảnh) chứa nhiều shot (cảnh quay), và mỗi shot là tập hợp các frame
+(khung hình) liên tiếp được ghi liền mạch. Phát hiện ranh giới cảnh quay
+là việc xác định các vị trí trong dòng khung hình nơi một shot kết thúc và
+một shot mới bắt đầu. Tác vụ này được thực hiện ở mức khung hình: nếu
+không có thay đổi đáng kể giữa các khung hình liên tiếp, không có ranh
+giới shot. Với chuyển cảnh dần, hệ thống thường phải quan sát đồng thời
+nhiều khung hình kế tiếp để xác nhận vì quá trình chuyển diễn ra trải dài
+theo thời gian.
+    Xác định đối tượng người dùng cuối. Người dùng cuối của hệ
+thống được đề xuất là nhà phát triển phần mềm hoặc kỹ sư xử lý video
+cần tự động chia tách các video ngắn thành các shot độc lập. Kết quả chia
+
+
+                                    2
+tách này đóng vai trò tiền đề phục vụ các tác vụ phân tích phía sau như
+lập chỉ mục tìm kiếm, tóm tắt video, biên tập tự động hoặc phân tích nội
+dung ngữ nghĩa. Việc xác định rõ đối tượng này giúp định hình các tiêu
+chí đánh giá mô hình trong thực tế, thay vì chỉ tối ưu các chỉ số lý thuyết.
+    Định nghĩa hình thức. Để phân tích bài toán một cách chặt chẽ, ta
+phân chia quy trình thực hiện thành hai giai đoạn rõ rệt: giai đoạn ngoại
+tuyến và giai đoạn trực tuyến.
+
+    Bài toán trực tuyến (Suy diễn trực tiếp): Đây là bài toán
+     mà người dùng cuối tương tác trực tiếp. Đầu vào trực tuyến là
+     một video thô hoặc chuỗi khung hình liên tục cần phân đoạn V =
+     {f1 , f2 , . . . , fn }. Đầu ra trực tuyến là danh sách chỉ số khung hình
+     hoặc mốc thời gian B = {b1 , b2 , . . . , bm } đánh dấu ranh giới bắt đầu
+     của một shot mới, có thể đi kèm một điểm tin cậy đại diện cho xác
+     suất chuyển cảnh. Giai đoạn này tuyệt đối không phụ thuộc vào các
+     thông tin hậu kiểm hay nhãn giám sát của tập kiểm tra.
+
+    Bài toán ngoại tuyến (Huấn luyện và hiệu chỉnh ngoại
+     tuyến): Đây là giai đoạn chuẩn bị và tối ưu hóa hệ thống. Đầu
+     vào bao gồm tập dữ liệu huấn luyện/xác thực đã được gán nhãn, các
+     đặc trưng lưu bộ nhớ đệm, và không gian tham số cần quét. Đầu ra
+     là bộ trọng số tối ưu của mô hình và các ngưỡng quyết định hoặc các
+     tham số hiệu chỉnh được cố định để triển khai thực tế.
+
+
+
+
+         Hình 1.2: Phân cấp cấu trúc video: từ frames đến shots và scenes.
+
+
+   Để phân biệt các shot, Khóa luận sử dụng cách phân loại chuyển tiếp
+được dùng phổ biến trong các nghiên cứu SBD [1], chia thành hai nhóm
+chính:
+
+
+                                        3
+                 Hình 1.3: Các loại chuyển tiếp shot trong video.
+
+
+    Chuyển tiếp đột ngột – Cut chuyển cảnh (CT): Là sự thay
+      đổi tức thì giữa hai shot mà không có hiệu ứng chỉnh sửa nào ở giữa,
+      xảy ra khi hai shot được nối trực tiếp. Đây là loại chuyển cảnh phổ
+      biến và tương đối dễ phát hiện do sự thay đổi đột ngột về nội dung
+      hình ảnh trong một khung hình.
+
+
+
+
+           Hình 1.4: Minh họa chuyển tiếp đột ngột (Cut chuyển cảnh).
+
+
+    Chuyển tiếp dần – chuyển cảnh dần (GT): Là sự kết hợp giữa
+      hai shot thông qua các hiệu ứng đồ họa, trải dài trên nhiều khung
+      hình. Các dạng phổ biến: Fade out (shot mờ dần sang đen), Fade in
+      (cảnh xuất hiện dần từ đen), Dissolve (hai shot chồng chéo), Wipe
+      (shot mới đẩy shot cũ — khó phát hiện nhất do hình thức đa dạng).
+      Xem Hình 1.3 để so sánh trực quan.
+
+   Bài toán đặt ra là xây dựng một mô hình học máy có khả năng tự động
+xác định chính xác vị trí thời gian của mọi ranh giới shot trong video.
+
+
+1.3    Thách thức bài toán
+
+   Mặc dù SBD là bài toán đã được nghiên cứu lâu năm, việc áp dụng vào
+thực tế – đặc biệt với video ngắn – gặp nhiều thách thức đặc thù:
+
+    Đặc thù của video ngắn: Video ngắn có nhịp độ rất nhanh, độ
+      dài shot trung bình thường dưới 5 giây, ngắn hơn nhiều so với video
+      truyền thống. Người sáng tạo nội dung thường kết hợp nhiều hiệu
+      ứng chuyển cảnh phức tạp để tăng tính hấp dẫn. Ngoài ra, định
+
+                                        4
+  dạng video dọc (vertical video) thường có các vùng tĩnh ở trên và
+  dưới (như tên thương hiệu, tiêu đề), chỉ phần giữa thay đổi, gây khó
+  khăn cho việc phát hiện thay đổi toàn cục.
+
+
+
+
+           Hình 1.5: Đặc thù video ngắn trên nền tảng TikTok.
+
+
+ Nội dung ảo và game: Một tỷ lệ đáng kể video ngắn là video game
+  với các cảnh ảo có sự thay đổi rất lớn trong nội bộ một shot do hiệu
+  ứng kỹ xảo, dễ dẫn đến cảnh báo giả.
+
+ Nhiễu thị giác: Các yếu tố như thay đổi độ sáng đột ngột (đèn
+  flash), chuyển động nhanh của vật thể hoặc camera (panning, zoom-
+  ing) và nền tương tự nhau giữa hai shot kế tiếp dễ bị nhầm lẫn với
+  chuyển cảnh thật.
+
+
+
+
+      Hình 1.6: Nhiễu thị giác do ánh sáng thay đổi đột ngột (Flash).
+
+
+
+                                    5
+    Khó khăn khi phát hiện chuyển cảnh dần: Không giống Cut,
+      GT diễn ra từ từ và có đặc điểm thống kê không rõ ràng. Các phương
+      pháp dựa trên chênh lệch pixel hoặc histogram thường thất bại khi
+      gặp các hiệu ứng dissolve hay wipe phức tạp.
+
+    Thiếu dữ liệu chuẩn cho video ngắn: Các bộ dữ liệu truyền
+      thống như BBC Planet Earth [2] chủ yếu chứa phim tài liệu hoặc tin
+      tức với cảnh quay tương đối tĩnh, không phản ánh được độ phức tạp
+      của video ngắn hiện đại.
+
+Tóm lại, ba vấn đề cốt lõi của bài toán SBD cho video ngắn là: (i) ranh
+giới cảnh quay xuất hiện dày đặc nhưng không ổn định theo thời gian, (ii)
+tín hiệu nhiễu thị giác dễ bị nhầm thành chuyển cảnh thật, và (iii) khoảng
+cách miền dữ liệu giữa các bộ chuẩn truyền thống và dữ liệu video ngắn
+hiện đại. Đây là lý do cần một hướng tiếp cận vừa có năng lực biểu diễn
+đặc trưng mạnh, vừa đủ linh hoạt để thích nghi theo phân phối dữ liệu
+thực tế. Ba thách thức trên dẫn trực tiếp tới ba khoảng trống nghiên cứu
+sẽ được phân tích chi tiết ở Chương 2, làm cơ sở để đặt ba câu hỏi nghiên
+cứu RQ1–RQ3 ở mục dưới.
+
+
+1.4    Mục tiêu nghiên cứu
+
+    Mục tiêu của khóa luận là cải thiện hiệu quả phát hiện ranh giới cảnh
+quay trên video ngắn dựa trên nền tảng AutoShot. Trọng tâm nghiên cứu
+là giữ lại mạng xương sống đã được tối ưu bằng NAS, đồng thời khảo sát
+các cải tiến ở tầng phân loại và hậu xử lý xác suất để tăng khả năng nhận
+diện ranh giới trong bối cảnh dữ liệu có nhịp cắt nhanh, mất cân bằng lớp
+và nhiều hiệu ứng chuyển cảnh phức tạp.
+
+
+1.5    Phạm vi và giới hạn đề tài
+
+    Trong khuôn khổ khóa luận này, bài toán được giới hạn theo các phạm
+vi sau:
+    Miền dữ liệu: Tập trung xử lý video ở định dạng đã giải nén, tức
+      là làm việc trực tiếp trên chuỗi khung hình thay vì dữ liệu nén.
+
+                                    6
+    Mục tiêu đầu ra: Bài toán tập trung vào việc xác định vị trí biên
+        thời gian (temporal boundary) của các shot; phân loại loại chuyển
+        tiếp (Cut/Gradual) được nhận diện như ngữ cảnh phân tích nhưng
+        không là mục tiêu thực nghiệm chính; chưa đi sâu vào việc hiểu ngữ
+        nghĩa mức cao (như nhận diện hành động hay cảm xúc) bên trong
+        shot.
+
+    Phương pháp luận: Khóa luận tập trung vào việc ứng dụng và cải
+        tiến các mô hình học sâu, cụ thể là mạng nơ-ron tích chập (CNN)
+        và Transformer, thay vì các phương pháp dựa trên ngưỡng thủ công
+        vốn có độ chính xác thấp hơn trên dữ liệu phức tạp.
+
+
+1.6      Câu hỏi nghiên cứu
+
+   Để giải quyết các khoảng trống đã nêu, Khóa luận tập trung vào ba
+câu hỏi nghiên cứu chính:
+
+    RQ1: Việc tối ưu kiến trúc theo hướng NAS có giúp cải thiện hiệu
+        năng phát hiện ranh giới cảnh quay trên video ngắn so với mạng
+        xương sống cố định như TransNetV2 hay không?
+
+    RQ2: Các kỹ thuật huấn luyện và hậu xử lý ở tầng phân loại (hàm
+        mất mát Focal - Focal Loss, nhãn nhiều điểm dương - many-hot
+        labels, hiệu chỉnh nhiệt độ - temperature scaling, làm mượt Gaussian
+        - Gaussian smoothing) có thể cải thiện F1 mà không cần thay đổi
+        mạng xương sống hay không?
+
+    RQ3: Mức cải thiện đạt được trên SHOT có duy trì khi đánh giá
+        chéo trên các bộ dữ liệu khác như BBC và ClipShots hay không?
+
+
+1.7      Hướng tiếp cận và đóng góp chính
+
+1.7.1     Hướng tiếp cận
+
+    Để giải quyết các thách thức nêu trên, Khóa luận tiếp cận bài toán dựa
+trên các kỹ thuật tiên tiến trong lĩnh vực thị giác máy tính:
+
+
+                                      7
+    Mạng nơ-ron tích chập 3D (3D ConvNets): Sử dụng các kiến
+     trúc 3D CNN để trích xuất đồng thời đặc trưng không gian và thời
+     gian, giúp mô hình nắm bắt được sự vận động liên tục của video tốt
+     hơn so với phương pháp 2D truyền thống.
+
+    Kiến trúc Transformer: Tận dụng khả năng mô hình hóa phụ
+     thuộc xa (long-range dependencies) của Transformer để xử lý các
+     chuỗi khung hình dài, từ đó cải thiện khả năng phát hiện các chuyển
+     cảnh dần kéo dài.
+
+    Tìm kiếm kiến trúc mạng nơ-ron (NAS): Thay vì thiết kế thủ
+     công, hướng tiếp cận này sử dụng NAS để tự động tối ưu thiết kế mô
+     hình trong một không gian tìm kiếm chứa các khối 3D ConvNets và
+     Transformer, nhằm đạt được cân bằng tốt giữa độ chính xác và chi
+     phí tính toán.
+
+    Huấn luyện trên dữ liệu video ngắn chuyên biệt: Sử dụng bộ
+     dữ liệu SHOT [23] – bộ dữ liệu video ngắn quy mô lớn đầu tiên – để
+     huấn luyện và đánh giá, qua đó đảm bảo mô hình thích nghi với các
+     đặc trưng của video ngắn hiện đại.
+
+Tổ hợp kế thừa AutoShot và cải tiến tầng phân loại này được ký hiệu là
+AutoShotV2 trong các chương sau.
+Ánh xạ giữa câu hỏi nghiên cứu và hướng giải quyết:
+
+    RQ1 được kiểm chứng qua đối sánh TransNetV2 và AutoShot/Au-
+     toShotV2 trên cùng bộ tiêu chí đánh giá.
+
+    RQ2 được giải quyết bằng các cải tiến ở tầng phân loại và hậu xử
+     lý xác suất, giữ nguyên mạng xương sống để tách biệt tác động của
+     từng kỹ thuật.
+
+    RQ3 được đánh giá bằng thực nghiệm đa bộ dữ liệu (SHOT, BBC,
+     ClipShots) nhằm kiểm tra mức độ tổng quát hóa.
+
+
+
+
+                                   8
+1.7.2     Đóng góp
+
+   Trên cơ sở hướng tiếp cận đã nêu, Khóa luận mang lại các đóng góp
+chính sau:
+
+    Hệ thống hóa tri thức: Trình bày có cấu trúc bối cảnh bài toán
+        SBD cho video ngắn, từ phương pháp cổ điển đến học sâu và NAS,
+        làm rõ khoảng trống nghiên cứu giữa dữ liệu truyền thống và dữ liệu
+        video ngắn hiện đại.
+
+    Đóng góp về phương pháp: Khóa luận thiết kế một quy trình
+        tinh chỉnh hai pha cho bài toán phát hiện ranh giới cảnh quay trên
+        video ngắn: tái sử dụng mạng xương sống AutoShot đã được tối ưu
+        hóa bằng NAS, đóng băng trọng số mạng xương sống này để cô lập
+        tác động của tầng đầu ra, huấn luyện lại tầng phân loại mới với
+        hàm mất mát Focal và nhãn nhiều điểm dương, sau đó áp dụng hiệu
+        chỉnh nhiệt độ và làm mượt Gaussian ở bước hậu xử lý. Quy trình
+        này nhằm giảm ảnh hưởng của mất cân bằng lớp cực đoan, sai lệch
+        chú thích thủ công và nhiễu xác suất theo thời gian.
+
+    Đóng góp về kết quả thực nghiệm: Trên tập SHOT, AutoShotV2
+        đạt F1 = 0.8607 theo lựa chọn tốt nhất trong quy trình đánh giá so
+        sánh chính (+6.14 điểm phần trăm so với mô hình cơ sở TransNetV2)
+        – lưu ý đây là mức trần lạc quan khi chọn ngưỡng tối ưu cho riêng
+        tập SHOT, không phải một cấu hình triển khai duy nhất; đồng thời
+        báo cáo cấu hình triển khai ngưỡng cố định đạt F1 = 0.8545 và cung
+        cấp phân tích so sánh chéo trên BBC, ClipShots để đánh giá khả
+        năng tổng quát hóa (chi tiết xem Chương 4).
+
+
+1.8      Tổ chức khóa luận
+
+   Báo cáo được cấu trúc thành 5 chương:
+
+    Chương 1 – Tổng quan đề tài: Giới thiệu bối cảnh, bài toán,
+        thách thức, mục tiêu, phạm vi, câu hỏi nghiên cứu và đóng góp
+        chính của khóa luận.
+
+
+                                      9
+    Chương 2 – Cơ sở lý thuyết và công trình liên quan: Khảo
+      sát các phương pháp SBD theo ba dòng chính – cổ điển dựa trên đặc
+      trưng thủ công, học sâu với CNN/Transformer, và NAS – đồng thời
+      nhận diện khoảng trống nghiên cứu.
+
+    Chương 3 – Phương pháp đề xuất: Trình bày AutoShot như
+      nền tảng kế thừa và phiên bản AutoShotV2 với các cải tiến ở tầng
+      phân loại, hàm mất mát, nhãn giám sát, hiệu chỉnh xác suất và làm
+      mượt hậu xử lý.
+
+    Chương 4 – Bộ dữ liệu và thực nghiệm: Mô tả các bộ dữ liệu
+      (SHOT, BBC, ClipShots), chỉ số đánh giá, mô hình cơ sở, siêu tham
+      số, kịch bản thực nghiệm, kết quả so sánh, phân tích Precision/Re-
+      call/F1 và thực nghiệm phân rã.
+
+    Chương 5 – Kết luận và hướng phát triển: Thảo luận kết quả
+      thực nghiệm, tổng kết kết quả chính, nhắc lại đóng góp, nêu hạn chế
+      và đề xuất các hướng phát triển tiếp theo.
+
+
+1.9    Tổng kết chương
+
+    Chương này đã giới thiệu bức tranh tổng quan về bài toán phát hiện
+ranh giới cảnh quay, nhấn mạnh tầm quan trọng của nó trong việc quản
+lý dữ liệu video lớn và đặc biệt là video ngắn. Các khái niệm cốt lõi về cấu
+trúc video, các loại chuyển cảnh Cut và Gradual, cùng các thách thức về
+đặc thù video ngắn, nội dung ảo, nhiễu thị giác và khoảng cách miền dữ
+liệu đã được phân tích. Khóa luận xác định hướng tiếp cận dựa trên học
+sâu và NAS, đặt ra ba câu hỏi nghiên cứu RQ1–RQ3, và cam kết ba nhóm
+đóng góp tương ứng. Đây là tiền đề để các chương tiếp theo đi sâu vào cơ
+sở lý thuyết và công trình liên quan, trình bày phương pháp đề xuất, thiết
+lập thực nghiệm, phân tích kết quả và tổng kết hướng phát triển.
+
+
+
+
+                                    10
+Chương 2
+
+CƠ            SỞ            LÝ            THUYẾT                           VÀ
+CÔNG TRÌNH LIÊN QUAN
+       Chương này trình bày nền tảng lý thuyết và các công trình liên quan cho
+      bài toán phát hiện ranh giới cảnh quay (SBD), từ phương pháp cổ điển dựa
+      trên đặc trưng thủ công, đến phương pháp học sâu hiện đại với CNN/3D
+      ConvNet/Transformer, và gần đây nhất là hướng tìm kiếm kiến trúc mạng
+      nơ-ron (NAS). Trên cơ sở đó, chương xác định các khoảng trống nghiên
+      cứu làm nền cho phương pháp ở Chương 3, cũng như phần dữ liệu và thực
+      nghiệm ở Chương 4.
+
+
+
+
+2.1    Tổng quan bài toán phát hiện ranh giới cảnh quay
+
+   Các hướng nghiên cứu SBD có thể nhóm thành ba dòng chính, mỗi
+dòng có thế mạnh và giới hạn riêng (Hình 2.1):
+
+    Hướng cổ điển dựa trên đặc trưng thủ công. Các phương
+      pháp so sánh histogram màu, chênh lệch pixel hoặc biên cạnh có ưu
+      điểm dễ triển khai và chi phí tính toán thấp. Tuy nhiên, chúng phụ
+      thuộc mạnh vào ngưỡng thủ công, kém bền vững trước nhiễu ánh
+      sáng/chuyển động và thường khó xử lý chuyển cảnh dần [1].
+
+    Hướng học sâu CNN/Transformer. Các mô hình như DeepSBD
+      [7] và TransNetV2 [16] học đặc trưng không-thời gian từ dữ liệu, cải
+      thiện đáng kể độ chính xác (Precision) và độ bao phủ (Recall) trên
+      nhiều bộ chuẩn. Tuy vậy, kiến trúc mạng xương sống được thiết kế
+      thủ công vẫn có nguy cơ chưa tối ưu cho video ngắn có nhịp cắt cảnh
+      dày đặc.
+
+    Hướng NAS cho SBD. Thay vì thiết kế thủ công, NAS [3, 14,
+      22] tự động tìm kiến trúc tốt nhất trong một không gian ứng viên.
+
+
+                                        11
+        AutoShot [23] cho thấy hướng này có tiềm năng vượt các mô hình cơ
+        sở mạnh trên SHOT, nhưng hiệu quả tổng quát hóa sang các miền
+        dữ liệu khác vẫn còn là câu hỏi mở.
+
+
+
+
+Hình 2.1: Phổ các phương pháp học sâu được sử dụng trong phát hiện ranh giới cảnh
+quay.
+
+
+    Phần còn lại của chương đi sâu vào từng dòng phương pháp theo trình
+tự tiến hóa của lĩnh vực, kết thúc bằng bảng so sánh tổng quan và phân
+tích khoảng trống nghiên cứu.
+
+
+2.2      Phương pháp cổ điển
+
+     Trước kỷ nguyên học sâu, các phương pháp SBD chủ yếu dựa trên đặc
+trưng thủ công và ngưỡng cố định. Khung xử lý điển hình của một thuật
+toán SBD cổ điển gồm ba bước: (i) trích xuất đặc trưng mức thấp từ mỗi
+khung hình, (ii) tính độ đo khoảng cách giữa các khung hình liên tiếp, và
+(iii) so ngưỡng để quyết định có ranh giới shot hay không [15, 1]. Nhóm
+phương pháp này có ưu điểm là đơn giản, dễ triển khai và chi phí tính toán
+thấp; tuy nhiên độ bền vững trước nhiễu cũng như khả năng tổng quát
+hóa trên dữ liệu đa dạng còn nhiều hạn chế [9].
+
+2.2.1     Biểu đồ tần suất và chênh lệch điểm ảnh
+
+     Phương pháp Sum of Absolute Differences (SAD) [15, 1] so sánh chênh
+                                                      1
+                                                         P
+lệch pixel giữa hai khung hình liên tiếp: Dpixel = HW       |ft−1 (x, y) −
+ft (x, y)|; đánh dấu ranh giới khi Dpixel > θ. Histogram màu cải thiện
+bằng cách so sánh phân phối màu (χ2 hoặc cosine distance), ít nhạy với
+
+
+                                       12
+chuyển động nhỏ hơn SAD. Cả hai phù hợp với chuyển cảnh đột ngột
+nhưng kém hiệu quả với chuyển cảnh dần và dễ bị nhiễu bởi thay đổi ánh
+sáng [1].
+
+2.2.2   Dựa trên biên cạnh và miền nén
+
+    Một nhánh cổ điển khác sử dụng đặc trưng biên cạnh để đo sự thay
+đổi cấu trúc giữa các khung hình. Tỉ lệ Edge Change Ratio (ECR) đếm tỷ
+lệ pixel biên xuất hiện hoặc biến mất khi đi từ ft−1 sang ft , qua đó nắm
+bắt được các chuyển cảnh dạng fade và dissolve tốt hơn so với histogram
+thuần túy.
+    Để giảm chi phí giải nén toàn bộ video, các phương pháp trên miền
+nén (compressed-domain) khai thác trực tiếp dữ liệu trong dòng bit nén
+(ví dụ vectơ chuyển động và các hệ số biến đổi cosin rời rạc DCT của chuẩn
+MPEG) [9]. Cách tiếp cận tương tự là dùng dòng quang học (optical flow )
+để ước lượng chuyển động giữa hai khung hình: nếu trường vectơ dòng
+quang học thay đổi đột ngột về phân bố, khả năng cao đó là một ranh giới
+shot. Các phương pháp này tiết kiệm chi phí tính toán nhưng độ chính xác
+phụ thuộc mạnh vào chất lượng tín hiệu chuyển động được nén và thường
+yêu cầu tinh chỉnh ngưỡng theo từng bộ mã hóa-giải mã.
+
+2.2.3   Hạn chế của phương pháp cổ điển trên video ngắn
+
+   Khi áp dụng vào video ngắn, các phương pháp cổ điển bộc lộ ba hạn
+chế cốt lõi:
+
+  1. Độ phụ thuộc ngưỡng cao: Mỗi tập dữ liệu hoặc thậm chí từng
+     video cần một ngưỡng riêng để cân bằng Precision–Recall. Trong
+     video ngắn với nhịp cắt dày và phong cách hậu kỳ đa dạng, một
+     ngưỡng cố định khó đạt hiệu quả tổng quát.
+
+  2. Kém bền vững với nhiễu thị giác: Đèn flash, chuyển động máy
+     quay nhanh và hiệu ứng kỹ xảo trong nội bộ shot dễ tạo ra các đỉnh
+     giả trong tín hiệu khoảng cách, dẫn đến cảnh báo giả.
+
+  3. Yếu với chuyển cảnh dần phức tạp: Các hiệu ứng dissolve, wipe
+
+
+                                   13
+        và morph có gradient thay đổi mượt theo thời gian, khiến độ đo dựa
+        trên khác biệt liền kề không tạo ra đỉnh đủ rõ để vượt ngưỡng.
+
+Những hạn chế này đặt nền tảng cho việc chuyển sang hướng học đặc trưng
+từ dữ liệu, được trình bày trong mục tiếp theo.
+
+
+2.3      Phương pháp học sâu
+
+    Sự phát triển của mạng nơ-ron tích chập (CNN), mạng tích chập 3D
+(3D ConvNet) và đặc biệt là kiến trúc Transformer đã giúp SBD chuyển
+từ đặc trưng thủ công sang đặc trưng học được. Cách tiếp cận này tăng
+đáng kể độ chính xác và khả năng mô hình hóa ngữ cảnh không-thời gian.
+Mục này lần lượt khảo sát các mô hình tiêu biểu theo trình tự lịch sử phát
+triển.
+
+2.3.1     DeepSBD và biến thể C3D
+
+    DeepSBD do Hassanien và cộng sự đề xuất [7] là một trong những mô
+hình SBD học sâu đầu tiên cho kết quả thuyết phục trên quy mô lớn. Mạng
+sử dụng kiến trúc C3D [19] để trích xuất đặc trưng không-thời gian từ một
+clip ngắn gồm 16 khung hình liên tiếp. Đầu ra của C3D được đưa qua một
+bộ phân loại đa lớp để dự đoán đồng thời ba khả năng: không có chuyển
+cảnh, cut, hoặc gradual.
+    Điểm mạnh của DeepSBD nằm ở khả năng học đặc trưng không-thời
+gian đầu-cuối, qua đó tránh được nhược điểm của ngưỡng thủ công ở
+phương pháp cổ điển. Kết quả trên các bộ dữ liệu lớn cho thấy DeepSBD
+vượt trội đáng kể so với các mô hình cơ sở cổ điển trên chuyển cảnh khó
+và dữ liệu đa miền. Tuy nhiên, kiến trúc dựa trên C3D có hai hạn chế:
+
+    Số lượng tham số lớn (khoảng 78 triệu theo cấu hình gốc [19]) khiến
+        chi phí huấn luyện cao và dễ quá khớp trên các tập dữ liệu vừa và
+        nhỏ.
+
+    Cửa sổ thời gian cố định 16 khung hình hạn chế khả năng nắm bắt
+        các chuyển cảnh dần kéo dài, vốn phổ biến trong video ngắn.
+
+
+
+                                     14
+2.3.2     TransNet và TransNetV2
+
+   TransNet [17] và TransNetV2 [16] là các mô hình cơ sở mạnh trong
+SBD hiện đại. TransNetV2 khai thác các khối tích chập giãn cho phép
+tăng trường tiếp nhận thời gian mà không tăng số tham số tương ứng.
+Cùng với kỹ thuật kernel factorization tách 3D convolution thành chuỗi
+2D + 1D convolution, TransNetV2 đạt mức cân bằng tốt giữa độ chính
+xác và chi phí tính toán.
+   Hai cải tiến đáng chú ý của TransNetV2 so với TransNet là:
+
+    Nhánh đặc trưng tương đồng (frame similarity branch): Tính
+        ma trận tương đồng giữa các khung hình trong cùng cửa sổ, cung cấp
+        tín hiệu phụ trợ giúp mô hình phân biệt chuyển cảnh thật với nhiễu
+        chuyển động.
+
+    Hai đầu phân loại song song: Một đầu dự đoán xác suất chuyển
+        cảnh đơn-khung (single-frame chuyển cảnh), một đầu dự đoán xác
+        suất "thuộc về một chuyển cảnh dần" (all-frames-of-chuyển cảnh).
+        Hai tín hiệu này được kết hợp ở giai đoạn suy diễn để vừa định vị
+        chính xác vị trí cut, vừa bao quát được toàn bộ vùng gradual.
+
+    Tuy là mô hình cơ sở mạnh, TransNetV2 chủ yếu được tối ưu trên các
+bộ dữ liệu video dài (phim, tài liệu) như BBC Planet Earth. Khi áp dụng
+sang video ngắn có shot dày đặc, hiệu ứng chuyển cảnh phức tạp và nhiều
+nhiễu thị giác, kiến trúc mạng xương sống cố định bộc lộ giới hạn về tổng
+quát hóa. Chi tiết kiến trúc và hàm mục tiêu của TransNetV2 được trình
+bày đầy đủ trong Chương 3 (Phần A) vì TransNetV2 đóng vai trò mô hình
+cơ sở trực tiếp của khóa luận.
+
+2.3.3     Tiếp cận Transformer và multi-modal
+
+   Sau thành công của Transformer [21] trong xử lý chuỗi, nhiều nghiên
+cứu SBD gần đây áp dụng cơ chế self-attention để mô hình hóa phụ thuộc
+xa giữa các khung hình. Esteve và cộng sự [4] đề xuất một mô hình kết
+hợp 3D depthwise convolution với visual attention, cho thấy attention có
+thể bổ trợ tốt cho convolution trong việc phát hiện các chuyển cảnh dần
+
+
+                                     15
+dài. Theo cùng hướng, nhiều công trình khảo sát trong các tổng kết gần
+đây [9] cho thấy xu hướng dùng kết hợp đa phương thức (kết hợp đặc trưng
+hình ảnh với âm thanh hoặc tín hiệu chuyển động) để tăng tính bền vững
+khi chuyển miền dữ liệu.
+    Mặc dù vậy, các phương pháp dựa trên Transformer thường có chi phí
+tính toán cao do độ phức tạp bậc hai theo độ dài chuỗi, và việc thiết kế
+thủ công không gian ứng viên cho từng đặc thù dữ liệu vẫn là vấn đề mở.
+Đây chính là động cơ dẫn đến hướng tiếp cận tiếp theo: để máy tự tìm
+kiến trúc thay vì thiết kế thủ công.
+
+
+2.4      Neural Architecture Search trong thị giác máy
+         tính và SBD
+
+2.4.1     Tổng quan NAS
+
+    Neural Architecture Search (NAS) là kỹ thuật tự động hóa quá trình
+thiết kế kiến trúc mạng nơ-ron. Một bài toán NAS được đặc trưng bởi ba
+thành phần chính [3]:
+
+    Không gian tìm kiếm (A): tập hợp tất cả các kiến trúc khả dĩ.
+        Có thể là toàn bộ mạng (macro search), một khối lặp lại (cell-based)
+        hoặc tổ hợp phân cấp (hierarchical).
+
+    Chiến lược tìm kiếm: cách thuật toán duyệt không gian A. Các
+        họ phương pháp tiêu biểu gồm học tăng cường (RL), giải thuật tiến
+        hóa (EA), và phương pháp khả vi (DARTS [11]).
+
+    Chiến lược ước tính hiệu suất: cách đánh giá nhanh một kiến
+        trúc ứng viên mà không cần huấn luyện từ đầu. Kỹ thuật nổi bật là
+        one-shot NAS với cơ chế chia sẻ trọng số trong một SuperNet duy
+        nhất [6].
+
+    Trong ba thành phần trên, chiến lược ước tính hiệu suất là yếu tố quyết
+định tính khả thi tính toán của NAS. Phương pháp Single-Path One-Shot
+(SPOS) [6] huấn luyện một SuperNet chứa mọi đường đi ứng viên với cơ chế
+lấy mẫu đồng đều, sau đó các kiến trúc con kế thừa trọng số từ SuperNet
+
+                                      16
+và chỉ cần đánh giá trực tiếp trên tập kiểm định mà không cần huấn luyện
+lại. Cách tiếp cận này giảm chi phí NAS từ hàng nghìn GPU-day xuống
+còn vài chục GPU-hour, mở đường cho NAS thực tế trong các bài toán thị
+giác máy tính cụ thể như SBD.
+
+
+2.5    AutoShot và vị trí trong dòng nghiên cứu SBD
+
+    AutoShot [23] là công trình tiêu biểu đưa NAS vào bài toán SBD, đặc
+biệt hướng đến video ngắn. Đóng góp của AutoShot gồm hai phần:
+
+    Bộ dữ liệu SHOT: Bộ dữ liệu video ngắn quy mô lớn đầu tiên dành
+      cho SBD, gồm 853 video với 11,606 chú thích ranh giới shot, kèm cơ
+      chế làm mờ khuôn mặt để bảo vệ quyền riêng tư.
+
+    Mô hình AutoShot: Sử dụng SuperNet một lần bắn theo phong
+      cách SPOS [6] trên không gian tìm kiếm gồm bốn biến thể khối tích
+      chập giãn (DDCNNV2, A, B, C). Tổng kích thước không gian tìm
+      kiếm vào khoảng 83.9 triệu kiến trúc ứng viên. Quá trình tìm kiếm
+      sử dụng Bayesian Optimization, kèm hai kỹ thuật huấn luyện lại là
+      Knowledge Distillation [8] và Weight Grafting theo entropy.
+
+    Trên tập SHOT, AutoShot cho thấy ưu thế rõ rệt so với mô hình cơ
+sở TransNetV2, xác nhận tiềm năng của hướng NAS trong môi trường
+shot ngắn và chuyển cảnh phức tạp. Tuy nhiên, AutoShot tập trung tối ưu
+phần mạng xương sống mà chưa khảo sát sâu các kỹ thuật ở tầng phân loại
+và hậu xử lý, bao gồm hàm mất mát Focal (Focal Loss), nhãn nhiều điểm
+dương (many-hot), hiệu chỉnh nhiệt độ (temperature scaling), và làm mượt
+Gaussian (Gaussian smoothing). Đây chính là khoảng trống mà phiên bản
+cải tiến AutoShotV2 của khóa luận hướng đến lấp đầy, được trình bày
+trong Phần B của Chương 3.
+
+
+2.6    So sánh tổng quan các công trình liên quan
+
+   Bảng 2.1 tổng hợp các nhóm phương pháp tiêu biểu theo hướng tiếp
+cận, loại mô hình, bộ dữ liệu thường được sử dụng, ưu điểm và hạn chế.
+
+
+                                   17
+Mục tiêu của bảng là đặt các công trình liên quan vào cùng một bức tranh
+phương pháp luận; các kết quả định lượng chi tiết được trình bày riêng ở
+Chương 4.
+Bảng 2.1: So sánh tổng quan các nhóm phương pháp SBD theo hướng tiếp cận, loại mô
+hình, bộ dữ liệu thường dùng, ưu điểm và hạn chế.
+
+ Nhóm phương                         Bộ dữ liệu
+                   Loại mô hình                        Ưu điểm              Hạn chế
+ pháp                                thường dùng
+                   Biểu đồ màu
+                   (Histogram),
+                                     BBC và các tập
+ Đặc trưng thủ     chênh lệch điểm
+                                     video truyền      Đơn giản, dễ triển   Phụ thuộc ngưỡng,
+ công              ảnh, dựa trên
+                                     thống             khai, chi phí thấp   dễ nhiễu bởi ánh
+                   biên cạnh, trên
+                                                                            sáng/chuyển động,
+                   miền nén
+                                                                            yếu với chuyển
+                                                                            cảnh dần phức tạp
+ Đặc trưng học     3D                Tập dữ liệu SBD
+                                                       Học đặc trưng        Nhiều tham số, chi
+ sâu [7]           ConvNet/C3D       quy mô lớn
+                                                       không-thời gian      phí huấn luyện
+                                                       đầu-cuối, giảm       cao, cửa sổ thời
+                                                       phụ thuộc đặc        gian cố định
+                                                       trưng thủ công
+                   CNN 3D giãn
+ TransNet/-
+                   nở, frame
+ TransNetV2 [17,                     BBC, ClipShots    Mô hình cơ sở        Mạng xương sống
+                   similarity, hai
+ 16]                                                   mạnh, cân bằng       thiết kế thủ công,
+                   đầu phân loại
+                                                       tốt giữa độ chính    chưa tối ưu riêng
+                                                       xác và tốc độ        cho video ngắn có
+                                                                            nhịp cắt dày
+                                     SHOT, ClipShots
+                   NAS trên mạng
+ AutoShot [23]                       và các tập đánh   Tự động tìm kiến     Chi phí NAS cao,
+                   xương sống SBD
+                                     giá bổ sung       trúc phù hợp hơn     còn ít phân tích về
+                                                       với video ngắn, kế   tầng phân loại và
+                                                       thừa quy trình       hậu xử lý xác suất
+                                                       mạnh từ
+                                                       TransNetV2
+                   Mạng xương
+                   sống AutoShot     SHOT, BBC,
+ AutoShotV2                                            Tập trung cải        Cần kiểm tra
+                   + cải tiến tầng   ClipShots
+                                                       thiện tầng phân      thêm khả năng
+                   phân loại
+                                                       loại và hậu xử lý    tổng quát hóa đa
+                                                       mà không thay đổi    miền và các biến
+                                                       toàn bộ mạng         thể chuyển cảnh
+                                                       xương sống           phức tạp
+
+
+
+
+2.7      Vấn đề tồn tại và khoảng trống nghiên cứu
+
+   Từ khảo sát ở các mục 2.2–2.4 và bảng so sánh tổng quan 2.1, Khóa
+luận xác định ba khoảng trống nghiên cứu chính làm cơ sở cho phương
+pháp đề xuất:
+
+
+
+                                             18
+    Khoảng trống 1 – Sai khác miền dữ liệu giữa video dài truyền
+     thống và video ngắn hiện đại. Hầu hết các kiến trúc mạnh hiện
+     nay (đặc biệt TransNetV2) được tối ưu trên dữ liệu video dài như
+     BBC Planet Earth, vốn có nhịp cắt cảnh thưa và ít hiệu ứng kỹ xảo.
+     Khi chuyển sang video ngắn – nơi shot trung bình ngắn dưới 5 giây
+     và xuất hiện dày đặc các hiệu ứng dissolve/wipe – các kiến trúc này
+     không còn tối ưu. NAS là một hướng tiềm năng để giải quyết, nhưng
+     chi phí tính toán của NAS vẫn là rào cản với nhiều đơn vị nghiên
+     cứu vừa và nhỏ.
+
+    Khoảng trống 2 – Tổng quát hóa đa miền chưa được giải
+     quyết trọn vẹn. Mô hình tối ưu cho một miền dữ liệu có thể suy
+     giảm khi chuyển sang các miền khác như ClipShots hoặc BBC. Hiện
+     tượng dịch chuyển miền dữ liệu trong SBD chưa có giải pháp tổng
+     quát: các nghiên cứu hiện hành thường báo cáo kết quả tốt nhất trên
+     một bộ dữ liệu mục tiêu mà chưa phân tích hệ thống mức suy giảm
+     chéo. Điều này tạo nhu cầu cho các thực nghiệm đánh giá chéo có
+     hệ thống, như được tiến hành trong Chương 4 của khóa luận.
+
+    Khoảng trống 3 – Thiếu phân tích hệ thống về hiệu chỉnh
+     xác suất và hậu xử lý. Phần lớn các công trình SBD tập trung
+     cải tiến mạng xương sống (DeepSBD, TransNetV2, AutoShot) trong
+     khi ít phân tích hệ thống về các kỹ thuật ở tầng đầu ra: hàm mất
+     mát cho dữ liệu mất cân bằng (hàm mất mát Focal [10]), giám sát
+     theo ranh giới với nhãn nhiều điểm dương, hiệu chỉnh nhiệt độ [5] để
+     cải thiện độ tin cậy (calibration) của xác suất dự đoán, và làm mượt
+     Gaussian để giảm phổ tần số cao trong dòng xác suất đầu ra. Đây
+     là khoảng trống mà khóa luận trực tiếp đề xuất giải pháp thông qua
+     AutoShotV2.
+
+Ba khoảng trống này tương ứng trực tiếp với RQ1, RQ3 và RQ2 ở Mục 1.6:
+NAS cho video ngắn, tổng quát hóa đa miền, và hiệu chỉnh tầng đầu ra.
+Đây là động lực cốt lõi để Chương 3 của khóa luận triển khai phương pháp
+đề xuất theo hướng: giữ nền tảng kiến trúc mạng xương sống mạnh từ
+AutoShot, đồng thời tăng cường khả năng thích nghi với video ngắn và
+
+
+                                   19
+tổng quát hóa đa miền thông qua thiết kế lại tầng phân loại và quy trình
+huấn luyện–hậu xử lý.
+
+
+2.8    Tổng kết chương
+
+    Chương này đã trình bày bức tranh công trình liên quan từ phương
+pháp cổ điển đến học sâu hiện đại và NAS, kèm theo công thức hình
+thức cho các độ đo cổ điển và phân tích đặc trưng kiến trúc của các mô
+hình học sâu tiêu biểu (DeepSBD, TransNetV2, AutoShot, các biến thể
+Transformer/multi-modal). Bảng so sánh tổng quan cho thấy mỗi hướng
+tiếp cận có ưu điểm và giới hạn riêng, đặc biệt là khoảng cách giữa dữ liệu
+video dài truyền thống và video ngắn hiện đại. Từ các quan sát trên, ba
+khoảng trống nghiên cứu đã được xác định rõ – sai khác miền dữ liệu, tổng
+quát hóa đa miền và hiệu chỉnh xác suất đầu ra – là nền tảng trực tiếp cho
+Chương 3, nơi khóa luận đi sâu vào nền tảng kế thừa và phương pháp đề
+xuất.
+
+
+
+
+                                    20
+Chương 3
+
+PHƯƠNG PHÁP ĐỀ XUẤT
+       Chương này trình bày phương pháp được sử dụng trong khóa luận. Trọng
+      tâm là kế thừa AutoShot, giữ lại mạng xương sống đã được NAS tối ưu, sau
+      đó cải tiến tầng phân loại, hàm mất mát, nhãn giám sát và các bước hậu
+      xử lý xác suất để hình thành AutoShotV2. Các phần nền tảng về NAS và
+      TransNetV2 được giữ lại ở mức cần thiết nhằm làm rõ cơ sở kế thừa trước
+      khi đi vào phương pháp cải tiến; dữ liệu, thiết lập thực nghiệm và kết quả
+      định lượng được trình bày ở Chương 4.
+
+
+
+
+3.1    Tổng quan hướng tiếp cận
+
+    Khóa luận tiếp cận bài toán theo hướng kế thừa một mạng xương sống
+(backbone) phát hiện ranh giới cảnh quay (SBD) đã được tối ưu bằng tìm
+kiếm kiến trúc mạng (Neural Architecture Search - NAS), sau đó tập trung
+cải thiện các thành phần ở tầng đầu ra. Cụ thể, AutoShot được dùng làm
+mô hình nền tảng; phần mạng xương sống được giữ nguyên để bảo toàn
+lợi ích của quá trình tìm kiếm kiến trúc, còn AutoShotV2 bổ sung tầng
+phân loại (ClassificationHead) mới, hàm mất mát Focal (Focal Loss), nhãn
+nhiều điểm dương (many-hot), hiệu chỉnh nhiệt độ (temperature scaling)
+và làm mượt Gaussian (Gaussian smoothing) nhằm xử lý mất cân bằng
+lớp, tăng tín hiệu giám sát quanh ranh giới và ổn định chuỗi xác suất dự
+đoán theo thời gian.
+Hai mục tiếp theo hệ thống hóa hai khối kiến thức nền tảng được khóa
+luận kế thừa: (i) các nguyên lý và kỹ thuật của Neural Architecture Search
+(Mục 3.2) – là công cụ trung tâm mà AutoShot vận dụng để tìm ra kiến
+trúc tối ưu cho SBD, và (ii) mô hình TransNetV2 (Mục 3.3) – là mô hình
+cơ sở trực tiếp để khóa luận so sánh và cải tiến. Sơ đồ luồng xử lý và
+kiến trúc tổng quan của toàn bộ hệ thống được minh họa chi tiết trong
+Hình 3.1.
+
+
+
+                                         21
+Hình 3.1: Sơ đồ luồng xử lý tổng quan của hệ thống phát hiện ranh giới cảnh quay
+AutoShot/AutoShotV2. Video đầu vào trải qua bước tiền xử lý, trích xuất đặc trưng kết
+hợp với nhánh tính độ tương đồng để tạo vector đặc trưng tổng hợp 4864-chiều, sau đó
+qua các lớp kết nối đầy đủ và phân loại song song để dự đoán xác suất ranh giới.
+
+
+
+3.2     Kỹ thuật tìm kiếm kiến trúc mạng nơ-ron
+
+    Tìm kiếm kiến trúc mạng nơ-ron (Neural Architecture Search — NAS)
+là quá trình tự động hóa việc thiết kế kiến trúc mạng nơ-ron nhằm đạt
+hiệu suất cao trên một nhiệm vụ cụ thể mà không cần can thiệp thủ công
+từ chuyên gia [22]. NAS được xem là bước tiến tự nhiên của học máy tự
+động (Automated Machine Learning — AutoML), mở rộng phạm vi tối ưu
+hóa từ siêu tham số sang toàn bộ cấu trúc mô hình. Trong thập kỷ qua,
+các kiến trúc được tìm kiếm tự động liên tục thiết lập kết quả tốt nhất
+trên nhiều bộ chuẩn đánh giá, đáng chú ý nhất là bộ dữ liệu ImageNet.
+Lĩnh vực này phát triển nhanh chóng với hơn 1000 bài báo được công bố
+chỉ trong hai năm tính đến 2022 [22], phản ánh tầm quan trọng của tự
+động hóa thiết kế mô hình trong học sâu hiện đại.
+    Theo khảo sát toàn diện của Elsken et al. [3] và Ren et al. [14], hầu
+hết các phương pháp NAS đều được tổ chức quanh ba thành phần cốt lõi
+
+
+                                         22
+liên kết chặt chẽ với nhau: không gian tìm kiếm xác định phạm vi các kiến
+trúc có thể xét đến, chiến lược tìm kiếm quyết định cách duyệt qua không
+gian đó một cách hiệu quả, và chiến lược ước tính hiệu suất giúp đánh
+giá nhanh chất lượng từng ứng viên mà không phải huấn luyện đầy đủ từ
+đầu. Ba thành phần này tạo thành một vòng lặp phản hồi: thiết kế không
+gian tìm kiếm ảnh hưởng trực tiếp đến chiến lược tìm kiếm phù hợp, còn
+phương pháp ước tính hiệu suất quyết định tốc độ toàn bộ vòng lặp NAS.
+Hình 3.2 minh họa sơ đồ tổng quan của ba thành phần này.
+
+           Không gian tìm kiếm ứng viên Chiến lược tìm kiếm
+          (không gian tìm kiếm)          (Search Strategy)chọn tốt nhất
+                    A
+
+                  phản hồi                        đánh giá              Kiến trúc tối ưu
+                                                                               a∗
+
+                             Ước tính hiệu suất
+                               (Performance
+                                Estimation)                               ngân sách t
+
+Hình 3.2: Sơ đồ ba thành phần cốt lõi của NAS: không gian tìm kiếm (không gian tìm
+kiếm), chiến lược tìm kiếm (search strategy) và chiến lược ước tính hiệu suất (performance
+estimation strategy) liên kết nhau thành vòng lặp phản hồi. Đầu ra là kiến trúc tối ưu
+a∗ đáp ứng ngân sách tính toán t.
+
+
+3.2.1    Định nghĩa bài toán NAS
+
+   NAS tìm kiến trúc a∗ tối ưu hóa độ chính xác trên tập xác thực trong
+ngân sách tính toán t:
+
+                 a∗ = arg max val_acc(a),                    trong ngân sách t.            (3.1)
+                               a∈A
+
+
+Thách thức: không gian A rời rạc, không khả vi, có thể hàng triệu cấu
+hình — huấn luyện đầy đủ từng kiến trúc không khả thi. Trong SBD, kiến
+trúc tối ưu phụ thuộc mạnh vào đặc điểm dữ liệu (nhịp cắt, loại chuyển
+cảnh), nên NAS đặc biệt có giá trị để tìm mạng xương sống chuyên biệt
+cho từng phân phối dữ liệu — đây là luận điểm trung tâm của AutoShot.
+
+
+
+
+                                                   23
+3.2.2   Không gian tìm kiếm
+
+    Không gian tìm kiếm A xác định tập hợp tất cả các kiến trúc mạng
+nơ-ron khả thi. Thiết kế không gian tìm kiếm là quyết định quan trọng
+nhất trong NAS vì nó định hình toàn bộ quá trình: không gian quá lớn
+dẫn đến chi phí tìm kiếm khổng lồ và khó hội tụ, trong khi không gian quá
+hẹp có thể loại bỏ các kiến trúc tiềm năng. Thực tế, phần lớn các kiến trúc
+tìm kiếm tốt đều được thiết kế không gian tìm kiếm lấy cảm hứng mạnh
+từ các kiến trúc thủ công tiên tiến [22].
+    Ba dạng không gian tìm kiếm phổ biến: (i) Macro — tìm kiếm toàn bộ
+mạng, tự do tối đa nhưng chi phí rất cao; (ii) Hierarchical — xây dựng
+kiến trúc theo nhiều cấp lồng nhau, cân bằng giữa linh hoạt và chi phí; (iii)
+Cell-based — tìm một đơn vị cấu trúc nhỏ (cell/block) rồi xếp chồng, phổ
+biến nhất hiện nay (NASNet, DARTS). AutoShot theo triết lý cell-based:
+không gian tìm kiếm định nghĩa ở cấp block (DDCNNV2/A/B/C), toàn
+mạng là tổ hợp 6 block độc lập. Bảng 3.1 tổng hợp đặc điểm của ba loại.
+            Bảng 3.1: Đặc điểm của các loại không gian tìm kiếm NAS
+
+ Loại không gian                      Kích        Linh hoạt        Chi phí
+                                     thước                        tìm kiếm
+ Vĩ mô (Macro)                     Rất lớn         Rất cao         Rất cao
+ Phân cấp (Hierarchical)             Lớn             Cao             Cao
+ Dựa trên tế bào (Cell-based)     Trung bình      Trung bình      Trung bình
+ AutoShot                         83.9M kiến      Cao (4 loại     Trung bình
+                                     trúc           block)        (SuperNet)
+
+
+3.2.3   Chiến lược tìm kiếm
+
+   Chiến lược tìm kiếm khám phá không gian A cân bằng giữa khám phá
+vùng chưa biết và khai thác vùng đã biết tốt [22].
+
+Kỹ thuật tối ưu hóa hộp đen
+
+   Các kỹ thuật hộp đen huấn luyện từng kiến trúc độc lập và không yêu
+cầu gradient, phù hợp với không gian rời rạc. Ba hướng chính: RL [3] mô
+hình hóa tìm kiếm như bài toán quyết định tuần tự với RNN làm controller,
+
+                                      24
+nhận F1 validation làm phần thưởng — chi phí cao (hàng trăm đến hàng
+nghìn GPU-giờ); EA [3] tiến hóa quần thể kiến trúc qua đột biến và lai
+ghép — dễ song song hóa nhưng vẫn tốn đánh giá; Tối ưu hóa Bayesian
+(BO) [3] xây dựng Gaussian Process xấp xỉ hàm hiệu suất và dùng hàm
+thu thập để chọn ứng viên tiếp theo một cách thông minh, hiệu quả mẫu
+nhất trong nhóm. AutoShot sử dụng BO với GP và hàm PoF ở giai đoạn
+tìm kiếm (Mục 3.4.3).
+
+Kỹ thuật một lần bắn và DARTS
+
+    Các phương pháp một lần bắn (One-Shot) mã hóa toàn bộ không gian
+tìm kiếm vào một supernetwork duy nhất, cho phép tất cả kiến trúc con
+chia sẻ trọng số và được đánh giá nhanh mà không cần huấn luyện riêng.
+DARTS [14] là biến thể phổ biến nhất, chuyển không gian rời rạc thành
+dạng liên tục qua softmax có trọng số trên các phép toán ứng viên; tuy
+giảm chi phí xuống vài GPU-giờ nhưng gặp vấn đề khoảng cách rời rạc hóa
+khi argmax cuối cùng phá vỡ biểu diễn liên tục đã học — điểm yếu chí
+mạng với không gian rời rạc như các biến thể DDCNN.
+    AutoShot vì vậy chọn Single-Path One-Shot (SPOS): tại mỗi bước huấn
+luyện, một kiến trúc con được lấy mẫu đồng đều và chỉ trọng số của đường
+đi đó được cập nhật. Cách làm này tránh tương quan giữa các nhánh và
+hoạt động ổn định với không gian hoàn toàn rời rạc; sau khi SuperNet hội
+tụ, mọi kiến trúc con có thể được đánh giá tức thời bằng cách kế thừa
+trọng số chia sẻ.
+    Bảng 3.2 tóm tắt đặc điểm và đánh đổi của các chiến lược tìm kiếm
+chính, giúp định vị AutoShot trong toàn cảnh NAS.
+               Bảng 3.2: So sánh các chiến lược tìm kiếm kiến trúc
+
+Chiến lược                  Chi phí          Yêu cầu     Không         Ví dụ
+                             GPU             gradient    gian rời
+                                                           rạc
+Học tăng cường (RL)         Rất cao           Không        Có         NASNet
+Tiến hóa (EA)                 Cao             Không        Có        AmoebaNet
+Tối ưu hóa Bayesian (BO)   Trung bình         Không        Có         AutoShot
+DARTS (One-Shot)             Thấp              Có         Không      PC-DARTS
+Single-Path One-Shot         Thấp             Không        Có          SPOS,
+                                                                      AutoShot
+
+
+
+                                        25
+3.2.4   Chiến lược ước tính hiệu suất
+
+    Ước tính hiệu suất thay thế huấn luyện đầy đủ (vài giờ GPU/kiến trúc)
+bằng xấp xỉ nhanh: (i) Lower-fidelity rút ngắn huấn luyện hoặc dùng tập
+con dữ liệu; (ii) Zero-cost proxy chỉ cần một lần lan truyền để gán điểm
+cho kiến trúc; (iii) Weight sharing (chiến lược AutoShot) — SuperNet chia
+sẻ trọng số cho tất cả kiến trúc con, cho phép đánh giá bất kỳ kiến trúc
+trong vài giây. Bảng 3.3 tóm tắt đánh đổi chi phí–độ chính xác.
+
+          Bảng 3.3: So sánh các chiến lược ước tính hiệu suất trong NAS
+
+Chiến lược                       Chi phí          Độ chính         Ví dụ ứng
+                                 đánh giá         xác xếp            dụng
+                                                   hạng
+Huấn luyện đầy đủ                 Rất cao          Cao nhất         NASNet
+                                                                      (RL)
+Lower-fidelity                  Trung bình        Trung bình       Hyperband-
+                                                                      NAS
+Zero-cost proxy                 Gần bằng 0       Thấp–Trung        NASWOT,
+                                                     bình          GradNorm
+Weight sharing (one-shot)          Thấp             Trung            SPOS,
+                                                  bình–Cao          AutoShot
+
+
+    Trong AutoShot: không gian tìm kiếm = 83.9M kiến trúc (phương
+trình (3.4)), chiến lược = SPOS + BO (Mục 3.4.3), ước tính hiệu suất =
+weight sharing từ SuperNet.
+    Điểm khởi đầu của AutoShot là TransNetV2 — một kiến trúc được
+thiết kế thủ công chuyên biệt cho SBD. AutoShot giữ nguyên các thành
+phần cốt lõi (DDCNN, similarity branch, two-head, sliding window) nhưng
+đa dạng hóa cách kết hợp tích chập không gian–thời gian thành bốn biến
+thể, tạo không gian tìm kiếm phong phú hơn. Sau đó, NAS tự động tìm
+cấu hình tối ưu thay vì chuyên gia quyết định thủ công. Phần tiếp theo sẽ
+phân tích nền tảng TransNetV2 trước khi trình bày những đóng góp đặc
+trưng của AutoShot.
+
+
+
+
+                                       26
+3.3     Nền tảng: Mô hình TransNetV2
+
+    TransNetV2 là mô hình mạng nơ-ron sâu được Souček và Lokoč đề xuất
+năm 2020 [16], với mục tiêu phát hiện ranh giới cảnh quay trong video một
+cách nhanh chóng và chính xác. Mô hình kế thừa TransNet (2019) và mang
+lại nhiều cải tiến căn bản về kiến trúc và quy trình huấn luyện. Mã nguồn
+và trọng số huấn luyện sẵn được tác giả công bố rộng rãi, tạo nền tảng
+quan trọng cho cộng đồng nghiên cứu và là điểm khởi đầu trực tiếp của
+AutoShot.
+
+3.3.1   Tổng quan và vị trí trong dòng chảy nghiên cứu SBD
+
+    Trước TransNetV2, phần lớn các phương pháp SBD dùng đặc trưng
+thủ công (histogram màu, pixel difference) hoặc mạng CNN xử lý từng
+cặp khung hình riêng lẻ. Nhóm phương pháp đầu dễ cài đặt nhưng thiếu
+khả năng nắm bắt ngữ cảnh thị giác phức tạp; nhóm sau học được đặc
+trưng phong phú hơn nhưng không mô hình hóa ngữ cảnh thời gian dài
+hạn — quan trọng để phân biệt chuyển cảnh đột ngột (thay đổi đột ngột)
+với chuyển cảnh dần (thay đổi dần dần như dissolve, fade).
+    TransNetV2 giải quyết cả hai hạn chế này đồng thời: khối tích chập
+giãn nở 3D (DDCNN) học đặc trưng thời gian đa tỉ lệ trực tiếp từ dữ liệu
+thô, trong khi nhánh đặc trưng tương đồng cung cấp tín hiệu bổ sung về
+sự thay đổi nội dung giữa các khung hình. Tích chập phân tách không
+gian–thời gian (tích chập phân tách) giảm số tham số xuống còn khoảng
+6.5 triệu trong khi vẫn duy trì trường nhìn thời gian rộng lên tới 97 khung
+hình.
+    So với TransNetV1, TransNetV2 cải thiện F1-score đáng kể trên các bộ
+dữ liệu chuẩn: từ 73.5% lên 77.9% trên ClipShots và từ 92.9% lên 96.2%
+trên BBC Planet Earth. Những cải thiện này đến từ sự kết hợp đồng bộ
+của bốn thay đổi quan trọng, được tổng hợp trong Bảng 3.4.
+
+
+
+
+                                    27
+           Bảng 3.4: Các cải tiến chính từ TransNetV1 sang TransNetV2
+
+Thành phần         TransNetV1                     TransNetV2
+Chuẩn hóa          Không có                       BatchNorm sau mỗi tích
+                                                  chập
+Kết nối            Tuần tự                        Skip connection sau mỗi 2
+                                                  khối
+Kernel tích
+                   3D đầy đủ                      Phân tách không
+chập
+                                                  gian–thời gian
+Nhánh bổ sung Không có                            Learned + Histogram
+                                                  similarity
+Đầu ra             Một head                       Hai heads (single + all
+                                                  frame)
+Dữ liệu huấn
+                   Nhân tạo 100%                  Nhân tạo 85% + Thực
+luyện
+                                                  15%
+F1 ClipShots       73.5%                          77.9%
+F1 BBC
+                   92.9%                          96.2%
+Planet Earth
+
+
+   Mỗi thay đổi trong Bảng 3.4 giải quyết một vấn đề cụ thể. BatchNorm
+và skip connection ổn định quá trình huấn luyện khi mô hình sâu hơn.
+Phân tách kernel giảm nguy cơ quá khớp trên dữ liệu nhân tạo có phân
+phối hạn chế. Nhánh similarity cung cấp tín hiệu bổ sung không thể học
+được chỉ từ tích chập cục bộ. Hai heads buộc mô hình phân biệt giữa "tại
+đâu là ranh giới" và "vùng nào là chuyển cảnh", hai câu hỏi bổ sung cho
+nhau. Cuối cùng, bổ sung dữ liệu thực vào 15% tập huấn luyện thu hẹp
+khoảng cách phân phối giữa huấn luyện và kiểm thử.
+
+3.3.2    Kiến trúc mô hình
+
+   TransNetV2 xử lý chuỗi khung hình đầu vào có kích thước 48 × 27 × 3
+pixel với độ dài 100 khung, trả ra xác suất ranh giới cho mỗi khung hình.
+Kiến trúc gồm hai nhánh song song — nhánh DDCNN chính và nhánh đặc
+trưng tương đồng — được kết hợp trước các đầu phân loại, như minh họa
+trong Hình 3.3.
+
+
+
+
+                                      28
+                                                                           Single-frame
+                            Nhánh chính                                        head
+                             6 khối DD-                                             (1)   (all)
+                                                   Fusion                          pt , pt
+                            CNN giãn nở
+                                                  đặc trưng                        xác suất ranh giới theo khung
+                            (+ skip/pool
+         Input clip          mỗi 2 khối)                                    All-frame
+     100 × 48 × 27 × 3                                                        head
+
+                             Histogram             Learned
+                           similarity RGB         similarity
+
+
+Hình 3.3: Tổng quan kiến trúc TransNetV2: 6 khối DDCNN giãn nở xếp chồng (nhánh
+chính) kết hợp với nhánh đặc trưng tương đồng (histogram RGB + learned similarity),
+đầu ra qua hai đầu phân loại song song (single-frame head và all-frame head). Kết nối
+tắt và pooling trung bình không gian được áp dụng sau mỗi hai khối DDCNN.
+
+
+Khối tích chập giãn nở DDCNN
+
+    Xương sống của TransNetV2 là 6 khối tích chập giãn nở (Dilated DCNN
+— DDCNN) xếp chồng tuần tự. Mỗi khối DDCNN gồm 4 nhánh tích
+chập song song với độ giãn nở (dilation) theo chiều thời gian tăng dần
+theo cấp số nhân: d ∈ {1, 2, 4, 8}. Đầu ra của 4 nhánh được nối ghép
+(concatenate) theo chiều kênh, tiếp theo là BatchNorm và ReLU. Sau mỗi
+hai khối DDCNN, một skip connection và lớp pooling trung bình không
+gian được thêm vào để ổn định luồng gradient và giảm dần độ phân giải
+không gian.
+    Hình 3.4 minh họa cấu trúc chi tiết của một khối DDCNN với 4 nhánh
+dilation song song.
+                                            Temporal
+                          Spatial
+                                            k×1×1
+                         1×k×k
+                                             d = 1
+                                            Temporal
+                          Spatial
+                                            k×1×1
+         Input feature   1×k×k                                                                    Output
+                                             d = 2              Concat          BatchNorm
+              Xt                            Temporal           theo kênh         + ReLU             Yt
+                          Spatial
+                                            k×1×1
+                         1×k×k
+                                             d = 4
+                                            Temporal
+                          Spatial
+                                            k×1×1
+                         1×k×k
+                                             d = 8
+
+
+Hình 3.4: Cấu trúc chi tiết của khối DDCNN trong TransNetV2: 4 nhánh tích chập thời
+gian 1D với độ giãn nở d ∈ {1, 2, 4, 8} song song nhau, đầu ra được nối ghép theo chiều
+kênh. Mỗi nhánh trước tiên qua tích chập không gian 2D (1 × k × k) rồi mới qua tích
+chập thời gian 1D giãn nở (k × 1 × 1).
+
+
+    Nhờ cấu trúc giãn nở, trường nhìn thời gian (temporal receptive field)
+tại khối DDCNN thứ k có thể được tính theo quy nạp. Với kernel thời
+gian kích thước K = 3 và 4 nhánh dilation {1, 2, 4, 8}, trường nhìn cộng
+
+
+
+                                                   29
+dồn sau k khối là:
+                                X
+ Rk = Rk−1 + 2 · (K − 1) ·                 d = Rk−1 + 2 · 2 · 15 = Rk−1 + 60, (3.2)
+                             d∈{1,2,4,8}
+
+
+với R0 = 1 (một khung hình đơn lẻ). Cơ chế cộng dồn cho R1 = 61,
+R2 = 121, . . . , R6 = 361 trong trường hợp lý tưởng. Tuy nhiên, chiều
+dài chuỗi đầu vào trong huấn luyện và suy diễn được cố định ở mức 100
+khung hình, nên trường nhìn bị cắt cụt; kết hợp với các lớp pooling xen kẽ,
+trường nhìn hiệu quả (effective receptive field) tập trung vào khoảng 97
+khung hình — đủ bao quát toàn bộ chuỗi đầu vào, giúp mô hình nắm bắt
+ngữ cảnh dài hạn để phân biệt cảnh tan dần (dissolve) với chuyển động
+chậm (slow motion).
+
+Phân tách tích chập không gian–thời gian
+
+   Thay vì dùng kernel tích chập 3D đầy đủ kích thước k × k × k,
+TransNetV2 phân tách mỗi phép tích chập thành hai bước tuần tự nhằm
+giảm số tham số và buộc mạng học riêng biệt hai loại thông tin:
+
+  1. Tích chập không gian 2D với kernel 1 × k × k: xử lý từng khung
+     hình trong chuỗi một cách độc lập theo hai chiều không gian (height,
+     width), học đặc trưng nội dung thị giác như cạnh, kết cấu, vùng màu.
+
+  2. Tích chập thời gian 1D giãn nở với kernel k × 1 × 1 và độ giãn nở
+     d: xử lý chuỗi đặc trưng theo trục thời gian, học sự biến đổi chuyển
+     động và chuyển cảnh.
+
+   Phân tách giảm số tham số còn ≈ 44% so với kernel 3D đầy đủ: với
+k = 3 và Cin = Cout = Cmid = C, tỉ lệ là (9C 2 + 3C 2 )/(27C 2 ) = 12/27 ≈
+44%, tức tiết kiệm ≈ 56% tham số bất kể số kênh. Ngoài lợi ích về bộ
+nhớ, việc ép xử lý không gian trước rồi mới xử lý thời gian tạo ra thiên
+kiến quy nạp phù hợp với SBD: nội dung khung thay đổi theo không gian,
+còn chuyển cảnh là hiện tượng theo thời gian — hai biến đổi nên được mô
+hình hóa riêng biệt.
+
+
+
+
+                                           30
+Nhánh đặc trưng tương đồng và hai đầu phân loại
+
+    Song song với DDCNN, TransNetV2 tính ma trận tương đồng qua
+hai nguồn bổ sung: learned similarity (cosine similarity giữa đặc trưng ℓ2 -
+chuẩn hóa trích từ L2 , L4 , L6 ) và histogram RGB similarity (cosine distance
+của histogram 512-bin). Hai loại tương đồng (mỗi loại 101 chiều) được
+ghép thành 202-D, qua Dense(128)+ReLU rồi kết hợp với đầu ra DDCNN.
+Learned similarity nhạy với thay đổi ngữ nghĩa; histogram nhạy với thay
+đổi màu sắc thô — sự kết hợp tăng tính bền vững qua nhiều loại chuyển
+cảnh.
+    Hai đầu phân loại: Single-frame head dự đoán xác suất tại đúng
+một khung trung tâm của ranh giới (đầu ra chính khi suy diễn); All-frame
+head dự đoán xác suất "thuộc về vùng chuyển cảnh" (hỗ trợ học phạm vi
+chuyển cảnh dần). Cơ chế hai đầu là cải tiến then chốt so với TransNetV1.
+
+3.3.3   Hàm mục tiêu và quy trình huấn luyện
+
+Hàm mất mát weighted cross-entropy
+
+   TransNetV2 tối thiểu hóa weighted cross-entropy tổng hợp hai nhánh
+kèm ℓ2 :
+
+           λ1 X       (1)    (1)   λ2 X       (2)    (2) 
+ L(θ) =          CE ŷi,t , yi,t +        CE ŷi,t , yi,t + λreg ∥θ∥2 , (3.3)
+          KM i,t                   KM i,t
+
+với λ1 = 5.0, λ2 = 0.1, λreg = 10−4 . Trọng số λ1 ≫ λ2 ưu tiên nhánh
+single-frame vốn mất cân bằng lớp nghiêm trọng hơn.
+
+Chiến lược dữ liệu và tăng cường
+
+    Tập huấn luyện kết hợp 85% dữ liệu nhân tạo (chuyển cảnh đột ngột
+và dissolve tạo từ IACC.3 + ClipShots) và 15% dữ liệu thực (ClipShots).
+Tăng cường dữ liệu được áp dụng nhất quán cho toàn chuỗi (flip, màu sắc,
+color transfer 10%) để tránh artifact thời gian giả tạo. Chuyển đổi màu
+giả lập trường hợp khó: hai cảnh liền kề có tông màu tương đồng, buộc
+mô hình học đặc trưng cấu trúc thay vì chỉ dựa vào màu sắc (Bảng 3.5).
+
+
+
+                                     31
+             Bảng 3.5: Chiến lược dữ liệu huấn luyện của TransNetV2
+
+Loại mẫu                                   Nguồn / Cách tạo           Tỉ lệ
+Chuỗi thực                              ClipShots (ranh giới cảnh      15%
+                                                  thực)
+chuyển cảnh đột ngột nhân tạo          IACC.3 + ClipShots, nối 2       35%
+                                                  cảnh
+Dissolve nhân tạo                    IACC.3 + ClipShots, hiệu ứng      50%
+                                                hòa tan
+Tăng cường                            Flip, màu sắc, color transfer   100%
+                                                 (10%)
+
+
+3.3.4   Thuật toán suy diễn với cửa sổ trượt
+
+    Thuật toán 1 mô tả cơ chế cửa sổ trượt xử lý video có độ dài tùy ý.
+TransNetV2 chỉ nhận đầu vào có độ dài cố định 100 khung, nên cần chia
+video dài thành các đoạn chồng lấp. Mỗi cửa sổ 100 khung di chuyển với
+bước nhảy 50 khung; chỉ 50 khung hình ở giữa (vị trí 25–74) được giữ lại
+trong kết quả, tránh hiệu ứng biên ở hai đầu cửa sổ nơi ngữ cảnh thời gian
+bị thiếu.
+
+Thuật toán 1 TransNetV2 Inference
+                                   ∗
+ 1: function Predict(video, θ , τ = 0.5)
+ 2:    f rames ← ExtractFrames(video)
+ 3:    f rames ← Resize(f rames, 48 × 27 × 3)
+ 4:    predictions ← []
+ 5:    for start = 0 to |f rames| − 100 step 50 do
+ 6:        ŷ (1) ← Forward(θ∗ , f rames[start : start + 100])
+ 7:        predictions.extend(ŷ (1) [25 : 75])     ▷ Keep middle 50 frames
+ 8:    positions ← {t : predictions[t] > τ }
+ 9:    boundaries ← GroupConsecutive(positions) ▷ Gradual: multiple
+    consecutive frames
+10:    return boundaries
+
+    Quy trình suy diễn này được AutoShot tái sử dụng nguyên vẹn: chỉ 50
+khung giữa được giữ lại, đảm bảo video được bao phủ đầy đủ và tránh sai
+số ở biên cửa sổ.
+
+
+
+                                      32
+3.3.5   Thông số cấu hình
+
+   Bảng 3.6 tổng hợp các siêu tham số chính, phục vụ đối chiếu với Au-
+toShot ở Mục 3.4.6. Mô hình ≈ 6.5M tham số, huấn luyện ≈ 17 giờ trên
+V100.
+                Bảng 3.6: Các thông số cấu hình của TransNetV2
+
+Tham số                                              Giá trị
+Độ phân giải đầu vào                              48 × 27 × 3
+Độ dài chuỗi huấn luyện                         100 khung hình
+Bước trượt suy diễn                              50 khung hình
+Kích thước batch                                       16
+Tốc độ học                                            0.01
+Momentum (SGD)                                         0.9
+Số epoch huấn luyện                                    50
+Trọng số loss (λ1 , λ2 )                            5.0, 0.1
+Chính quy hóa (λreg )                                 10−4
+Trường nhìn thời gian hiệu quả                  ≈ 97 khung hình
+Tổng số tham số                                   ≈ 6.5 triệu
+Bộ nhớ GPU (batch 16)                               ≈ 2 GB
+Thời gian huấn luyện (V100)                         ≈ 17 giờ
+
+
+Từ nền tảng NAS và TransNetV2 đã trình bày, các mục tiếp theo cụ thể
+hóa khung NAS thành hai mô hình. Trước hết, Mục 3.4 mô tả AutoShot
+— một instance của khung NAS với 83.9 triệu kiến trúc ứng viên, dùng
+SuperNet kết hợp Bayesian Optimization để chọn mạng xương sống phù
+hợp với phân phối video ngắn của SHOT. Tiếp theo, Mục 3.5 trình bày
+đóng góp của khóa luận: biến thể AutoShotV2 đóng băng mạng xương
+sống đã được NAS tối ưu, chỉ huấn luyện lại tầng phân loại với Focal Loss,
+nhãn many-hot, Gaussian smoothing và temperature scaling — nhằm cô
+lập đóng góp của tầng đầu ra so với mạng xương sống.
+
+
+
+
+                                     33
+3.4      Mô hình AutoShot — nền tảng kế thừa từ
+         TransNetV2
+
+3.4.1     Động lực kế thừa từ TransNetV2
+
+    AutoShot [23] bắt đầu từ một nhận xét thực nghiệm: TransNetV2 [16]
+là mô hình cơ sở mạnh cho SBD, nhưng chỉ đạt F1 = 79.9% trên SHOT,
+thấp hơn kỳ vọng khi chuyển sang miền video ngắn. Vấn đề không nằm
+ở toàn bộ quy trình TransNetV2, vì các quyết định như cửa sổ trượt,
+nhánh similarity và hai đầu phân loại vẫn phù hợp. Điểm cần tối ưu là
+backbone: TransNetV2 dùng cùng một dạng DDCNN cho 6 vị trí, trong
+khi video ngắn có nhịp cắt nhanh, hiệu ứng chỉnh màu dày đặc và phân
+phối chuyển cảnh khác video dài.
+    Vì vậy, AutoShot không thay thế TransNetV2 từ đầu. Mô hình giữ lại
+quy trình đã được kiểm chứng, rồi dùng Neural Architecture Search (NAS)
+để chọn cấu hình mạng xương sống phù hợp hơn với SHOT và ClipShots.
+Cách tổ chức này giúp so sánh công bằng: nếu hiệu năng tăng, nguyên
+nhân chính đến từ cơ chế chọn kiến trúc bằng NAS chứ không phải từ việc
+đổi toàn bộ quy trình suy diễn hay hàm mục tiêu.
+    Hai luận điểm kỹ thuật được kiểm chứng trong AutoShot:
+
+    H1: mạng xương sống cố định với 6 khối DDCNN đồng nhất chưa
+        tối ưu cho video ngắn; chuyên biệt hóa theo từng vị trí có thể cải
+        thiện F1.
+
+    H2: NAS one-shot trên không gian gồm các biến thể DDCNN và tùy
+        chọn Transformer có thể tìm kiến trúc vượt TransNetV2 với chi phí
+        huấn luyện chấp nhận được.
+
+   Bảng 3.7 phân rõ thành phần nào của AutoShot được kế thừa từ
+TransNetV2 và thành phần nào là đóng góp của công trình AutoShot
+gốc.
+
+
+
+
+                                     34
+Bảng 3.7: Thành phần kế thừa từ TransNetV2 và đóng góp của công trình AutoShot gốc
+
+ Thành phần                                                         Kế thừa / Mới                          Mô tả
+ Độ phân giải đầu vào (48 × 27)                                     Kế thừa                              Giữ nguyên
+ Nhánh similarity (learned + hist.)                                 Kế thừa                              Giữ nguyên
+ Hai đầu phân loại (single + all)                                   Kế thừa                              Giữ nguyên
+ Hàm mất mát (WCE hai nhánh)                                        Kế thừa                              Giữ nguyên
+ Suy diễn sliding window                                            Kế thừa                              Giữ nguyên
+ Loại khối mạng xương sống                                          Mới                           4 biến thể DDC-
+                                                                                                   NNV2/A/B/C
+ Khối Transformer (vị trí 7)                                        Mới                               Tùy chọn
+                                                                                                    self-attention
+ Quy trình NAS (SuperNet + BO) Mới                                                                 Tìm kiếm kiến
+                                                                                                    trúc tự động
+ chưng cất tri thức                                                 Mới                             Học từ nhãn
+                                                                                                         mềm
+ Weight Grafting                                                    Mới                             Kết hợp trọng
+                                                                                                   số theo entropy
+
+
+3.4.2           Không gian tìm kiếm kiến trúc
+
+   Không gian tìm kiếm của AutoShot được thiết kế hẹp có chủ đích: chỉ
+thay đổi các khối trích xuất đặc trưng trong mạng xương sống, còn phần
+vào/ra và quy trình suy diễn vẫn giữ theo TransNetV2. Cụ thể, mô hình
+có 7 quyết định kiến trúc nối tiếp: 6 vị trí đầu chọn khối tích chập phân
+tách 3D, vị trí cuối chọn số lớp Transformer 1D. Hình 3.5 minh họa sơ đồ
+tổng thể, trong đó mỗi biến αi là một quyết định rời rạc của NAS.
+     Video                                                                                                Similarity
+                 Block 1   Block 2       Block 3        Block 4        Block 5   Block 6   Transformer
+   48×27×3
+                                                                                           α7 ∈ {0..4}
+                                                                                                           branch      ŷ (1) , ŷ (2)
+                 α1 ∈ V    α2 ∈ V        α3 ∈ V         α4 ∈ V         α5 ∈ V    α6 ∈ V
+ (100 frames)                                                                                             + 2 heads
+
+
+                                      6 khối tích chập (NAS search):                        Tự chú ý        Kế thừa
+                             V = {DDCNNV2, V2A, V2B, V2C} (16 cấu hình/khối)                (0–4 lớp)     TransNetV2
+
+
+Hình 3.5: Sơ đồ tổng thể mô hình AutoShot gồm 7 vị trí kiến trúc cần tìm
+kiếm.     Sáu vị trí đầu là các khối tích chập phân tách 3D chọn từ V =
+{DDCNNV2, DDCNNV2A, DDCNNV2B, DDCNNV2C} với các siêu tham số (nc, nd); vị
+trí thứ 7 là khối Transformer 1D với số lớp tự chú ý α7 ∈ {0, 1, 2, 3, 4}. Nhánh similarity
+và hai đầu phân loại được kế thừa nguyên vẹn từ TransNetV2, do đó mọi cải thiện đo
+được đều quy về sự khác biệt ở 7 quyết định α1 , . . . , α7 của NAS.
+
+
+
+
+                                                                  35
+Bốn biến thể khối tích chập
+
+    Hình 3.6 minh họa bốn biến thể khối tích chập 3D phân tách trong
+không gian tìm kiếm. Tất cả đều kế thừa nguyên tắc tích chập phân
+tách từ TransNetV2 (Mục 3.3.2), nhưng khác nhau ở cách chia sẻ spatial
+convolution và cách ghép đặc trưng spatial–temporal. Bảng 3.8 tóm tắt
+vai trò của từng biến thể.
+
+        DDCNNV2                       DDCNNV2A                        DDCNNV2B                        DDCNNV2C
+
+
+            Input                          Input                            Input                         Input
+
+
+  4 nhánh spatial riêng biệt        Shared spatial conv                                             Shared spatial conv
+                                                                  Spatial           Temporal
+
+  4 nhánh temporal giãn nở        4 nhánh temporal giãn nở                                          Temporal giãn nở
+                                                                            Add
+
+           Concat                         Concat                                                           Add
+
+
+
+Hình 3.6: Bốn biến thể khối tích chập 3D phân tách trong không gian tìm kiếm của
+AutoShot. Từ trái qua phải: DDCNNV2 (spatial riêng biệt từng nhánh, concat), DDC-
+NNV2A (shared spatial, concat), DDCNNV2B (spatial + temporal song song, cộng dồn
+theo P3D), DDCNNV2C (spatial truyền tuần tự vào temporal, cộng dồn). Tất cả đều
+dùng tích chập thời gian 1D giãn nở đa nhánh.
+
+
+        Bảng 3.8: So sánh bốn biến thể khối tích chập 3D phân tách của AutoShot
+
+ Biến thể                      Spatial conv                  Phép kết hợp                        Nguồn cảm
+                                                                                                   hứng
+ DDCNNV2                       Riêng biệt từng                     Concat                      TransNetV2 gốc
+                                   nhánh
+ DDCNNV2A                        Dùng chung                        Concat                      Chia sẻ đặc trưng
+                                  (shared)                                                        không gian
+ DDCNNV2B                       Song song với                         Add                      Pseudo-3D (P3D)
+                                  temporal
+ DDCNNV2C                        Tuần tự vào                          Add                         Kết hợp
+                                  temporal                                                     DDCNNV2A + B
+
+
+    Bảng 3.8 là nguồn so sánh chính giữa bốn biến thể; điểm cốt lõi cần
+ghi nhớ là không gian tìm kiếm phủ hai trục thiết kế: cách chia sẻ spatial
+convolution (riêng biệt như V2 vs. dùng chung như V2A, V2C) và cách
+ghép spatial–temporal (Concat như V2/V2A vs. Add lấy cảm hứng P3D
+như V2B/V2C). Đưa cả hai cơ chế Concat và Add vào không gian tìm
+
+
+                                                             36
+kiếm cho phép NAS tự cân nhắc giữa tính phân tách thông tin (Concat)
+và sự ổn định gradient kiểu ResNet (Add) phù hợp nhất với từng vị trí
+trong mạng xương sống của video ngắn.
+
+Kích thước không gian tìm kiếm
+
+    Với 4 loại khối và các tùy chọn siêu tham số như mô tả trong Bảng 3.8,
+số cấu hình khả thi cho mỗi khối tích chập là:
+
+    DDCNNV2: 3 × 2 = 6 cấu hình (3 giá trị nc, 2 giá trị nd)
+
+    DDCNNV2A: 3 × 2 = 6 cấu hình
+
+    DDCNNV2B: 1 × 2 = 2 cấu hình (nc cố định, 2 giá trị nd)
+
+    DDCNNV2C: 1 × 2 = 2 cấu hình
+
+    Tổng mỗi khối tích chập: 6 + 6 + 2 + 2 = 16 cấu hình
+
+    Khối Transformer thứ 7 có 5 tùy chọn về số lớp self-attention:
+{0, 1, 2, 3, 4}. Các 6 khối tích chập được cấu hình độc lập, nên tổng số
+kiến trúc trong không gian tìm kiếm là:
+
+ |A| = 166 × 5 = 16,777,216 × 5 = 83,886,080 ≈ 83.9 triệu kiến trúc. (3.4)
+
+   Không gian gần 84 triệu kiến trúc này quá lớn để duyệt toàn bộ bằng
+phương pháp naı̈ve (đánh giá từng kiến trúc độc lập sẽ cần hàng nghìn năm
+GPU). Đây là lý do cốt lõi tại sao AutoShot cần quy trình NAS hai giai
+đoạn với SuperNet và Bayesian Optimization, được trình bày tiếp theo.
+
+3.4.3   Quy trình tìm kiếm NAS
+
+    Áp dụng khung NAS đã trình bày ở Mục 3.2, AutoShot cụ thể hóa ba
+thành phần không gian tìm kiếm, search strategy và performance estima-
+tion thành quy trình hai lớp dưới đây.
+    AutoShot áp dụng One-Shot NAS kết hợp Tối ưu hóa Bayesian. Có
+thể nhìn quy trình ở hai lớp: lớp tìm kiếm gồm huấn luyện SuperNet và
+chọn kiến trúc bằng BO; lớp hoàn thiện mô hình gồm retraining, chưng
+
+
+                                   37
+cất tri thức và Weight Grafting. Hình 3.7 tóm tắt toàn bộ luồng 5 pha từ
+thiết kế không gian tìm kiếm đến mô hình cuối cùng.
+
+    (1) Thiết kế           (2) Huấn luyện            (3) Bayesian
+                                                                                             (5) Tinh chỉnh cuối
+     không gian               SuperNet               Optimization           (4) Retraining
+                                                                                              chưng cất tri thức
+      tìm kiếm               Single-Path              GP + PoF               kiến trúc α∗
+                                                                                             + Weight Grafting
+  83.9M kiến trúc             One-Shot                 chọn α∗
+
+                              Đầu ra: mô hình AutoShot tối ưu cho bài toán SBD video ngắn
+
+
+Hình 3.7: Sơ đồ 5 pha của quy trình NAS trong AutoShot: (1) Thiết kế không gian tìm
+kiếm với 83.9M kiến trúc; (2) Huấn luyện SuperNet theo chiến lược Single-Path One-Shot;
+(3) Tìm kiếm kiến trúc tối ưu bằng Bayesian Optimization (GP + PoF); (4) Huấn luyện
+lại kiến trúc α∗ ; (5) Tinh chỉnh bằng chưng cất tri thức và Weight Grafting.
+
+
+Giai đoạn 1: Huấn luyện SuperNet (Single-Path One-Shot)
+
+    SuperNet là một mạng duy nhất triển khai tất cả 83.9 triệu kiến trúc
+trong không gian tìm kiếm thông qua cơ chế chia sẻ trọng số (weight
+sharing). Mỗi trong 6 vị trí khối tích chập, SuperNet duy trì đầy đủ trọng
+số cho tất cả 16 cấu hình khả thi; tại mỗi bước huấn luyện, chỉ một đường
+đi (path) được kích hoạt và cập nhật.
+    Chiến lược Single-Path One-Shot hoạt động như sau: tại mỗi bước huấn
+luyện, lấy mẫu ngẫu nhiên một vector cấu hình α = [α1 , α2 , . . . , α6 , α7 ] ∈ A
+theo phân phối đồng đều, trong đó αi xác định loại và siêu tham số của
+khối thứ i. Chỉ trọng số của các lớp tương ứng với α được kích hoạt trong
+bước forward/backward, còn phần còn lại không được cập nhật. Về mặt
+toán học, cập nhật tham số tại bước n là:
+
+                    θsuper [α(n) ] ← θsuper [α(n) ] − lr · ∇θ[α(n) ] L(α(n) , B (n) ),                    (3.5)
+
+trong đó α(n) là kiến trúc được lấy mẫu tại bước n, B (n) là batch dữ liệu,
+và L là hàm mất mát giống phương trình (3.3).
+   Chiến lược lấy mẫu đồng đều đảm bảo mọi kiến trúc con được huấn
+luyện với xác suất bằng nhau, tránh thiên lệch về một loại khối nhất định.
+Điều này quan trọng để trọng số chia sẻ θsuper phản ánh khả năng chung
+của tất cả kiến trúc, không bị áp đảo bởi một số ít kiến trúc chiếm ưu thế.
+Sau khi huấn luyện 12 epoch, θsuper đóng vai trò oracle đánh giá nhanh:
+cho bất kỳ kiến trúc α, điểm F1 ước tính được tính bằng cách nạp θsuper
+và suy diễn trên tập xác thực mà không cần huấn luyện lại.
+
+
+                                                         38
+    Thuật toán 2 mô tả quy trình huấn luyện SuperNet; điểm mới so với
+TransNetV2 là bước lấy mẫu kiến trúc α ở đầu mỗi vòng lặp (iteration) và
+chỉ cập nhật có chọn lọc theo α.
+    Dù trọng số chia sẻ (shared) không tối ưu cho bất kỳ kiến trúc con cụ
+thể nào, thứ tự xếp hạng giữa các kiến trúc con khi dùng trọng số chia sẻ
+tương quan cao với thứ tự khi huấn luyện độc lập [14], đủ để BO hướng
+dẫn tìm kiếm. Sau 12 epoch, hàm đánh giá nhanh chỉ cần nạp θsuper vào α
+và suy diễn trên tập xác thực (Thuật toán 1), mất vài giây thay vì nhiều
+giờ.
+
+Thuật toán 2 SuperNet Training (Single-Path One-Shot)
+ 1: function TrainSuperNet(S, epochs = 12)
+ 2:    Initialize θsuper randomly
+ 3:    Set: lr = 0.1, momentum = 0.9, batch_size = 16, λ1 = 5.0,
+    λ2 = 0.1
+ 4:    for epoch = 1 . . . epochs do
+ 5:        for iter = 1 . . . num_iterations do
+ 6:            α ← SampleUniform(S)                        ▷ Sample sub-architecture
+    uniformly at random
+ 7:            B ← CreateBatch(SHOT ∪ ClipShots, batch_size)
+ 8:            (ŷ (1) , ŷ (2) ) ← Forward(θsuper , B, α)
+ 9:            L ← λ1 · CE(y (1) , ŷ (1) ) + λ2 · CE(y (2) , ŷ (2) )
+10:            θsuper [α] ← θsuper [α] − lr · ∇θsuper [α] L       ▷ Update only path α
+11:    return θsuper
+
+
+Giai đoạn 2: Tìm kiếm kiến trúc bằng Tối ưu hóa Bayesian
+
+    Sau khi có θsuper , AutoShot tiến hành tìm kiến trúc tối ưu bằng Tối ưu
+hóa Bayesian (BO) với mô hình đại diện Quá trình Gauss (GP). BO phù
+hợp với bài toán này vì: (1) không gian kiến trúc rời rạc và không khả vi,
+(2) mỗi lần đánh giá tuy rẻ hơn huấn luyện đầy đủ nhưng vẫn tốn thời
+gian, và (3) cần tìm cực trị toàn cục trong không gian 83.9M điểm với ngân
+sách hữu hạn.
+    GP với kernel Hamming (đo khoảng cách giữa hai chuỗi cấu hình
+theo số vị trí khác biệt) duy trì phân phối hậu nghiệm f (α) | Dn ∼
+GP(µn (α), σn2 (α)) dựa trên các quan sát đã thu thập. Hàm thu thập Prob-
+
+
+
+                                         39
+ability of Feasibility (PoF) hướng dẫn lựa chọn ứng viên tiếp theo:
+                                                  
+                                  µn (α) − fbest
+                       PoF(α) = Φ                      ,                (3.6)
+                                      σn (α)
+
+PoF ổn định hơn EI trong không gian rời rạc có nhiễu vì chỉ quan tâm
+đến xác suất vượt mốc tốt nhất, không bị thiên lệch bởi dự đoán µn quá
+lạc quan ở vùng phương sai cao. Tổng cộng 4800 đánh giá (0.0057% của
+83.9M kiến trúc) đủ để tìm cấu hình gần tối ưu.
+
+Thuật toán 3 Bayesian Architecture Search
+ 1: function BayesianSearch(θsuper , T = 100)
+ 2:    D ← ∅; fbest ← −∞
+ 3:    GP ← InitializeGaussianProcess(kernel = Hamming)
+ 4:                              ▷ Phase 1: Random Exploration (20 epochs)
+ 5:    for t = 1 . . . 20 do
+ 6:        for i = 1 . . . 48 do
+ 7:           α ← SampleRandom(S)
+ 8:           F 1 ← QuickEvaluate(α, θsuper , Dval )
+ 9:           D ← D ∪ {(α, F 1)}; fbest ← max(fbest , F 1)
+10:           GP.Update(D)
+11:                            ▷ Phase 2: Bayesian Optimization (80 epochs)
+12:    for t = 21 . . . T do
+13:        for i = 1 . . . 48 do
+14:           (µ, σ) ← GP.Predict(S)            ▷ Posterior distribution over
+    search space                                     
+                                         µ(α) − fbest
+15:           αnext ← arg maxα∈S Φ
+                                            σ(α)
+16:           F 1 ← QuickEvaluate(αnext , θsuper , Dval )
+17:           D ← D ∪ {(αnext , F 1)}; fbest ← max(fbest , F 1)
+18:           GP.Update(D)
+19:    α∗ ← arg max(α,F 1)∈D F 1
+20:    return α∗
+
+
+Chi phí tính toán
+
+   Tổng thể, quy trình AutoShot đắt hơn TransNetV2 vì phải trả chi phí
+tìm kiếm trước khi có mô hình cuối. Bảng 3.9 chuẩn hóa các con số theo
+cùng dải ước lượng được dùng trong phần so sánh.
+
+
+                                     40
+         Bảng 3.9: Chi phí tính toán ước tính của từng pha trong AutoShot
+
+Pha                                Mô tả        Phần cứng    Thời gian ước tính
+1. Huấn luyện SuperNet             12 epoch,     8Ö V100              ≈ 12–16 giờ
+                                  single-path
+2. Tìm kiếm kiến trúc             4800 đánh      8Ö V100              ≈ 40–50 giờ
+                                  giá (GP +
+                                      PoF)
+3. Huấn luyện lại (Retraining)   12 epoch với    1Ö V100                    ≈ 12 giờ
+                                       α∗
+4. Chưng cất tri thức (KD)         12 epoch,     1Ö V100                    ≈ 12 giờ
+                                 student học
+                                  từ teacher
+5. Ghép trọng số                 Tính entropy     CPU                        < 1 giờ
+                                   + nội suy
+                                    trọng số
+Tổng                                                                 ≈ 76–91 giờ
+
+
+   So với TransNetV2 (≈ 17 giờ, 1 GPU), AutoShot tốn 4–5 lần thời gian
+và đòi hỏi nhiều GPU ở giai đoạn tìm kiếm. Đây là đánh đổi cốt lõi của
+NAS: chi phí trả trước lớn, nhưng mô hình cuối cùng có chi phí suy diễn
+xấp xỉ TransNetV2 vì chỉ còn một kiến trúc con α∗ được chọn ra. SuperNet
+cần ≈ 16 GB VRAM trong pha huấn luyện, còn mô hình cuối chỉ cần ≈ 2
+GB.
+
+3.4.4   Huấn luyện lại và tinh chỉnh mô hình
+
+    Sau khi BO chọn được kiến trúc α∗ , AutoShot không dùng trực tiếp
+trọng số chia sẻ (shared) của SuperNet làm mô hình cuối. Kiến trúc này
+được huấn luyện lại từ đầu trong 12 epoch với cùng hàm mục tiêu như
+TransNetV2 (phương trình (3.3)). Bước huấn luyện lại giúp loại bỏ nhiễu
+do chia sẻ trọng số (weight sharing) gây ra: trong SuperNet, mỗi đường đi
+chỉ được cập nhật rời rạc theo lấy mẫu; trong mô hình cuối, toàn bộ tham
+số của α∗ được tối ưu liên tục cho một kiến trúc cố định.
+    Sau khi huấn luyện lại, AutoShot áp dụng hai kỹ thuật tinh chỉnh
+không làm thay đổi kiến trúc: chưng cất tri thức và Weight Grafting. Vì
+vậy, phần này cần được hiểu là giai đoạn hoàn thiện trọng số, không phải
+tiếp tục tìm kiếm kiến trúc.
+
+
+
+                                        41
+chưng cất tri thức — trích xuất tri thức
+
+    chưng cất tri thức (KD) [8] sử dụng mô hình ứng viên tốt nhất sau
+bước huấn luyện lại làm giáo viên (teacher), hướng dẫn quá trình học của
+học sinh (student) — cũng là kiến trúc α∗ nhưng khởi tạo ngẫu nhiên.
+Ý tưởng cốt lõi: thay vì học từ nhãn cứng (nhãn cứng) nhị phân {0, 1},
+student học từ nhãn mềm (nhãn mềm) của teacher.
+                 (j)
+    Nhãn mềm ỹi,t là xác suất dự đoán của teacher tại khung t của chuỗi
+i, nhánh j ∈ {1, 2}. Hàm mất mát KD:
+
+                         K   M
+                   1 X Xh           (1)       (1)          (2)       (2)
+                                                                         i
+     Ldistill = −            λ1 · ỹi,t log ŷi,t + λ2 · ỹi,t log ŷi,t ,   (3.7)
+                  KM i=1 t=1
+
+trong đó ỹ (j) là nhãn mềm của teacher (cố định, không có gradient qua
+teacher), ŷ (j) là dự đoán của student, và λ1 = 5.0, λ2 = 0.1 như trong
+phương trình (3.3).
+    So sánh với phương trình (3.3), sự khác biệt duy nhất là nhãn ground-
+truth y (j) được thay bằng nhãn mềm ỹ (j) từ teacher. Nhãn mềm mang
+nhiều thông tin hơn nhãn nhị phân: chúng phản ánh độ không chắc chắn
+của teacher, đặc biệt tại các khung hình thuộc vùng chuyển cảnh dần hay
+các chuyển cảnh đột ngột có nền màu tương đồng. Nhờ đó, student học
+được phân phối xác suất trơn tru hơn, ít kích hoạt cực đoan hơn và bền
+vững hơn trước các biến thể rìa ranh giới — đây là cốt lõi của "giảng dạy
+về sự không chắc chắn" trong KD.
+    Trong AutoShot, teacher và student có cùng kiến trúc α∗ — đây là
+trường hợp KD tự học (self-distillation). Khác với KD truyền thống
+(teacher lớn hơn student), tự học giúp student thoát khỏi cực trị cục bộ
+mà retraining trước đó có thể đã rơi vào, do điểm khởi đầu ngẫu nhiên
+khác nhau.
+
+Weight Grafting — ghép trọng số theo entropy
+
+   Weight Grafting là kỹ thuật kết hợp trọng số từ hai mô hình dựa trên
+entropy của phân phối trọng số, giả định rằng lớp có entropy trọng số cao
+hơn đã học được biểu diễn phong phú và đa dạng hơn.
+
+
+                                        42
+    Cho hai mô hình M1 (sau retraining) và M2 (sau KD) với trọng số lớp
+               (l)     (l)
+l lần lượt là W1 và W2 , entropy được ước tính bằng histogram B = 10
+bin trên phân phối của các giá trị trọng số:
+
+                     B
+            (l)
+                     X                         |{w ∈ W (l) : w ∈ binb }|
+      H(W ) = −             pb log pb ,   pb =                           ,    (3.8)
+                      b=1
+                                                      |W (l) |
+
+với pb là xác suất ước tính của bin b trong histogram. Hệ số ghép α(l) xác
+định tỉ lệ đóng góp của M2 tại lớp l theo công thức arctan liên tục:
+
+                                        (l)      (l) 
+              α(l) = A · arctan c · (H(W2 ) − H(W1 )) + 0.5,                  (3.9)
+
+trong đó A = 0.4 và c = 1.0 là siêu tham số điều khiển độ nhạy và tốc
+độ chuyển tiếp. Hàm arctan đảm bảo α(l) ∈ [0.5 − Aπ/2, 0.5 + Aπ/2] ≈
+[0.5 − 0.628, 0.5 + 0.628], giới hạn ảnh hưởng tối đa của bất kỳ mô hình
+nào. Trọng số ghép cuối cùng:
+
+                      (l)                  (l)                 (l)
+                    Wgrafted = α(l) · W2 + (1 − α(l) ) · W1 .                (3.10)
+
+              (l)            (l)
+    Khi H(W2 ) > H(W1 ), hàm arctan dương, α(l) > 0.5 — ưu tiên trọng
+số M2 tại lớp đó; ngược lại ưu tiên M1 . Điều này cho phép Weight Grafting
+thích ứng linh hoạt theo từng lớp: lớp nào M2 học tốt hơn thì dùng nhiều
+M2 , và ngược lại.
+    Hàm arctan đảm bảo tính bão hòa: khi chênh lệch entropy rất lớn, α(l)
+tiệm cận 0.5 ± Aπ/2 thay vì để một mô hình hoàn toàn lấn át mô hình
+kia. Tham số c điều chỉnh độ dốc chuyển tiếp.
+    Một điểm thực tế quan trọng: trong AutoShot, Weight Grafting được
+áp dụng giữa ba mô hình [θretrain , θstudent , θretrain ] (theo thứ tự ghép), không
+chỉ hai mô hình. Điều này tạo ra một chuỗi ghép tuần tự, trong đó kết
+quả ghép của hai mô hình đầu tiên tiếp tục được ghép với mô hình thứ ba.
+Kết hợp Weight Grafting sau KD mang lại cải thiện thêm ≈ 0.3% F1 trên
+tập SHOT.
+
+
+
+
+                                           43
+3.4.5   Kiến trúc tối ưu của AutoShot
+
+    Nhóm tác giả tiến hành tìm kiếm hai lần với hai tiêu chí đánh giá khác
+nhau, thu được hai kiến trúc có đặc điểm bổ sung cho nhau: AutoShot@F1
+tối ưu cân bằng precision–recall, còn AutoShot@Precision ưu tiên giảm
+dương tính giả.
+    Bảng 3.10 tổng hợp kiến trúc tìm được cho hai tiêu chí:
+
+            Bảng 3.10: Kiến trúc tối ưu của AutoShot theo hai tiêu chí tối ưu
+
+Block/Thông số            AutoShot@F1 (F1=84.1%)            AutoShot@Precision
+                                                                (P=93.9%)
+Block 1                    DDCNNV2 (4F , nd = 4)          DDCNNV2 (12F , nd = 4)
+Block 2–4                  DDCNNV2A (4F , nd = 5)         V2(8F, 4), V2B(4), V2C(4)
+                                    Ö3
+Block 5                    DDCNNV2 (12F , nd = 5)            DDCNNV2B (nd = 5)
+Block 6                    DDCNNV2 (8F , nd = 5)             DDCNNV2B (nd = 4)
+Block 7 (Transformer)         0 lớp attention                  0 lớp attention
+FLOPs                           37 GMACs                         30 GMACs
+
+
+   Cả hai kiến trúc đều chọn 0 lớp Transformer (xác nhận tích chập
+giãn nở đủ để mô hình hóa phụ thuộc thời gian trong video ngắn). Au-
+toShot@F1 thiên về DDCNNV2A (shared spatial) ở lớp giữa, trong khi
+AutoShot@Precision dùng nhiều DDCNNV2B (Add) ở lớp sau — biểu
+diễn bảo thủ hơn, ít kích hoạt cực đoan, dẫn đến giảm dương tính giả.
+Điều này cho thấy không gian tìm kiếm đủ đa dạng để NAS tìm kiến trúc
+chuyên biệt cho từng tiêu chí.
+
+3.4.6   So sánh với TransNetV2
+
+    Tiểu mục này đặt TransNetV2 và AutoShot cạnh nhau nhằm tách
+bạch hai lớp đóng góp: các thành phần AutoShot kế thừa trực tiếp từ
+TransNetV2 và các thay đổi do quy trình NAS của AutoShot gốc mang
+lại. Cách nhìn này quan trọng vì AutoShot không thay toàn bộ quy trình,
+mà giữ lại nhiều quyết định thiết kế hiệu quả của TransNetV2 rồi chỉ tối
+ưu những điểm có khả năng ảnh hưởng mạnh đến phân phối SHOT.
+
+
+
+
+                                           44
+Bảng tổng hợp
+
+   Bảng 3.11 tập trung vào các chiều kỹ thuật cốt lõi: cách thiết kế kiến
+trúc, không gian tìm kiếm, thành phần giữ nguyên, chi phí huấn luyện và
+hiệu năng chính trên SHOT.
+
+                 Bảng 3.11: So sánh tổng hợp TransNetV2 và AutoShot
+
+Đặc điểm             TransNetV2                     AutoShot
+Cách thiết kế kiến
+                   Thiết kế thủ công, cố định       Tìm kiếm tự động bằng NAS
+trúc
+Không gian kiến
+                   1 kiến trúc cố định              83.9M ứng viên
+trúc
+Khối tích chập
+                   DDCNNV2 cố định                  DDCNNV2/A/B/C được chọn
+chính
+                                                    theo từng vị trí
+Thành phần giữ
+                     Sliding window, similarity     Kế thừa các thành phần này từ
+nguyên
+                     branch, two-head output        TransNetV2
+Chiến lược tìm
+                     Không có                       Single-Path One-Shot +
+kiếm
+                                                    Bayesian Optimization
+Kỹ thuật sau tìm
+                     Huấn luyện trực tiếp           Retraining, chưng cất tri thức
+kiếm
+                                                    và Weight Grafting
+Chi phí huấn
+                     ≈17 giờ trên 1×V100            ≈76–91 giờ trên 8×V100
+luyện
+Quy mô tham số       ≈6.5M                          ≈6.7M
+Hiệu năng chính
+                     F1 = 0.7993 (79.9%)            F1 = 0.8405 (84.1%)
+trên SHOT
+Precision trên
+                     Khoảng 80%                     93.9% với AutoShot@Precision
+SHOT
+
+
+
+Nhận xét ưu và nhược điểm tương đối
+
+    Ưu điểm của AutoShot so với TransNetV2. Mức tăng từ 0.7993
+lên 0.8405 F1 trên SHOT là đáng kể, nhất là khi AutoShot không lớn
+hơn TransNetV2 theo số tham số. Điểm chính không nằm ở việc mở rộng
+năng lực mô hình, mà ở việc thay đổi cách chọn kiến trúc: NAS tìm cấu
+hình khối tích chập phù hợp hơn với phân phối video ngắn của SHOT.
+AutoShot@Precision cũng cho thấy cùng một không gian kiến trúc có thể
+được tối ưu theo mục tiêu khác, đạt precision 93.9% khi cần giảm dương
+tính giả trong hệ thống biên tập bán tự động.
+    Hạn chế của AutoShot. Đánh đổi chính là chi phí NAS và độ khó tái
+
+
+                                            45
+lập. Quy trình AutoShot cần nhiều pha hơn TransNetV2, tiêu tốn khoảng
+76–91 giờ trên 8 GPU V100 so với khoảng 17 giờ trên 1 GPU V100 của
+TransNetV2. Ngoài ra, kiến trúc tìm được gắn chặt với mục tiêu và tập
+validation dùng trong tìm kiếm; khả năng tổng quát hóa sang các bộ dữ
+liệu khác được phân tích riêng ở Chương 5.
+    Tóm lại, AutoShot kế thừa phần lớn quy trình hiệu quả của TransNetV2
+và chỉ thay đổi cơ chế lựa chọn mạng xương sống. Điểm đóng góp chính
+không phải là làm mô hình lớn hơn, mà là làm cho kiến trúc khớp hơn với
+phân phối video ngắn. Đây là nền tảng để AutoShotV2 ở mục tiếp theo
+đóng băng mạng xương sống AutoShot@F1 và tập trung cải tiến tầng phân
+loại cùng hậu xử lý, thay vì chạy lại toàn bộ NAS.
+
+
+3.5     Biến thể AutoShotV2 — Cải tiến tầng phân loại
+        và hậu xử lý
+
+3.5.1   Động lực và chiến lược tổng thể
+
+    AutoShot@F1 đạt F1 = 0.8405 với BCE chuẩn và nhãn một điểm dương
+(one-hot). Tầng phân loại vẫn còn hai hạn chế: (i) mất cân bằng lớp
+nghiêm trọng (ranh giới chiếm <1% khung hình); (ii) tín hiệu cứng nhắc
+không chịu sai lệch chú thích. AutoShotV2 áp dụng chiến lược đóng băng
+mạng xương sống + huấn luyện lại tầng phân loại: khóa toàn bộ
+trọng số AutoShot@F1, huấn luyện bộ phân lớp mới từ đầu trên các đặc
+trưng đã được lưu bộ nhớ đệm. Quyết định này được thúc đẩy bởi ba lý
+do thực tế: (a) NAS đã tối ưu mạng xương sống với chi phí lớn ( 76–91
+giờ trên 8×V100, Bảng 3.9), nên kết quả không nên bị mất đi qua một lần
+huấn luyện toàn mạng nữa; (b) đóng băng mạng xương sống cô lập đóng
+góp của tầng phân loại, làm mọi cải thiện F1 đều có thể quy về thiết kế
+tầng phân loại; (c) chỉ huấn luyện tầng phân loại trên đặc trưng đã bộ
+nhớ đệm giúp giảm chi phí huấn luyện lại từ hàng chục giờ xuống còn vài
+chục phút trên một GPU phổ thông, cho phép thử nghiệm nhanh nhiều
+cấu hình phân rã.
+
+
+
+
+                                  46
+3.5.2    Kiến trúc tầng phân loại (ClassificationHead)
+
+   Tương tự AutoShot, AutoShotV2 thiết kế một tầng phân loại với hai
+nhánh song song đặt sau lớp trích xuất đặc trưng 4864-D:
+
+   1. fc1: Linear(4864 → 1024) + ReLU — nén đặc trưng về không gian
+      thấp hơn.
+
+   2. Dropout(p = 0.5) — chính quy hóa để tránh quá khớp trên tập
+      huấn luyện nhỏ.
+
+   3. cls_layer1: Linear(1024 → 1) — nhánh chính với nhãn một điểm
+      dương (one-hot), học định vị ranh giới chính xác.
+
+   4. cls_layer2: Linear(1024 → 1) — nhánh phụ với nhãn nhiều điểm
+      dương (many-hot), học ngữ cảnh vùng quanh ranh giới.
+
+   Toàn bộ đặc trưng mạng xương sống được tính trước và lưu cache
+vào file .pickle trước khi huấn luyện, giúp mỗi epoch chỉ cần chạy qua bộ
+phân lớp nhỏ thay vì toàn mạng mạng xương sống 55 MB, tăng tốc đáng
+kể vòng lặp huấn luyện.
+
+                                           Features (4864-D)
+
+                                   Linear(4864 → 1024) + ReLU
+
+                                            Dropout(p = 0.5)
+
+
+                 cls_layer1                                                      cls_layer2
+              Linear(1024→1)                                                  Linear(1024→1)
+
+
+               ŷ1 (one-hot)                                                        ŷ2
+
+
+
+
+                               L = Lfocal (ŷ1 , yoh ) + 0.3 Lfocal (ŷ2 , ymh )
+
+Hình 3.8: Kiến trúc tầng phân loại (ClassificationHead) trong AutoShotV2. Tầng phân
+loại này nhận đặc trưng 4864-D từ mạng xương sống (đóng băng) và sinh hai đầu ra song
+song: nhánh một điểm dương (one-hot) định vị ranh giới chính xác và nhánh nhiều điểm
+dương (many-hot) học ngữ cảnh vùng biên.
+
+
+
+
+                                                     47
+3.5.3   Focal Loss – giải quyết mất cân bằng lớp
+
+   Trong video ngắn, khung hình tại ranh giới chiếm chưa đến 1% tổng
+số khung hình. Nếu xử lý đây như bài toán phân loại nhị phân trên từng
+khung, hàm Binary Cross-Entropy (BCE) chuẩn bị chi phối bởi hàng loạt
+mẫu âm dễ phân loại:
+
+                 LBCE = − [y log(p) + (1 − y) log(1 − p)]           (3.11)
+
+Đặt pt là xác suất gán cho lớp đúng (pt = p nếu y = 1; pt = 1 − p nếu
+y = 0), BCE viết gọn thành LBCE = − log(pt ). Khi tổng hợp giá trị mất
+mát (loss) trên toàn bộ lô (batch), các mẫu âm dễ (mẫu âm dễ - khung
+không có chuyển cảnh, rất dễ phân loại) áp đảo về số lượng và kéo gradient
+theo hướng “luôn dự đoán không có ranh giới”.
+    Khác với AutoShot gốc dùng BCE có trọng số λ1 , λ2 trên nhãn one-
+hot (phương trình (3.3)), AutoShotV2 thay BCE bằng Focal Loss [10] —
+được thiết kế chuyên cho mất cân bằng lớp trong bài toán phát hiện —
+với nhân tử động (1 − pt )γ làm giảm trực tiếp đóng góp của các mẫu âm
+dễ ngay trong từng mẫu, thay vì chỉ cân bằng giữa hai nhánh:
+
+                       Lfocal = −α(1 − pt )γ log(pt )               (3.12)
+
+    Nhân tử (1 − pt )γ là điểm mấu chốt. Với một mẫu âm dễ (pt ≈ 0.99),
+nhân tử gần bằng 0, đóng góp vào tổng giá trị mất mát gần như biến mất.
+Với một mẫu khó (hard example) — khung ranh giới chỉ dự đoán được
+pt ≈ 0.3 — nhân tử vẫn lớn, buộc mô hình tiếp tục học. Focal Loss ưu
+tiên các mẫu khó: ranh giới mờ, chuyển cảnh dần, hay thay đổi ánh sáng
+dễ gây nhầm lẫn. Nếu γ = 0, hàm mất mát Focal quay về BCE có trọng
+số α.
+    Tham số γ ∈ {1.0, 2.0} và α ∈ {0.5, 0.75} được chọn qua tìm kiếm
+lưới (8 tổ hợp), đánh giá theo F1 trên tập xác thực. Cấu hình tốt nhất:
+γ = 1.0, α = 0.5. Khác với BCE có trọng số (BCE có trọng số - chỉ điều
+chỉnh trọng số tĩnh giữa hai lớp) hoặc hàm mất mát cân bằng lớp (hàm
+mất mát cân bằng lớp - dựa trên số mẫu hữu hiệu), Focal Loss điều chỉnh
+động theo độ khó của từng mẫu — phù hợp với SBD nơi mức độ khó biến
+
+
+                                    48
+thiên mạnh giữa chuyển cảnh đột ngột, chuyển cảnh dần và các trường
+hợp ánh sáng đột biến. Trong tìm kiếm lưới, γ = 1.0 thắng γ = 2.0 do
+nhánh nhiều điểm dương (Mục 3.5.4) đã cung cấp thêm tín hiệu giám sát
+cho vùng biên, nên hệ số làm sắc quá mạnh khiến gradient ở các khung
+biên bị triệt tiêu sớm.
+
+3.5.4   Nhãn nhiều điểm dương (many-hot) — giám sát vùng biên
+
+    Nhãn một điểm dương (one-hot) chuẩn chỉ gán giá trị 1 tại đúng một
+khung hình ranh giới và 0 cho tất cả còn lại. Cách biểu diễn này chính xác
+về định vị, nhưng quá cứng nhắc trong thực tiễn SBD vì hai lý do: (i) chú
+thích thủ công có thể lệch ±1 frame so với ranh giới thực sự; (ii) chuyển
+cảnh dần kéo dài trên nhiều frame, nên các khung lân cận ranh giới cũng
+mang tín hiệu chuyển cảnh đáng kể.
+    AutoShotV2 bổ sung một nhánh giám sát phụ với nhãn nhiều điểm
+dương (many-hot) [13]: tất cả các khung trong phạm vi ±1 frame quanh
+ranh giới đều được coi là dương:
+                                
+                                1, ∃ t sao cho |t − t | ≤ 1
+                                       b              b
+                ymany-hot [t] =                                      (3.13)
+                                0, ngược lại
+
+
+   Hàm mất mát kết hợp hai nhánh với trọng số khác nhau:
+
+           Ltotal = Lfocal (ŷ1 , yone-hot ) + 0.3 · Lfocal (ŷ2 , ymany-hot )   (3.14)
+
+    Nhánh một điểm dương (one-hot) giữ vai trò chính: định vị ranh giới
+sắc nét tại đúng thời điểm chuyển cảnh. Nhánh nhiều điểm dương (many-
+hot) đóng vai trò phụ (hệ số 0.3): dạy mô hình rằng các khung lân cận
+ranh giới là những mẫu “gần đúng” và không nên bị phạt nặng khi dự đoán
+lệch nhẹ. Hệ số 0.3 được chọn nhỏ hơn 1 để nhánh phụ hỗ trợ mà không
+lấn át định vị chính xác.
+    Bán kính ±1 frame được chọn căn cứ vào phân phối sai số chú thích
+thực tế trên SHOT: phần lớn ranh giới thủ công được đánh lệch không quá
+một khung so với chuyển cảnh đột ngột thật, và chuyển cảnh dần thường
+kéo dài 3–5 khung sao cho ba khung trung tâm {t − 1, t, t + 1} mang tín
+
+
+                                          49
+hiệu chuyển cảnh rõ nhất. Mở rộng sang ±2 frame trong thử nghiệm sơ bộ
+làm tăng nhiễu giám sát vì các khung biên xa hơn (như t ± 2) thường đã
+thuộc shot lân cận, gây nhầm chuyển cảnh đột ngột với chuyển cảnh dần
+và làm giảm precision.
+                                                       boundary
+
+
+
+                  Một điểm dương: 0        0     0        1       0     0     0
+
+
+              Nhiều điểm dương: 0          0     1        1       1     0     0
+                                   t−3     t−2   t−1      t       t+1   t+2   t+3
+
+
+Hình 3.9: Minh họa nhãn một điểm dương (one-hot) và nhiều điểm dương (many-hot).
+Nhãn một điểm dương chỉ gán 1 tại đúng khung ranh giới t; nhãn nhiều điểm dương mở
+rộng thêm t ± 1, cung cấp tín hiệu gradient dày đặc hơn quanh vùng ranh giới.
+
+
+3.5.5   Gaussian Smoothing — triệt tiêu nhiễu đơn lẻ
+
+   Sau khi mô hình sinh chuỗi xác suất p[t], tín hiệu này thường chứa
+các đỉnh nhọn hẹp do nhiễu cục bộ: một khung đơn lẻ có xác suất cao
+bất thường vì flash sáng, rung máy, hoặc biến đổi màu sắc đột ngột. Nếu
+ngưỡng hóa trực tiếp, các đỉnh nhiễu dễ bị nhận nhầm là ranh giới cảnh.
+AutoShotV2 áp dụng Gaussian smoothing 1D với σ = 2.0 lên chuỗi xác
+suất trước bước ngưỡng hóa:
+                  X                                            1      2    2
+        p̂[t] =       Gσ (k) · p[t − k],    Gσ (k) = √             e−k /(2σ )       (3.15)
+                  k
+                                                              2π σ
+
+    Phép biến đổi này là lấy trung bình có trọng số theo trục thời gian: xác
+suất tại t sau làm mượt phụ thuộc vào các khung lân cận, với trọng số
+giảm dần theo dạng chuông Gaussian. Hạt nhân Gaussian được chuẩn hóa
+nên chủ yếu phân phối lại xác suất trong vùng lân cận.
+    Nguyên tắc hoạt động: ranh giới thật tạo phản hồi nhất quán trên vài
+khung liên tiếp — sau smoothing, các khung “hỗ trợ lẫn nhau” và đỉnh xác
+suất được giữ lại. Nhiễu đơn lẻ không được hàng xóm ủng hộ bị kéo xuống
+đáng kể. Tham số σ = 2.0 được chốt sau khi quét σ ∈ {1.0, 1.5, 2.0, 2.5, 3.0}
+trên tập xác thực của SHOT: giá trị nhỏ hơn (σ ≤ 1.5) chưa đủ triệt nhiễu
+flash, trong khi giá trị lớn hơn (σ ≥ 2.5) làm phẳng cả các đỉnh ranh giới
+
+                                            50
+thật và đẩy ngưỡng tối ưu xuống vùng quá nhỏ, kém ổn định. So với bộ lọc
+trung vị (median filter) — một lựa chọn hậu xử lý phổ biến khác — hạt
+nhân Gaussian (kernel Gaussian) giữ được dạng đỉnh khi ranh giới được
+nhiều khung liên tiếp hỗ trợ và tránh hiện tượng cắt phẳng đột ngột, phù
+hợp hơn với phân phối xác suất sigmoid của tầng phân loại.
+
+3.5.6   Hiệu chỉnh nhiệt độ (Temperature Scaling) — hiệu chỉnh
+        xác suất
+
+    Sau huấn luyện, phân phối xác suất đầu ra của mô hình có thể chưa
+được hiệu chỉnh tốt (poorly calibrated): mô hình có thể thiếu tự tin (under-
+confident) (xác suất bị nén về gần 0.5 dù nhiều mẫu khá chắc chắn) hoặc
+quá tự tin (over-confident). Trong SBD, hiệu chỉnh xác suất trực tiếp ảnh
+hưởng đến việc chọn ngưỡng tối ưu.
+    AutoShotV2 áp dụng hiệu chỉnh nhiệt độ [5]: tìm hệ số vô hướng T ∗
+tối thiểu hóa mất mát NLL (Negative Log-Likelihood) trên tập xác thực
+mà không huấn luyện lại bất kỳ tham số nào:
+
+                    T ∗ = arg                    LBCE σ Tz , y
+                                                           
+                                   min                               (3.16)
+                                T ∈[0.1, 10.0]
+
+
+trong đó z là logit trước sigmoid. Điểm quan trọng: hiệu chỉnh nhiệt độ
+không thay đổi thứ tự tương đối giữa các dự đoán (phép chia cho T > 0
+là đơn điệu), chỉ hiệu chỉnh mức độ tự tin. Nếu T > 1, phân phối bị làm
+phẳng; nếu T < 1, phân phối trở nên sắc hơn và các giá trị bị đẩy xa khỏi
+0.5.
+    Giá trị tối ưu trên tập SHOT: T ∗ = 0.3878 < 1, cho thấy mô hình đang
+thiếu tự tin (under-confident) — nhiều dự đoán đúng nhưng xác suất chưa
+đủ “dứt khoát”. Chia logit cho T ∗ < 1 làm sắc hóa phân phối, đẩy các dự
+đoán rõ ràng ra xa vùng trung tính. Hệ quả: ngưỡng tối ưu dịch từ 0.296
+(AutoShot) xuống 0.02 (AutoShotV2).
+    Khoảng tìm kiếm T ∈ [0.1, 10.0] được chọn theo khuyến nghị của Guo
+et al. [5] cho bài toán phân loại nhị phân: cận dưới 0.1 cho phép sắc hóa
+rất mạnh khi mô hình thiếu tự tin (under-confident), còn cận trên 10.0 phủ
+trường hợp quá tự tin (over-confident) mà không gặp rủi ro chia cho giá
+
+
+
+                                          51
+trị quá lớn làm gradient triệt tiêu. So với hiệu chỉnh Platt (Platt scaling
+- học hai tham số affine a, b trên logit) hoặc hồi quy đơn điệu (isotonic
+regression - hàm bậc thang không tham số), hiệu chỉnh nhiệt độ chỉ có một
+tham số duy nhất nên không có nguy cơ quá khớp (quá khớp) trên tập xác
+thực nhỏ và giữ nguyên thứ tự xếp hạng dự đoán — một tính chất then
+chốt để ngưỡng hóa nhị phân của SBD vẫn ổn định sau hiệu chỉnh.
+
+3.5.7   Quy trình huấn luyện lại và thuật toán tổng thể
+
+   Tầng phân loại (ClassificationHead) được huấn luyện lại theo chiến lược
+hai pha [12]: khởi động tuyến tính trong 4 epoch (tốc độ học - LR từ 0
+đến 10−5 ) rồi giảm nhiệt cosine đến tối đa 20 epoch. Cấu hình chạy cuối
+không dùng cơ chế dừng sớm, nhằm giữ cùng ngân sách huấn luyện cho
+các biến thể thực nghiệm phân rã.
+
+
+3.6     Tổng kết chương
+
+   Chương này đã trình bày hướng tiếp cận kế thừa AutoShot và cải tiến
+ở tầng đầu ra để hình thành AutoShotV2. Các nội dung chính gồm nền
+tảng NAS và TransNetV2, mô hình AutoShot gốc, kiến trúc tầng phân loại
+mới, Focal Loss, nhãn many-hot, Gaussian smoothing, hiệu chỉnh nhiệt độ
+và quy trình huấn luyện lại. Chương 4 tiếp theo mô tả dữ liệu, thiết lập
+thực nghiệm và kết quả đánh giá.
+
+
+
+
+                                    52
+Chương 4
+
+BỘ              DỮ               LIỆU                  VÀ             THỰC
+NGHIỆM
+         Chương này tập trung vào dữ liệu và kết quả thực nghiệm. Nội dung chính
+        gồm đặc điểm của bộ dữ liệu SHOT, hai bộ dữ liệu đánh giá bổ sung BBC
+        Planet Earth và ClipShots, các chỉ số Precision/Recall/F1, sau đó trình bày
+        kết quả định lượng và nhận xét chính trên từng bộ dữ liệu.
+
+
+
+
+4.1      Bộ dữ liệu SHOT
+
+    SHOT [23] (Short Video Shot Boundary Detection Dataset) là bộ dữ
+liệu công khai dành cho tác vụ phát hiện ranh giới cảnh quay (shot bound-
+ary detection) trong video ngắn. Các nền tảng video ngắn như TikTok hay
+Instagram Reels đã thay đổi thói quen tiêu thụ nội dung. Nhu cầu phân
+tích video chính xác về mặt thời gian là cấp thiết. SHOT cung cấp dữ liệu
+chuẩn cho video có nhịp độ nhanh và nội dung cô đọng.
+    Phần lớn các bộ dữ liệu phát hiện biên cảnh (SBD) hiện có như BBC
+Planet Earth [2] chỉ chứa phim tài liệu hoặc talk show với cảnh quay tĩnh
+và nhịp độ chậm. Ngay cả bộ dữ liệu lớn ClipShots cũng chủ yếu chứa các
+video dài (trung bình 237 giây). SHOT ra đời để lấp đầy khoảng trống này
+với tư cách là bộ dữ liệu công khai đầu tiên dành riêng cho video ngắn,
+bao gồm 853 video hoàn chỉnh và 11.606 chú thích cảnh quay, mang tính
+thách thức cao hơn về nhịp độ và hiệu ứng hình ảnh.
+
+4.1.1     Chi tiết bộ dữ liệu
+
+    Tên bộ dữ liệu: SHOT (Short Video Shot Boundary Detection
+        Dataset)
+
+    Quy mô: 853 video ngắn và 11.606 chú thích ranh giới cảnh quay
+
+
+                                            53
+    Tổng số khung hình: 960.794 khung hình
+
+    Tập kiểm tra: 200 video với 2.716 chú thích chất lượng cao; chuyên
+        gia kiểm duyệt hai vòng
+
+    Nguồn dữ liệu: Video từ một nền tảng video ngắn phổ biến
+
+    Quyền riêng tư: Làm mờ khuôn mặt bằng công cụ phát hiện khuôn
+        mặt
+
+    Phương pháp gán nhãn: Dùng hình thu nhỏ 48 × 27 cho mỗi
+        khung hình; số thứ tự khung hình hiển thị thích ứng để giảm công
+        sức kiểm tra
+
+4.1.2     Phân tích bộ dữ liệu
+
+   SHOT được phân tích dựa trên các thách thức đặc thù của video ngắn:
+
+    Chuyển cảnh dần phức tạp (Complex Gradual Transitions):
+        Kết hợp nhiều hiệu ứng chuyển cảnh chồng chéo thay vì cắt cảnh dứt
+        khoát.
+
+    Cấu trúc tam phân (Ternary Structure): Video dọc thường giữ
+        nguyên phần trên và dưới (chứa liên kết/thương hiệu), chỉ thay đổi
+        nội dung ở giữa, gây khó khăn cho việc phát hiện.
+
+    Cảnh ảo (Virtual Scenes): Các video game với hiệu ứng hình ảnh
+        phóng đại và biến đổi liên tục.
+
+
+
+
+                                      54
+Hình 4.1: Minh họa các thách thức đặc thù trong SHOT: (Hàng 1) Chuyển cảnh dần
+phức tạp, (Hàng 2) Cấu trúc tam phân, và (Hàng 3) Cảnh ảo.
+
+
+   Sự khác biệt giữa video ngắn và video truyền thống không chỉ nằm ở
+thời lượng mà còn ở nhịp độ và phong cách hậu kỳ (so sánh chi tiết xem
+Bảng 4.1 ở Mục 4.2.3). Các thống kê chính phản ánh tính chất ngắn và
+nhanh của bộ dữ liệu:
+
+    Độ dài trung bình video: 39.5 giây
+
+    Độ dài trung bình cảnh: 2.59 giây
+
+    Phân bố thời lượng: 90% video có độ dài dưới một phút
+
+    Tốc độ chuyển cảnh: Hầu hết các cảnh trong tập kiểm tra kéo dài
+      dưới 5 giây; video ngắn có nhịp độ sự kiện nhanh hơn video truyền
+      thống
+
+
+
+
+                                     55
+Hình 4.2: Sự phân bố độ dài video (trên) và độ dài shot (dưới). Có thể thấy sự chênh
+lệch rõ rệt: shot trong SHOT tập trung dày đặc ở vùng dưới 5 giây.
+
+
+4.1.3    Tóm tắt bộ dữ liệu SHOT
+
+    Trong khóa luận, SHOT là bộ dữ liệu trung tâm để đánh giá hiệu quả
+trên video ngắn. Các kết quả trên SHOT được dùng để so sánh trực tiếp
+với TransNetV2, AutoShot gốc và các biến thể AutoShotV2; các kết quả
+trên BBC và ClipShots được dùng để kiểm tra khả năng tổng quát hóa
+sang miền dữ liệu khác. Với các đặc điểm độc đáo phản ánh đúng thực tế
+của video ngắn và quy trình gán nhãn chất lượng cao, SHOT không chỉ là
+một chuẩn mực đánh giá mới mà còn là một tài nguyên quý giá để huấn
+luyện các mô hình SBD thế hệ tiếp theo. Các kết quả thực nghiệm chi tiết
+trên SHOT và các bộ dữ liệu bổ sung được trình bày ở các mục kết quả
+phía sau.
+
+
+
+
+                                        56
+4.2     Các bộ dữ liệu đánh giá bổ sung
+
+    Ngoài bộ dữ liệu SHOT dành riêng cho video ngắn, các nghiên cứu về
+phát hiện ranh giới cảnh quay thường được đánh giá trên nhiều bộ dữ liệu
+chuẩn khác nhau để kiểm tra khả năng tổng quát hóa. Phần này giới thiệu
+chi tiết hai bộ dữ liệu phổ biến: BBC Planet Earth và ClipShots. Những
+bộ dữ liệu này đại diện cho các miền nội dung và thách thức khác nhau,
+giúp đánh giá toàn diện hiệu năng của các mô hình SBD.
+
+4.2.1   Bộ dữ liệu BBC Planet Earth
+
+   BBC Planet Earth [2] gồm 11 tập phim tài liệu thiên nhiên ( 50
+phút/tập, 4.900 shot, shot TB 6.57 giây). Nội dung chất lượng cao với
+camera mượt mà (panning, zooming) và phong cách biên tập nghệ thuật
+sử dụng nhiều dissolve và fade. Thách thức chính là gradual transition
+phức tạp khiến ranh giới giữa hai shot không sắc nét như chuyển cảnh đột
+ngột.
+
+4.2.2   Bộ dữ liệu ClipShots
+
+   ClipShots [18] là bộ dữ liệu quy mô lớn từ YouTube và Weibo, gồm
+4.039 video (TB 237 giây), 128.000+ chuyển cảnh đột ngột và 38.000+
+chuyển cảnh dần được dán nhãn thủ công (shot TB 15.34 giây). Nội dung
+đa dạng (20+ danh mục) từ nghiệp dư đến chuyên nghiệp. Thách thức:
+thay đổi ánh sáng đột ngột, camera rung, hiệu ứng chuyển cảnh không quy
+ước (glitch, flash, zoom nhanh) và khoảng cách miền dữ liệu lớn.
+
+4.2.3   So sánh tổng hợp các bộ dữ liệu
+
+   Bảng 4.1 tổng hợp các đặc điểm chính của ba bộ dữ liệu được sử dụng
+trong đánh giá hiệu năng các mô hình SBD.
+
+
+
+
+                                  57
+Đặc điểm                    BBC                 ClipShots              SHOT
+Loại nội dung           Phim tài liệu            Đa dạng          Video ngắn
+Số lượng video                11                   4,039              853
+Độ dài TB video (s)         2,945                   237               39.5
+Độ dài TB shot (s)           6.57                  15.34              2.59
+Hard cuts                  Nhiều                 128,000+            8,890
+Gradual transitions       Rất nhiều              38,000+             2,716
+Độ khó                   Trung bình                 Cao             Rất cao
+Thách thức chính      Gradual transitions    Đa dạng hiệu ứng    Nhịp độ nhanh
+
+              Bảng 4.1: So sánh chi tiết các bộ dữ liệu đánh giá SBD
+
+
+   Mỗi bộ dữ liệu đại diện cho một khía cạnh khác nhau của bài toán SBD
+trong thực tế:
+    BBC Planet Earth: Đánh giá khả năng xử lý chuyển cảnh dần
+      dần trong nội dung chuyên nghiệp.
+
+    ClipShots: Đánh giá khả năng tổng quát hóa trên nội dung thế giới
+      mở đa dạng.
+
+    SHOT: Đánh giá hiệu năng trên video ngắn với nhịp độ nhanh và
+      hiệu ứng phức tạp.
+
+
+4.3    Các chỉ số đánh giá hiệu quả mô hình
+
+    Do dữ liệu SBD mất cân bằng nghiêm trọng (khung hình không chuyển
+cảnh chiếm đa số), khóa luận dùng bộ ba chỉ số Precision, Recall và F1-
+score thay cho Độ chính xác. Ký hiệu: Nc (TP), Nm (FN), Nf (FP) lần
+lượt là số ranh giới phát hiện đúng, bỏ sót, và báo động giả. Ngưỡng θ
+chuyển xác suất đầu ra thành quyết định nhị phân: dự đoán > θ được coi
+là ranh giới.
+
+
+                                    Nc
+                      Precision =        ,                                    (4.1)
+                                 Nc + Nf
+                                    Nc
+                        Recall =          ,                                   (4.2)
+                                 Nc + Nm
+                                     Precision × Recall
+                           F1 = 2 ×                     .                     (4.3)
+                                     Precision + Recall
+
+
+                                        58
+    Precision cao đồng nghĩa ít báo động giả; Recall cao đồng nghĩa ít bỏ
+sót ranh giới. F1 là trung bình điều hòa của hai chỉ số, được dùng làm
+tiêu chí so sánh chính giữa các phương pháp vì nó phản ánh đồng thời cả
+hai chiều. Việc đánh giá trên nhiều bộ dữ liệu (SHOT, ClipShots, BBC)
+là cần thiết để kiểm tra khả năng tổng quát hóa.
+
+
+4.4     Kịch bản thực nghiệm
+
+   Các kết quả trong khóa luận được tổ chức theo bốn nhóm: kết quả tốt
+nhất theo từng bộ dữ liệu trong protocol so sánh chính, phân tích triển
+khai với ngưỡng cố định, so sánh Precision/Recall/F1, và các bảng kết quả
+bổ sung để giải thích xu hướng quan sát được. Phần thảo luận về lỗi và
+khả năng tổng quát hóa được chuyển sang Chương 5.
+   Để bảo đảm khả năng tái lập, toàn bộ thí nghiệm được chạy với seed
+cố định 42. Các kết quả ablation sử dụng cùng split train/validation/test,
+cùng checkpoint AutoShot gốc và cùng metadata. Những artifact nặng
+như checkpoint, cached logits và video dataset không được đưa vào Git,
+mà được quản lý riêng theo manifest artifact. Chi tiết về môi trường phần
+cứng và phiên bản thư viện được mô tả cụ thể trong Bảng 4.2.
+
+              Bảng 4.2: Môi trường thực thi và cấu hình thực nghiệm
+
+Hạng mục          Giá trị
+Hệ điều hành     Windows 10 Pro 19045 (local) và Kaggle Linux tùy theo lượt chạy
+Python           3.12.7 (Anaconda)
+PyTorch          2.5.1 (build cu121)
+CUDA             12.1 (nếu dùng GPU build)
+GPU              Kaggle P100/T4 cho huấn luyện
+Thư viện chính   numpy 2.2.6, scipy 1.17.1, einops 0.8.2, opencv-python 4.12.0.88,
+                 pillow 10.4.0, matplotlib 3.10.8
+Hạt giống (Seed) 42
+
+
+
+4.4.1   Giải pháp triển khai cuối cùng được chọn
+
+    Để đảm bảo tính công bằng và thực tế khi bàn giao hệ thống cho người
+dùng cuối (tránh rủi ro rò rỉ thông tin từ tập kiểm tra khi chọn ngưỡng
+riêng biệt), khóa luận đề xuất và chốt Giải pháp triển khai cuối cùng
+
+
+
+                                       59
+là một mô hình với cấu hình tham số cố định duy nhất cho tất cả các miền
+dữ liệu (mô tả tại cột “Bản cân bằng” trong Bảng 4.3).
+    Cụ thể, giải pháp trực tuyến này tích hợp các thành phần:
+    Mạng xương sống (Backbone): Kiến trúc AutoShot@F1 (đã được
+      NAS tối ưu và đóng băng trọng số).
+
+    Tầng phân loại (ClassificationHead): Bộ phân lớp mới huấn
+      luyện lại từ đặc trưng cache với hàm Focal Loss (γ = 1.0, α = 0.5)
+      và nhãn many-hot (trọng số 0.3).
+
+    Hậu xử lý thời gian thực: Hiệu chỉnh nhiệt độ với hệ số tối ưu
+      cố định T ∗ = 0.3878046184, làm mượt Gaussian với σ = 2.0, và áp
+      dụng ngưỡng quyết định cố định duy nhất θ = 0.10 cho mọi video
+      đầu vào.
+    Bên cạnh giải pháp triển khai cố định này, khóa luận cũng báo cáo kết
+quả của cấu hình “Bản tốt nhất theo từng bộ dữ liệu” (Mục 4.7). Tuy
+nhiên, cấu hình này sử dụng các ngưỡng quyết định tối ưu hóa riêng biệt
+trên từng tập kiểm tra (chọn ngưỡng tối ưu oracle để đo lường giới hạn
+hiệu năng của mô hình) nên chỉ đóng vai trò là mức trần hiệu năng
+tiềm năng (oracle upper-bound), không được hiểu là giải pháp triển
+khai thực tế phục vụ người dùng cuối.
+    Các tham số cụ thể được trình bày trong Bảng 4.3.
+Bảng 4.3: Tham số cuối cùng của AutoShotV2 bản cân bằng và bản tốt nhất theo từng
+bộ dữ liệu
+
+ Tham số                   Bản cân bằng     Bản tốt nhất theo từng bộ dữ liệu
+ Hệ số nhiệt độ T           0.3878046184            0.24127588762141639
+ Độ lệch chuẩn Gaussian           2.0                         2.0
+ Hệ số Focal Loss γ               1.0                         2.0
+ Hệ số Focal Loss α               0.5                         0.6
+ Trọng số nhánh many-hot          0.3                         0.3
+ Tốc độ học                  1.00 × 10−5                 7.00 × 10−6
+ Suy giảm trọng số              0.0001                      0.0001
+
+
+   Bản tốt nhất theo từng bộ dữ liệu dùng cùng bộ tham số ở cột thứ ba
+của Bảng 4.3, nhưng khác ngưỡng quyết định theo từng tập. Riêng BBC
+đạt kết quả tốt nhất ngay với bản cân bằng, nên giữ ngưỡng 0.10.
+
+                                       60
+      Bảng 4.4: Ngưỡng quyết định dùng cho kết quả tốt nhất theo từng bộ dữ liệu
+
+        Bộ dữ liệu         Bộ tham số sử dụng            Ngưỡng quyết định
+        SHOT         Bản tốt nhất theo từng bộ dữ liệu           0.12
+        ClipShots    Bản tốt nhất theo từng bộ dữ liệu           0.19
+        BBC                   Bản cân bằng                       0.10
+
+
+
+4.5      Kết quả chính trên SHOT và các bộ dữ liệu bổ
+         sung
+
+    Trước khi đi vào phân tích chi tiết từng nhóm thí nghiệm, khóa luận
+phân biệt hai cách đọc kết quả AutoShotV2: cấu hình triển khai cố định
+dùng một ngưỡng chung cho mọi tập dữ liệu, còn cấu hình tốt nhất theo
+từng bộ dữ liệu chỉ đóng vai trò mức trần lạc quan. Bảng 4.5 là bảng so
+sánh chính, trong đó đặt cạnh nhau cấu hình triển khai cố định và mức trần
+lạc quan của AutoShotV2 để tránh nhầm lẫn giữa kết quả triển khai và
+kết quả oracle. Các bảng tiếp theo lần lượt phân tích Precision/Recall/F1,
+quét tham số bổ sung và phân rã thành phần. Danh sách đầy đủ tất cả
+thực nghiệm dùng cho tra cứu tổng quan được đặt tại Bảng B.1 trong Phụ
+lục B.
+    Mục đích thí nghiệm: Thí nghiệm này nhằm so sánh hiệu năng tổng
+thể (đo bằng F1-score) của phương pháp đề xuất AutoShotV2 với các mô
+hình thế hệ trước (TransNetV2, AutoShot gốc) và các công trình kinh điển
+trên ba bộ dữ liệu SHOT (video ngắn), BBC (video dài truyền thống) và
+ClipShots (môi trường thế giới mở) để kiểm chứng giả thuyết nghiên cứu
+RQ1 và RQ3.
+    Bảng 4.5 tổng hợp F1-score của AutoShot, TransNetV2 và biến thể
+AutoShotV2 khi đánh giá trên ba tập dữ liệu SHOT, BBC và ClipShots.
+
+
+
+
+                                         61
+     Phương pháp / cấu       Quy trình đánh                            Clip-
+                                                  SHOT       BBC
+     hình                    giá                                       Shots
+
+     Deep Structured
+                            Theo báo cáo             –      0.8920     0.7030
+     Models
+     TransNet V1            Theo báo cáo             –      0.9290     0.7350
+     TransNetV2             Theo báo cáo          0.7993    0.9620     0.7760
+     TransNetV2 tự chạy lại Tái lập                  –      0.9593     0.7454
+     AutoShot theo báo cáo Theo báo cáo gốc       0.8410    0.9710     0.7870
+     AutoShot tự chạy lại   Tái lập               0.8405    0.9554     0.7649
+     AutoShotV2 triển khai
+                            Ngưỡng chung 0.10     0.8545    0.9656     0.7529
+     cố định
+     AutoShotV2 tốt nhất Mức trần lạc quan
+                                                  0.8607    0.9656    0.7706
+     theo từng bộ dữ liệu   / oracle
+
+Bảng 4.5: So sánh F1-score của các mô hình trên SHOT, BBC và ClipShots. Hàng “triển
+khai cố định” là cấu hình cuối cùng phục vụ suy luận trực tuyến với một ngưỡng chung.
+Hàng “tốt nhất theo từng bộ dữ liệu” là mức trần lạc quan khi chọn cấu hình/ngưỡng
+riêng cho từng tập, không đại diện cho một chính sách triển khai duy nhất.
+
+
+    Kết quả minh chứng: Số liệu so sánh F1-score tổng thể giữa các
+phương pháp trên ba bộ dữ liệu được thống kê chi tiết tại Bảng 4.5.
+    Thảo luận: Trong Bảng 4.5, các hàng “theo báo cáo” lấy từ công trình
+gốc [23], còn các hàng “tự chạy lại” là kết quả tái lập trong môi trường thực
+nghiệm của khóa luận. AutoShotV2 được báo cáo theo hai cách: cấu hình
+triển khai cố định dùng cùng ngưỡng 0.10 trên cả ba bộ dữ liệu, còn cấu
+hình tốt nhất theo từng bộ dữ liệu là mức trần lạc quan dùng để đánh giá
+tiềm năng của mô hình. Do đó, kết quả oracle không được hiểu là chính
+sách triển khai duy nhất. Dấu “–” chỉ ra cấu hình đó không được đánh giá
+lại trên tập tương ứng.
+    Nhận xét chi tiết từ kết quả đo lường:
+
+    So sánh với các công trình kinh điển: Các mô hình thế hệ đầu
+      như Deep Structured Models (DSM – F1 đạt 0.7030 trên ClipShots,
+      0.8920 trên BBC) và TransNet (V1) (F1 đạt 0.7350 trên ClipShots,
+      0.9290 trên BBC) cho hiệu năng thấp hơn đáng kể so với các kiến
+      trúc thế hệ sau. Điều này minh chứng cho sự phát triển mạnh mẽ
+      của các mô hình học sâu không-thời gian trong giai đoạn từ sau năm
+      2020.
+
+
+
+                                         62
+     Biến thể AutoShotV2 với các kỹ thuật cải tiến đạt kết quả
+      chính theo lựa chọn tốt nhất là 0.8607 trên SHOT, 0.9656 trên BBC
+      và 0.7706 trên ClipShots. So với AutoShot tự chạy lại, mức cải thiện
+      lần lượt là +2.02 điểm phần trăm trên SHOT và +0.57 điểm phần
+      trăm trên ClipShots. Ở cấu hình triển khai ngưỡng cố định, ClipShots
+      đạt 0.7529 tại ngưỡng 0.10, thấp hơn AutoShot tự chạy lại; điều này
+      cho thấy lợi ích trên ClipShots phụ thuộc nhiều hơn vào lựa chọn
+      ngưỡng hoặc cấu hình theo miền.
+
+
+4.6     So sánh Precision, Recall và F1-score
+
+    Mục đích thí nghiệm: Thí nghiệm này nhằm báo cáo chi tiết các chỉ
+số Precision, Recall và các giá trị True Positive (TP), False Positive (FP),
+False Negative (FN) của giải pháp triển khai AutoShotV2 dưới một chính
+sách ngưỡng quyết định cố định duy nhất (θ = 0.10), qua đó giúp đánh
+giá xu hướng thiên lệch (bias) về hướng bỏ sót hay dự đoán thừa ranh giới
+shot trên từng miền dữ liệu.
+    Bảng 4.6 trình bày chi tiết Precision, Recall và F1 của AutoShotV2 tại
+ngưỡng triển khai trên từng bộ dữ liệu, kèm theo số liệu TP/FP/FN tuyệt
+đối để làm rõ hành vi của mô hình. Bảng dưới dùng ngưỡng triển khai cố
+định 0.10 cho cả ba bộ dữ liệu để báo cáo một chính sách suy luận đồng
+bộ; các ngưỡng tốt nhất theo từng tập dữ liệu được trình bày riêng như
+mức trần lạc quan và không được hiểu là một cấu hình triển khai (deploy)
+duy nhất.
+
+Bảng 4.6: Precision, Recall, F1 của AutoShotV2 trên ba bộ dữ liệu với ngưỡng θ = 0.10.
+
+    Bộ dữ liệu        Ngưỡng Precision          Recall    F1     TP / FP / FN
+    SHOT                0.10      0.8554        0.8537   0.8545 2148 / 363 / 368
+                                                                 6241 / 3129 /
+    ClipShots           0.10      0.6661        0.8657   0.7529
+                                                                      968
+    BBC                 0.10      0.9750        0.9564   0.9656 4633 / 119 / 211
+
+
+   Kết quả minh chứng: Số liệu đo lường chi tiết được ghi nhận tại
+Bảng 4.6.
+   Thảo luận: Ở ngưỡng triển khai chung, AutoShotV2 giữ cân bằng
+
+
+                                           63
+Precision–Recall tốt trên SHOT và BBC, nhưng ClipShots có Precision
+thấp hơn rõ rệt (0.6661) dù Recall vẫn cao (0.8657). Điều này cho thấy
+vấn đề chính trên ClipShots không chỉ là bỏ sót chuyển cảnh mà còn là số
+lượng dự đoán dư thừa lớn, thể hiện qua 3129 false positives.
+
+
+4.7     Thí nghiệm quét tham số (sweep) bổ sung
+
+    Mục đích thí nghiệm: Thí nghiệm này (quét tham số bổ sung)
+nhằm khảo sát giới hạn hiệu năng cao nhất (mức trần oracle) của kiến
+trúc AutoShotV2 khi được tối ưu hóa riêng biệt theo từng bộ dữ liệu
+thông qua việc tìm kiếm bộ siêu tham số và ngưỡng quyết định tối ưu cục
+bộ, nhằm trả lời câu hỏi nghiên cứu về tiềm năng tối đa của giải pháp trên
+các phân phối dữ liệu khác nhau.
+    Sau cấu hình triển khai ngưỡng cố định, khóa luận thử thêm
+một lượt quét tham số (sweep) rút gọn với cấu hình mới: T ∗ =
+0.24127588762141639, σ = 2.0, γ = 2.0, α = 0.6, trọng số nhãn nhiều
+điểm dương (many-hot weight) bằng 0.3, tốc độ học (learning rate) bằng
+7 × 10−6 và suy giảm trọng số (weight decay) bằng 10−4 . Mục tiêu của
+thí nghiệm này là kiểm tra xem việc tăng độ tập trung của hàm mất mát
+Focal và giảm tốc độ học có tạo ra các đỉnh F1 tốt hơn sau khi quét ngưỡng
+(quét ngưỡng quyết định) hay không.
+Bảng 4.7: Đỉnh F1 của cấu hình quét tham số bổ sung khi chọn ngưỡng quyết định tốt
+nhất riêng cho từng bộ dữ liệu. Cột cuối so sánh với cấu hình AutoShotV2 triển khai
+ngưỡng cố định ở Bảng 4.6.
+
+                                                                  Chênh
+       Bộ dữ liệu       Ngưỡng Precision       Recall      F1
+                                                                   lệch
+       SHOT                0.12     0.8408     0.8816    0.8607   +0.0062
+       ClipShots           0.19     0.7011     0.8554    0.7706   +0.0177
+       BBC                 0.12     0.9668     0.9628    0.9648   −0.0008
+
+
+    Kết quả minh chứng: Các đỉnh F1 tìm được cùng các giá trị Preci-
+sion/Recall tương ứng được ghi nhận chi tiết tại Bảng 4.7.
+    Thảo luận: Bảng 4.7 cho thấy cấu hình bổ sung tạo ra các đỉnh tốt
+hơn trên SHOT và ClipShots khi mỗi bộ dữ liệu được chọn ngưỡng riêng.
+Đây là kết quả oracle theo tập kiểm tra, nên chỉ dùng để ước lượng tiềm
+
+                                        64
+năng của từng miền dữ liệu. Hàng “AutoShotV2 tốt nhất theo từng bộ
+dữ liệu” trong Bảng 4.5 lấy SHOT và ClipShots từ cấu hình bổ sung ở
+Bảng 4.7, còn BBC từ cấu hình triển khai cố định vì đạt F1 cao hơn. Khi
+xét một chính sách triển khai chung cho cả ba bộ dữ liệu, cấu hình bổ sung
+không ổn định bằng cấu hình triển khai ngưỡng cố định: ngưỡng chung tốt
+nhất nằm quanh 0.17, với F1 lần lượt là 0.8518 trên SHOT, 0.7581 trên
+ClipShots và 0.9598 trên BBC, trung bình khoảng 0.8566, thấp hơn trung
+bình của cấu hình triển khai ngưỡng cố định 0.8577.
+
+
+4.8    Thực nghiệm phân rã thành phần
+
+   Mục đích thí nghiệm: Thực nghiệm phân rã thành phần (ablation
+study) này nhằm kiểm chứng độc lập và làm rõ đóng góp thực tế của
+từng đề xuất cải tiến (gồm hàm mất mát Focal, nhãn nhiều điểm dương
+ở giai đoạn huấn luyện; hiệu chỉnh nhiệt độ - temperature scaling, làm
+mượt Gaussian - Gaussian smoothing ở giai đoạn hậu xử lý) trên quy trình
+(pipeline) Pha 2 (đóng băng mạng xương sống) đối với hiệu năng cuối cùng
+của hệ thống, trả lời cho câu hỏi nghiên cứu RQ2.
+   Bảng 4.8 phân tách đóng góp của từng thành phần trên quy trình triển
+khai Pha 2 — chỉ huấn luyện lại tầng phân loại trên đặc trưng đã trích
+sẵn (đóng băng mạng xương sống) — theo một ma trận đối chứng có kiểm
+soát. Lưu ý hệ số nhiệt độ ở ma trận này khác cấu hình triển khai ngưỡng
+cố định (do chạy trên tập con metadata) nên F1 không so trực tiếp được;
+điểm nhất quán là SHOT gần như bằng nhau (0.8540 ở B4 so với 0.8545
+của cấu hình triển khai ngưỡng cố định).
+
+
+
+
+                                   65
+Bảng 4.8: Ablation thành phần có kiểm soát trên Pha 2: ∆F1 so với đối chứng A1 (điểm
+phần trăm). Số đậm đánh dấu cấu hình B4 được chọn cho ablation.
+
+       Cấu hình                       SHOT           BBC        ClipShots
+       A2 – Focal only                 -0.00        -0.03          -0.17
+       A3 – Many-hot only              -0.03        -0.08          +0.21
+       P1 – Gaussian only              +0.54        -1.34          +5.36
+       P2 – Temperature only           +0.00        +0.00          +0.00
+       B1 – Focal + many-hot           +0.06        -0.11          +0.23
+       B4 – Temperature +
+                                      +1.62          -0.00        +4.57
+       Gaussian (được chọn)
+       B5 – Ứng viên đầy đủ            +1.64         -0.19         +4.25
+
+
+    Kết quả minh chứng: Ma trận kết quả ablation có kiểm soát được
+chi tiết hóa tại Bảng 4.8.
+    Thảo luận: Trong ma trận đối chứng có kiểm soát ở Bảng 4.8, quá
+trình ablation được thực hiện trên quy trình Pha 2 bằng cách huấn luyện
+tầng phân loại trên đặc trưng đã trích sẵn (đóng băng mạng xương sống).
+Cấu hình đối chứng (control) là A1 (huấn luyện với hàm BCE và nhãn một
+điểm dương (one-hot)). Quá trình hậu xử lý trong thí nghiệm này sử dụng
+hệ số nhiệt độ T ∗ = 0.6618 (khác hệ số T ∗ = 0.3878 của cấu hình triển khai
+ngưỡng cố định do chạy trên tập con metadata dùng cho cross-validation).
+Mô hình AutoShot gốc A0 đóng vai trò mốc tham chiếu. Số đậm trong
+bảng đánh dấu cấu hình B4 được chọn cho ablation chứ không phải giá trị
+lớn nhất của cột.
+    Trong ma trận đối chứng này, hậu xử lý là đòn bẩy lớn nhất: B4 (Hiệu
+chỉnh nhiệt độ + Làm mượt Gaussian) nâng F1 rõ rệt so với đối chứng A1
+trên SHOT (+1.6 điểm phần trăm) và ClipShots (+4.6 điểm phần trăm),
+trong khi hàm mất mát Focal hay nhãn nhiều điểm dương riêng lẻ gần như
+không thay đổi. Cấu hình P 1 (chỉ làm mượt Gaussian) tuy tăng mạnh
+ClipShots nhưng làm giảm BBC xuống dưới ngưỡng guardrail, nên không
+được chọn; B4 giữ BBC gần như không đổi, cung cấp bằng chứng thực
+nghiệm rằng hiệu chỉnh nhiệt độ kết hợp làm mượt Gaussian là hướng hậu
+xử lý ổn định nhất trong thí nghiệm đối chứng.
+    Nhận xét từ bảng phân rã thành phần:
+
+    Hậu xử lý là thành phần tác động lớn nhất: Làm mượt Gaus-
+      sian, đặc biệt khi kết hợp với hiệu chỉnh nhiệt độ ở B4, cải thiện rõ
+
+                                        66
+      rệt trên ClipShots và SHOT; các thành phần huấn luyện như hàm
+      mất mát Focal hay nhãn nhiều điểm dương chỉ tạo thay đổi nhỏ hoặc
+      không ổn định khi đứng độc lập.
+
+    ClipShots vẫn là miền thử thách cực lớn: Việc tinh chỉnh tầng
+      phân loại chưa thể giúp mô hình vượt qua baseline gốc một cách ổn
+      định trên ClipShots ở các cấu hình đối chứng, củng cố nhận định
+      rằng miền dữ liệu thế giới mở này cần các cơ chế hiệu chỉnh nhiệt độ
+      hoặc làm mượt thích nghi miền riêng biệt.
+
+
+                     AutoShotV2                                0.8607
+
+
+                       AutoShot                           0.8405
+
+
+                     TransNetV2                      0.7993
+                                                                        F1
+                                  0.70   0.75   0.80    0.85    0.90
+
+
+Hình 4.3: So sánh F1 giữa các mô hình trên tập SHOT (200 video kiểm tra). AutoShotV2
+đạt F1 = 0.8607 theo lựa chọn tốt nhất trong protocol so sánh chính, cải thiện +2.02
+điểm phần trăm so với AutoShot tự chạy lại và +6.14 điểm phần trăm so với TransNetV2
+mô hình cơ sở.
+
+
+
+4.9     Tổng kết chương
+
+    Chương này đã trình bày các bộ dữ liệu được sử dụng, đặc điểm chính
+của SHOT và hai bộ dữ liệu đánh giá bổ sung BBC, ClipShots, cùng bộ
+chỉ số Precision/Recall/F1. Trên cơ sở đó, chương báo cáo kết quả đánh
+giá AutoShotV2 trên từng bộ dữ liệu, so sánh với các mô hình tham chiếu
+và phân tích xu hướng Precision/Recall/F1. Những nội dung thảo luận
+sâu về lỗi còn tồn tại và khả năng tổng quát hóa được đặt ở Chương 5.
+
+
+
+
+                                                67
+Chương 5
+
+KẾT                 LUẬN                       VÀ              HƯỚNG
+PHÁT TRIỂN
+       Chương này tổng kết lại toàn bộ nội dung nghiên cứu của khóa luận, đưa
+      ra câu trả lời trực tiếp cho các câu hỏi nghiên cứu đã đặt ra, thảo luận sâu
+      sắc về các hạn chế thực nghiệm và đề xuất các hướng phát triển tiếp theo
+      trong tương lai để tối ưu hóa hiệu năng phát hiện ranh giới cảnh quay trên
+      nhiều miền dữ liệu khác nhau.
+
+
+
+
+5.1    Trả lời các câu hỏi nghiên cứu
+
+   Các kết quả thực nghiệm đạt được trong khóa luận cho phép trả lời
+trực tiếp ba câu hỏi nghiên cứu (Research Questions) đã được đặt ra ở
+Mục 1.6:
+
+    RQ1: Việc áp dụng tìm kiếm kiến trúc mạng (NAS) có mang
+      lại hiệu quả vượt trội cho bài toán phát hiện ranh giới cảnh
+      quay trên video ngắn so với các phương pháp truyền thống
+      không?
+      Trả lời: Có. Mô hình AutoShot (được xây dựng trên kiến trúc mạng
+      tìm kiếm tự động NAS) khi tự chạy lại trong môi trường thực nghiệm
+      của khóa luận đạt điểm F1 là 0.8405 trên tập dữ liệu video ngắn
+      SHOT (bản theo báo cáo gốc: 0.8410). Kết quả này vượt trội đáng
+      kể so với mô hình baseline nổi tiếng TransNetV2 (F1 chỉ đạt 0.7993),
+      tức cải thiện khoảng +4.12 điểm phần trăm F1. Thử nghiệm này xác
+      nhận rằng việc tối ưu hóa kiến trúc mạng bằng NAS giúp mô hình
+      nắm bắt tốt hơn các đặc trưng không-thời gian đặc thù của video
+      ngắn (nhịp độ nhanh, nhiều chuyển động hình ảnh đột ngột).
+
+
+
+
+                                          68
+ RQ2: Có thể cải thiện hiệu năng của mô hình AutoShot
+ trên tập video ngắn bằng cách tối ưu hóa tầng phân loại và
+ hậu xử lý xác suất mà không cần huấn luyện lại hoặc thay
+ đổi mạng xương sống không?
+ Trả lời: Có. Bằng cách bổ sung các kỹ thuật cải tiến ở Pha 2 (huấn
+ luyện tầng phân loại mới trên đặc trưng trích xuất sẵn từ mạng
+ xương sống đã đóng băng) bao gồm: hàm mất mát Focal (Focal
+ Loss), nhãn nhiều điểm dương thích ứng (many-hot labels), hiệu
+ chỉnh nhiệt độ xác suất (temperature scaling) và làm mượt Gaussian
+ (Gaussian smoothing), biến thể AutoShotV2 đạt hiệu năng vượt trội.
+ Về tiềm năng mô hình, AutoShotV2 đạt điểm F1 tối đa 0.8607 trên
+ tập SHOT theo mức trần lạc quan (oracle upper-bound – cấu hình
+ tốt nhất trong quy trình đánh giá so sánh chính). Đây là mức cải
+ thiện +2.02 điểm phần trăm so với AutoShot tự chạy lại (0.8405) và
+ +6.14 điểm phần trăm so với TransNetV2 (theo báo cáo, 0.7993).
+ Về cấu hình triển khai thực tế phục vụ người dùng cuối, AutoShotV2
+ sử dụng ngưỡng cố định chung đạt F1 = 0.8545, chứng minh rằng
+ hướng tối ưu hóa tầng phân loại trên mạng xương sống đóng băng
+ vẫn mang lại hiệu quả vượt bậc và khả thi ngay cả dưới một chính
+ sách suy luận cố định duy nhất.
+
+ RQ3: Mô hình đề xuất có giữ được khả năng tổng quát hóa
+ tốt trên các miền dữ liệu video khác ngoài video ngắn (như
+ video tài liệu dài hoặc video thế giới mở đa dạng) không?
+ Trả lời: Một phần.
+
+   – Đối với miền video tài liệu dài (BBC Planet Earth), Au-
+     toShotV2 thể hiện khả năng tổng quát hóa rất tốt khi đạt F1
+     = 0.9656, vượt qua cả TransNetV2 tự chạy lại (0.9593) và Au-
+     toShot gốc (0.9554).
+   – Tuy nhiên, trên tập dữ liệu thế giới mở đa dạng (ClipShots),
+     hiệu năng triển khai của AutoShotV2 chỉ đạt 0.7529 ở ngưỡng
+     cố định 0.10, thấp hơn AutoShot tự chạy lại (0.7649). Khi chọn
+     cấu hình tốt nhất theo bộ dữ liệu trong quy trình đánh giá so
+
+
+                              69
+             sánh chính, ClipShots tăng lên 0.7706, cao hơn AutoShot tự
+             chạy lại +0.57 điểm phần trăm. Thí nghiệm mở khóa lớp gần
+             đầu phân loại nhất còn đạt F1 0.7962 trên ClipShots, nhưng
+             làm BBC giảm xuống 0.9341, nên kết luận thận trọng là: cấu
+             hình tối ưu cho SHOT/BBC chưa chuyển dịch hoàn hảo sang
+             miền dữ liệu đa dạng hơn nếu không chấp nhận đánh đổi đa
+             miền.
+
+5.1.1     Các phát hiện bổ sung ngoài câu hỏi nghiên cứu
+
+   Bên cạnh ba câu trả lời cho RQ ở trên, khóa luận còn ghi nhận một số
+phát hiện thực nghiệm quan trọng:
+
+    Mạng xương sống NAS có khả năng tái sử dụng cao: Quá
+        trình tìm kiếm kiến trúc (NAS) ban đầu rất tốn kém tài nguyên, tuy
+        nhiên kết quả AutoShotV2 cho thấy mạng xương sống thu được có
+        tính tổng quát hóa cao và có thể tái sử dụng cho nhiều cải tiến tầng
+        trên với chi phí tính toán phụ trội cực kỳ nhỏ.
+
+    Ngưỡng quyết định là một tham số ứng dụng: Việc điều chỉnh
+        ngưỡng suy luận xác suất (θ) thực tế là sự đánh đổi giữa Precision
+        và Recall. Lựa chọn ngưỡng tối ưu nên căn cứ vào bài toán nghiệp
+        vụ thực tế (ví dụ: ưu tiên không bỏ sót cảnh quay hay ưu tiên giảm
+        báo động giả), đồng thời cần tách rõ giữa ngưỡng triển khai cố định
+        và ngưỡng trần lạc quan (oracle) chỉ dùng để phân tích.
+
+    Kết quả tốt nhất phụ thuộc mục tiêu: Nếu mục tiêu là báo cáo
+        tiềm năng cao nhất theo từng bộ dữ liệu, hàng mức trần lạc quan
+        tổng hợp là kết quả chính nhưng mang tính lạc quan. Nếu mục tiêu
+        là triển khai cân bằng trên nhiều miền dữ liệu, AutoShotV2 ở ngưỡng
+        cố định là phân tích độ ổn định triển khai. Nếu chỉ tối ưu ClipShots,
+        mở khóa một phần nhỏ gần tầng phân loại có thể đạt F1 cao hơn,
+        nhưng đi kèm suy giảm rõ trên BBC.
+
+
+
+
+                                      70
+5.2     Hạn chế của đề tài và thảo luận
+
+  Mặc dù đạt được những kết quả cải tiến khả quan, đề tài vẫn tồn tại
+một số hạn chế quan trọng cần thảo luận:
+
+5.2.1   Precision thấp trên ClipShots ở ngưỡng triển khai
+
+    Ở ngưỡng triển khai 0.10, kết quả Precision–Recall ở Chương 4 cho
+thấy ClipShots có Precision thấp hơn đáng kể so với SHOT và BBC. Cụ
+thể, AutoShotV2 đạt Recall 0.8657 nhưng Precision chỉ 0.6661, tương ứng
+3129 false positives. Điều này cho thấy mô hình vẫn phát hiện được nhiều
+ranh giới thật, nhưng phân phối video thế giới mở của ClipShots làm tăng
+số dự đoán dư thừa. Đây là lý do hiệu chỉnh hậu xử lý theo miền có thể
+cải thiện kết quả, nhưng cấu hình triển khai ngưỡng cố định vẫn chưa đạt
+mức ổn định như trên SHOT/BBC.
+
+5.2.2   Các giả thuyết kỹ thuật chưa được kiểm chứng đầy đủ
+
+    Từ kết quả thực nghiệm, khóa luận đưa ra một số giả thuyết về sự
+suy giảm trên ClipShots: tham số hiệu chỉnh nhiệt độ T ∗ và ngưỡng quyết
+định tối ưu trên SHOT có thể bị lệch phân phối khi sang ClipShots; nhãn
+nhiều điểm dương cố định chưa mô tả tốt các chuyển cảnh có độ dài khác
+nhau; và hàm mất mát Focal chưa tạo được lợi ích rõ ràng trong ma trận
+đối chứng hiện tại. Tuy nhiên, bằng chứng mạnh nhất của khóa luận đang
+nghiêng về vai trò của hậu xử lý và sự lệch miền dữ liệu (domain shift):
+làm mượt Gaussian và hiệu chỉnh nhiệt độ là các thành phần tạo cải thiện
+lớn nhất, còn hàm mất mát Focal và nhãn nhiều điểm dương riêng lẻ chỉ
+tạo thay đổi nhỏ hoặc không ổn định. Do giới hạn về thời gian và tài
+nguyên tính toán, khóa luận chưa thể thực hiện đầy đủ các thí nghiệm đối
+chứng độc lập trên từng miền dữ liệu để chứng minh các giả thuyết này
+một cách tuyệt đối.
+
+
+
+
+                                  71
+5.3      Hướng phát triển tương lai
+
+   Để giải quyết các hạn chế nêu trên, các hướng nghiên cứu tiếp theo
+được đề xuất bao gồm:
+
+5.3.1     Cải tiến mô hình phát hiện chuyển cảnh dần
+
+    Mã hóa nhãn many-hot thích ứng (Adaptive Many-hot La-
+        bels): Thay vì gán nhãn cố định ±1 frame, nghiên cứu tiếp theo có
+        thể tự động điều chỉnh độ rộng của vùng nhãn dương dựa trên thời
+        lượng thực tế của hiệu ứng chuyển cảnh dần (được trích xuất từ dữ
+        liệu ground truth).
+
+    Cơ chế Attention thích ứng thời gian: Bổ sung các khối tem-
+        poral attention có khả năng tự động điều chỉnh cửa sổ quan sát
+        (receptive field) dài hơn để bắt trọn các chuyển cảnh kéo dài nhiều
+        giây.
+
+5.3.2     Tối ưu hóa hiệu chỉnh nhiệt độ đa miền (Multi-domain
+          Calibration)
+
+    Nghiên cứu áp dụng các phương pháp hiệu chỉnh nhiệt độ thích ứng
+        theo miền dữ liệu (Domain-specific Temperature Scaling) hoặc huấn
+        luyện mạng hiệu chỉnh xác suất phụ thuộc vào đặc trưng video đầu
+        vào, thay vì cố định một hệ số T ∗ chung.
+
+    Thiết kế chính sách chọn ngưỡng theo mục tiêu ứng dụng, ví dụ một
+        cấu hình ưu tiên Recall cho bài toán gợi ý biên cảnh và một cấu hình
+        ưu tiên Precision cho quy trình hậu kiểm thủ công.
+
+5.3.3     Mở rộng ma trận thực nghiệm đối chứng
+
+    Thực hiện huấn luyện lại toàn bộ ma trận phân rã thành phần (ab-
+        lation study) trên cả ClipShots và BBC để đánh giá độc lập tác động
+        của từng thành phần (hàm mất mát Focal, nhãn nhiều điểm dương,
+        làm mượt Gaussian, hiệu chỉnh nhiệt độ) trên từng miền dữ liệu riêng
+        biệt.
+
+                                      72
+ Bổ sung phân tích lỗi theo video và theo nhóm nội dung để tách riêng
+  false positives do chuyển động máy quay, thay đổi ánh sáng, hiệu ứng
+  biên tập và chuyển cảnh thật kéo dài.
+
+
+
+
+                                73
+Danh mục công trình của tác
+giả
+
+    Trong phạm vi thực hiện hiện tại, nhóm tác giả chưa có công trình công
+bố chính thức liên quan trực tiếp đến khóa luận này. Các kết quả và phân
+tích trong báo cáo là cơ sở để tiếp tục hoàn thiện theo hướng bài báo khoa
+học hoặc báo cáo hội nghị trong giai đoạn tiếp theo.
+
+
+
+
+                                   74
+Tài liệu tham khảo
+
+Tiếng Anh
+
+[1] Abdulhussain, Sadiq H. et al. “Methods and Challenges in Shot
+    Boundary Detection: A Review”. In: Entropy 20.4 (2018), p. 214.
+    doi: 10 . 3390 / e20040214. url: https : / / www . mdpi . com / 1099 -
+    4300/20/4/214.
+[2] Baraldi, Lorenzo, Grana, Costantino, and Cucchiara, Rita. “Shot and
+    Scene Detection via Hierarchical Clustering for Re-using Broadcast
+    Video”. In: Computer Analysis of Images and Patterns (2015). url:
+    https : / / link . springer . com / chapter / 10 . 1007 / 978 - 3 - 319 -
+    23192-1_67.
+[3] Elsken, Thomas, Metzen, Jan Hendrik, and Hutter, Frank. “Neural
+    Architecture Search: A Survey”. In: arXiv preprint arXiv:1808.05377
+    (2018). Journal reference: Journal of Machine Learning Research 20
+    (2019) 1–21. url: https://arxiv.org/abs/1808.05377.
+[4] Esteve, Adrián et al. “Shot Boundary Detection with 3D Depth-
+    wise Convolutions and Visual Attention”. In: Sensors 23.12 (2023),
+    p. 5620.
+[5] Guo, Chuan et al. “On Calibration of Modern Neural Networks”. In:
+    arXiv preprint arXiv:1706.04599 (2017). Published at ICML 2017.
+    doi: 10.48550/arXiv.1706.04599. url: https://arxiv.org/abs/
+    1706.04599.
+[6] Guo, Zichao et al. “Single Path One-Shot Neural Architecture Search
+    with Uniform Sampling”. In: Proceedings of the European Conference
+    on Computer Vision (ECCV). 2020. url: https://arxiv.org/abs/
+    1904.00420.
+
+
+
+
+                                    75
+ [7] Hassanien, Ahmed et al. “Large-scale, Fast and Accurate Shot
+     Boundary Detection through Spatio-temporal Convolutional Neural
+     Networks”. In: arXiv preprint arXiv:1705.03281 (2017). url: https:
+     //arxiv.org/abs/1705.03281.
+ [8] Hinton, Geoffrey, Vinyals, Oriol, and Dean, Jeff. “Distilling the
+     knowledge in a neural network”. In: arXiv preprint arXiv:1503.02531
+     (2015). url: https://arxiv.org/abs/1503.02531.
+ [9] Kar, T. et al. “Video shot-boundary detection: issues, challenges and
+     solutions”. In: Artificial Intelligence Review 57.104 (2024). Springer.
+     doi: 10 . 1007 / s10462 - 024 - 10742 - 1. url: https : / / link .
+     springer.com/article/10.1007/s10462-024-10742-1.
+[10] Lin, Tsung-Yi et al. “Focal Loss for Dense Object Detection”. In:
+     arXiv preprint arXiv:1708.02002 (2017). Published at ICCV 2017.
+     doi: 10.48550/arXiv.1708.02002. url: https://arxiv.org/abs/
+     1708.02002.
+[11] Liu, Hanxiao, Simonyan, Karen, and Yang, Yiming. “DARTS: Dif-
+     ferentiable Architecture Search”. In: Proceedings of the International
+     Conference on Learning Representations (ICLR). 2019. url: https:
+     //arxiv.org/abs/1806.09055.
+[12] Loshchilov, Ilya and Hutter, Frank. “SGDR: Stochastic Gradient
+     Descent with Warm Restarts”. In: arXiv preprint arXiv:1608.03983
+     (2017). Published at ICLR 2017. doi: 10.48550/arXiv.1608.03983.
+     url: https://arxiv.org/abs/1608.03983.
+[13] Müller, Rafael, Kornblith, Simon, and Hinton, Geoffrey E. “When
+     Does Label Smoothing Help?” In: arXiv preprint arXiv:1906.02629
+     (2019). Published at NeurIPS 2019. doi: 10.48550/arXiv.1906.
+     02629. url: https://arxiv.org/abs/1906.02629.
+[14] Ren, Pengzhen et al. “A Comprehensive Survey of Neural Ar-
+     chitecture Search: Challenges and Solutions”. In: arXiv preprint
+     arXiv:2006.02903 (2020). Accepted by ACM Computing Surveys
+     2021. url: https://arxiv.org/abs/2006.02903.
+
+
+
+                                    76
+[15] Seridi, Hamid et al. “Shot Boundary Detection: Fundamental Con-
+     cepts and Survey”. In: CEUR Workshop Proceedings, Vol. 2589.
+     CEUR-WS.org. 2020. url: https : / / ceur - ws . org / Vol - 2589 /
+     Paper6.pdf.
+[16] Souček, Tomáš and Lokoč, Jakub. “TransNet V2: An effective deep
+     network architecture for fast shot transition detection”. In: arXiv
+     preprint arXiv:2008.04838 (2020). url: https://arxiv.org/abs/
+     2008.04838.
+[17] Souček, Tomáš, Moravec, Jaroslav, and Lokoč, Jakub. “TransNet:
+     A deep network for fast detection of common shot transitions”. In:
+     arXiv preprint arXiv:1906.03363 (2019). url: https://arxiv.org/
+     abs/1906.03363.
+[18] Tang, Shitao et al. “Fast Video Shot Transition Localization with
+     Deep Structured Models”. In: arXiv preprint arXiv:1808.04234
+     (2018). Introduces the ClipShots dataset. url: https : / / arxiv .
+     org/abs/1808.04234.
+[19] Tran, Du et al. “Learning Spatiotemporal Features with 3D Convo-
+     lutional Networks”. In: Proceedings of the IEEE International Con-
+     ference on Computer Vision (ICCV). 2015, pp. 4489–4497. doi: 10.
+     1109/ICCV.2015.510. url: https://arxiv.org/abs/1412.0767.
+[20] Van Anh. Short-form video trend harming youth. VietnamNet Global;
+     cites data from Sprout Social. May 7, 2023. url: https : / /
+     vietnamnet.vn/en/short-form- video- trend-harming- youth-
+     2140096.html (visited on 05/16/2026).
+[21] Vaswani, Ashish et al. “Attention Is All You Need”. In: Advances
+     in Neural Information Processing Systems (NeurIPS). 2017. url:
+     https://arxiv.org/abs/1706.03762.
+[22] White, Colin et al. “Neural Architecture Search: Insights from 1000
+     Papers”. In: arXiv preprint arXiv:2301.08727 (2023). url: https:
+     //arxiv.org/abs/2301.08727.
+
+
+
+
+                                  77
+[23] Zhu, Wentao et al. “AutoShot: A Short Video Dataset and
+     State-of-the-Art Shot Boundary Detection”. In: arXiv preprint
+     arXiv:2304.06116 (2023). url: https : / / arxiv . org / abs / 2304 .
+     06116.
+
+
+
+
+                                   78
+Chương A
+
+Ký hiệu toán học và quy ước
+đánh giá
+
+   Phụ lục này tổng hợp các ký hiệu chính xuất hiện trong khóa luận và
+nhắc lại các quy ước đánh giá được sử dụng xuyên suốt phần thực nghiệm.
+
+
+A.1        Ký hiệu sử dụng trong khóa luận
+
+
+   Ký hiệu              Tên gọi                      Ý nghĩa
+
+   V =                                               Video gồm n khung hình theo
+                        Chuỗi khung hình đầu vào
+   {f1 , . . . , fn }                                thứ tự thời gian.
+                                                     Phần tử cơ bản của video đầu
+   fi                   Khung hình thứ i
+                                                     vào.
+   B=                                                Tập hợp các vị trí bắt đầu shot
+                        Tập ranh giới cảnh quay
+   {b1 , . . . , bm }                                mới trong video.
+                                                     Một mốc thời gian biểu thị sự
+   bj                   Ranh giới thứ j              chuyển từ shot hiện tại sang shot
+                                                     kế tiếp.
+                                                     Xác suất ranh giới tại khung
+   ŷsingle             Dự đoán single-frame
+                                                     hình trung tâm.
+                                                     Xác suất trên vùng lân cận
+                        Dự đoán all-frame /
+   ŷall                                             quanh ranh giới, dùng để hỗ trợ
+                        many-hot
+                                                     huấn luyện.
+                                                     Giá trị đầu ra của mô hình trước
+   p[t]                 Xác suất tại thời điểm t
+                                                     hoặc sau hậu xử lý.
+                                                     Giá trị đầu ra trước hàm
+   z[t]                 Logit tại thời điểm t        sigmoid hoặc trước bước hiệu
+                                                     chỉnh nhiệt độ.
+
+
+
+
+                                                79
+   Ký hiệu         Tên gọi                      Ý nghĩa
+
+                                                Ngưỡng chuyển xác suất sang
+                                                quyết định có ranh giới hay
+   θ               Ngưỡng quyết định
+                                                không (ngưỡng > θ ⇒ có ranh
+                                                giới).
+                                                Ngưỡng cho F1 cao nhất trên
+   θbest           Ngưỡng tốt nhất              một bộ dữ liệu hoặc một thiết
+                                                lập đánh giá cụ thể.
+                                                Hệ số hiệu chỉnh xác suất trong
+   T∗              Nhiệt độ tối ưu
+                                                temperature scaling.
+                                                Tham số điều khiển mức làm
+   σ               Độ lệch chuẩn Gaussian
+                                                mượt của Gaussian smoothing.
+                                                Tham số γ của Focal Loss, điều
+   γ               Tham số tập trung
+                                                khiển mức ưu tiên mẫu khó.
+                                                Tham số α của Focal Loss, điều
+   α               Tham số cân bằng
+                                                chỉnh tỉ lệ giữa lớp dương và âm.
+                                                Tốc độ học theo lịch trình
+   ηt              Tốc độ học tại bước t
+                                                Cosine với khởi động dần.
+                                                Số phần chia dữ liệu trong kiểm
+   K               Số fold kiểm định chéo       định chéo; khóa luận dùng
+                                                K = 5 ở thí nghiệm bổ sung.
+                                                Phần dữ liệu giữ lại để đánh giá
+   Dk              Fold thứ k
+                                                trong lần kiểm định chéo thứ k.
+                                                Lần lượt là dự đoán đúng ranh
+   T P, F P, F N   Các biến đếm đánh giá        giới, báo động giả và ranh giới bị
+                                                bỏ sót.
+                                                Tập hợp toàn bộ kiến trúc ứng
+   A               Không gian tìm kiếm NAS
+                                                viên trong bài toán NAS.
+                                                Đại lượng tối ưu trong quá trình
+   L               Hàm mất mát tổng
+                                                huấn luyện mô hình.
+
+
+
+A.2        Quy ước đánh giá
+
+   Trong bài toán phát hiện ranh giới cảnh quay, dữ liệu thường mất cân
+bằng mạnh do số khung hình nền lớn hơn rất nhiều số khung hình thuộc
+ranh giới. Vì vậy, khóa luận không dùng Độ chính xác làm chỉ số chính
+
+
+                                           80
+mà ưu tiên bộ ba Precision, Recall và F1-score.
+
+    True Positive (TP): mô hình dự đoán đúng một ranh giới cảnh
+     quay.
+
+    False Positive (FP): mô hình dự đoán có ranh giới nhưng thực tế
+     không có.
+
+    False Negative (FN): mô hình bỏ sót một ranh giới có thật trong
+     dữ liệu gán nhãn.
+
+   Các chỉ số được tính theo các công thức:
+
+                                          TP
+                         P recision =                             (A.1)
+                                        TP + FP
+
+                                      TP
+                          Recall =                                (A.2)
+                                  TP + FN
+                              P recision × Recall
+                     F1 = 2 ×                                     (A.3)
+                              P recision + Recall
+    Trong các thí nghiệm của khóa luận, F1-score được dùng làm tiêu chí
+so sánh chính giữa các mô hình vì đây là chỉ số phản ánh tốt nhất sự cân
+bằng giữa khả năng phát hiện đúng và khả năng hạn chế báo động giả.
+
+
+
+
+                                   81
+Chương B
+
+Bảng tổng hợp kết quả bổ sung
+
+   Phụ lục này cung cấp danh sách đầy đủ tất cả các thực nghiệm đã được
+thực hiện trong khóa luận để phục vụ tra cứu.
+
+
+B.1     Bảng đầy đủ tất cả thực nghiệm
+
+    Bảng B.1 tổng hợp tất cả các dòng thực nghiệm đã được sử dụng trong
+Chương 4 và phần thảo luận ở Chương 5. Các giá trị trong ba cột bộ dữ
+liệu là F1-score. Do các nhóm thí nghiệm dùng quy trình đánh giá khác
+nhau, bảng này chỉ dùng để tra cứu tổng quan; các kết luận chính cần đọc
+theo từng nhóm thí nghiệm ở các chương trước.
+Bảng B.1: Bảng đầy đủ tất cả thực nghiệm. Các giá trị SHOT, BBC và ClipShots là
+F1-score.
+
+               Thực nghiệm / Quy                      Clip-
+ Nhóm                            SHOT BBC                   Ghi chú
+               trình đánh giá                         Shots
+
+                                                             Logits triển khai
+                                                             được tính lại;
+               Pha 2, ngưỡng triển
+ Triển khai                          0.8545 0.9656    0.7529 T=0.3878,
+               khai
+                                                             sigma=2.0,
+                                                             threshold=0.10.
+                                                             ClipShots tốt
+                                                             nhất tại ngưỡng
+               Pha 2, quét ngưỡng tốt
+ Triển khai                           0.8545 0.9656   0.7556 0.15; SHOT/BBC
+               nhất
+                                                             trùng với cấu
+                                                             hình triển khai.
+                                                             AutoShot gốc,
+ Phân rã thành                                               ngưỡng tốt nhất
+               A0 – AutoShot gốc     0.8405 0.9554    0.7649
+ phần Pha 2                                                  theo từng bộ dữ
+                                                             liệu.
+
+                                                           Còn tiếp ở trang sau
+
+                                      82
+             Bảng B.1: Bảng đầy đủ tất cả thực nghiệm (tiếp theo)
+
+                Thực nghiệm / Quy                      Clip-
+Nhóm                              SHOT BBC                   Ghi chú
+                trình đánh giá                         Shots
+
+Phân rã thành                                                   Đối chứng Pha 2
+              A1 – BCE + one-hot       0.8378 0.9570   0.6983
+phần Pha 2                                                      tối giản.
+Phân rã thành                                                   Chỉ thêm Focal
+              A2 – Focal only          0.8378 0.9567   0.6967
+phần Pha 2                                                      Loss.
+Phân rã thành                                                   Chỉ thêm nhãn
+              A3 – Many-hot only       0.8375 0.9563   0.7005
+phần Pha 2                                                      many-hot.
+Phân rã thành                                                   Tăng ClipShots
+              P1 – Gaussian only       0.8432 0.9436   0.7519
+phần Pha 2                                                      nhưng giảm BBC.
+Phân rã thành                                                   Gần như trùng
+              P2 – Temperature only 0.8378 0.9570      0.6983
+phần Pha 2                                                      đối chứng.
+                                                              Tác động của
+Phân rã thành
+              B1 – Focal + many-hot 0.8384 0.9559      0.7006 thành phần huấn
+phần Pha 2
+                                                              luyện nhỏ.
+Phân rã thành B4 – Temperature +                                Cấu hình hậu xử
+                                       0.8540 0.9570   0.7441
+phần Pha 2    Gaussian                                          lý được ưu tiên.
+Phân rã thành                                                   Focal + many-hot
+              B5 – Ứng viên đầy đủ     0.8542 0.9551   0.7409
+phần Pha 2                                                      + hậu xử lý.
+                                                              Kiểm định chéo 5
+                                                              lớp khách quan;
+                A0 – AutoShot cơ sở,
+Hiệu chỉnh CV                          0.8443 0.9538   0.7881 mô hình cơ sở
+                5-fold CV
+                                                              mạnh nhất trên
+                                                              ClipShots.
+                                                              Mức trần lạc
+              A0 – AutoShot cơ sở,
+Mức trần hiệu                                                 quan; không dùng
+              tinh chỉnh trên tập      0.8475 0.9561   0.7896
+chỉnh                                                         làm kết quả triển
+              kiểm tra
+                                                              khai trung thực.
+                                                              Kiểm định chéo 5
+                                                              lớp khách quan;
+                A1 – Đối chứng Pha 2,
+Hiệu chỉnh CV                         0.8540 0.9631    0.7575 mô hình Pha 2
+                5-fold CV
+                                                              mạnh trên
+                                                              SHOT/BBC.
+
+                                                            Còn tiếp ở trang sau
+
+
+
+
+                                       83
+             Bảng B.1: Bảng đầy đủ tất cả thực nghiệm (tiếp theo)
+
+                Thực nghiệm / Quy                    Clip-
+Nhóm                              SHOT BBC                 Ghi chú
+                trình đánh giá                       Shots
+
+                                                            Mức trần lạc
+              A1 – Đối chứng Pha 2,
+Mức trần hiệu                                               quan; không dùng
+              tinh chỉnh trên tập   0.8540 0.9631    0.7599
+chỉnh                                                       làm kết quả triển
+              kiểm tra
+                                                            khai trung thực.
+                                                            Kiểm định chéo 5
+                                                            lớp khách quan;
+                B5 – Pha 2 đầy đủ,
+Hiệu chỉnh CV                        0.8539 0.9584   0.7555 mô hình Pha 2
+                5-fold CV
+                                                            mạnh trên
+                                                            SHOT/BBC.
+                                                            Mức trần lạc
+              B5 – Pha 2 đầy đủ,
+Mức trần hiệu                                               quan; không dùng
+              tinh chỉnh trên tập    0.8550 0.9603   0.7607
+chỉnh                                                       làm kết quả triển
+              kiểm tra
+                                                            khai trung thực.
+
+
+
+
+                                     84
+

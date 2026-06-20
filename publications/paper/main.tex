@@ -35,25 +35,31 @@
 
 \title{AutoShotV2: Calibrated Classification and Post-Processing for Short-Video Shot Boundary Detection}
 
-\author{Senh~Manh~Tang, Tien~Manh~Do, and Thai~Son~Tran}
+\author{Senh~Manh~Tang, Tien~Manh~Do, Thai~Son~Tran, and Hoai~Viet~Vo%
+\thanks{S. M. Tang and T. M. Do are with the Faculty of Information Technology,
+University of Science, Vietnam National University Ho Chi Minh City, Vietnam.
+T. S. Tran supervised this research.
+H. V. Vo is with the Faculty of Information Technology,
+University of Science, Vietnam National University Ho Chi Minh City, Vietnam.}}
 
-\markboth{IEEE Journal Paper Draft,~June~2026}%
-{Tang \MakeLowercase{\textit{et al.}}: AutoShotV2 for Short-Video Shot Boundary Detection}
+\markboth{AutoShotV2,~June~2026}%
+{Tang \MakeLowercase{\textit{et al.}}: AutoShotV2: Calibrated Classification and Post-Processing for Short-Video SBD}
 
 \maketitle
 
 \input{sections/abstract.tex}
 
 \begin{IEEEkeywords}
-Shot boundary detection, short video, AutoShot, TransNetV2, Focal Loss, temperature scaling, Gaussian smoothing, video understanding.
+Shot boundary detection, short video, AutoShot, frozen features, focal loss, probability calibration, temperature scaling, Gaussian smoothing, video understanding.
 \end{IEEEkeywords}
 
 \IEEEpeerreviewmaketitle
 
 \input{sections/1_introduction.tex}
 \input{sections/2_related_work.tex}
-\input{sections/3_method.tex}
+\input{sections/3_methodology.tex}
 \input{sections/4_experiments.tex}
+\input{sections/5_discussion.tex}
 \input{sections/6_conclusion.tex}
 \input{sections/7_acknowledgment.tex}
 \ifCLASSOPTIONcaptionsoff
@@ -80,14 +86,8 @@ T. Soucek and J. Moravec, ``TransNet V2: An effective deep network architecture 
 \bibitem{soucek2019transnet}
 T. Soucek, J. Moravec, and J. Lokoc, ``TransNet: A deep network for fast detection of common shot transitions,'' \emph{arXiv preprint arXiv:1906.03363}, 2019.
 
-\bibitem{baraldi2015rai}
-L. Baraldi, C. Grana, and R. Cucchiara, ``Shot and scene detection via hierarchical clustering for re-using broadcast video,'' in \emph{Computer Analysis of Images and Patterns}, 2015, pp. 801--811.
-
 \bibitem{tang2018clipshots}
 S. Tang, L. Feng, Z. Kuang, Y. Chen, and W. Zhang, ``Fast video shot transition localization with deep structured models,'' \emph{arXiv preprint arXiv:1808.04234}, 2018.
-
-\bibitem{hassanien2017largescale}
-A. Hassanien, M. Elgharib, A. Selim, S.-H. Bae, M. Hefeeda, and W. Matusik, ``Large-scale, fast and accurate shot boundary detection through spatio-temporal convolutional neural networks,'' \emph{arXiv preprint arXiv:1705.03281}, 2017.
 
 \bibitem{elsken2019nas}
 T. Elsken, J. H. Metzen, and F. Hutter, ``Neural architecture search: A survey,'' \emph{Journal of Machine Learning Research}, vol. 20, no. 55, pp. 1--21, 2019.
@@ -98,38 +98,50 @@ T.-Y. Lin, P. Goyal, R. Girshick, K. He, and P. Dollar, ``Focal loss for dense o
 \bibitem{guo2017calibration}
 C. Guo, G. Pleiss, Y. Sun, and K. Q. Weinberger, ``On calibration of modern neural networks,'' in \emph{Proc. International Conference on Machine Learning}, 2017, pp. 1321--1330.
 
-\bibitem{loshchilov2017sgdr}
-I. Loshchilov and F. Hutter, ``SGDR: Stochastic gradient descent with warm restarts,'' in \emph{Proc. International Conference on Learning Representations}, 2017.
-
-\bibitem{vietnamnet2023shortform}
-V. Anh, ``Short-form video trend harming youth,'' \emph{VietnamNet Global}, May 2023.
-
 \bibitem{white2023_nas1000}
 C. White, M. Safari, R. Sukthanker, B. Ru, T. Elsken, A. Zela, D. Dey, and F. Hutter, ``Neural architecture search: Insights from 1000 papers,'' \emph{arXiv preprint arXiv:2301.08727}, 2023.
 
 \bibitem{ren2020_nas_survey}
 P. Ren, Y. Xiao, X. Chang, P.-Y. Huang, Z. Li, X. Chen, and X. Wang, ``A comprehensive survey of neural architecture search: Challenges and solutions,'' \emph{arXiv preprint arXiv:2006.02903}, 2020.
 
-\bibitem{Muller2019LabelSmoothing}
-R. M{\"u}ller, S. Kornblith, and G. E. Hinton, ``When does label smoothing help?'' in \emph{Proc. Advances in Neural Information Processing Systems}, 2019, pp. 4694--4703.
-
 \bibitem{esteve2023shot}
 A. Esteve et al., ``Shot boundary detection with 3D depthwise convolutions and visual attention,'' \emph{Sensors}, vol. 23, no. 12, p. 5620, 2023.
 
-\bibitem{hinton2015distilling}
-G. Hinton, O. Vinyals, and J. Dean, ``Distilling the knowledge in a neural network,'' \emph{arXiv preprint arXiv:1503.02531}, 2015.
+\bibitem{tran2015c3d}
+D. Tran, L. Bourdev, R. Fergus, L. Torresani, and M. Paluri, ``Learning spatiotemporal features with 3D convolutional networks,'' in \emph{Proc. IEEE International Conference on Computer Vision}, 2015, pp. 4489--4497.
+
+\bibitem{platt1999probabilistic}
+J. C. Platt, ``Probabilistic outputs for support vector machines and comparisons to regularized likelihood methods,'' in \emph{Advances in Large Margin Classifiers}. Cambridge, MA, USA: MIT Press, 1999, pp. 61--74.
+
+\bibitem{zadrozny2002transforming}
+B. Zadrozny and C. Elkan, ``Transforming classifier scores into accurate multiclass probability estimates,'' in \emph{Proc. ACM SIGKDD International Conference on Knowledge Discovery and Data Mining}, 2002, pp. 694--699.
+
+\bibitem{nixon2019measuring}
+J. Nixon, M. W. Dusenberry, L. Zhang, G. Jerfel, and D. Tran, ``Measuring calibration in deep learning,'' in \emph{Proc. IEEE/CVF CVPR Workshops}, 2019.
+
+\bibitem{houlsby2019parameter}
+N. Houlsby, A. Giurgiu, S. Jastrzebski, B. Morrone, Q. de Laroussilhe, A. Gesmundo, M. Attariyan, and S. Gelly, ``Parameter-efficient transfer learning for NLP,'' in \emph{Proc. International Conference on Machine Learning}, 2019, pp. 2790--2799.
+
+\bibitem{hu2022lora}
+E. J. Hu, Y. Shen, P. Wallis, Z. Allen-Zhu, Y. Li, S. Wang, L. Wang, and W. Chen, ``LoRA: Low-rank adaptation of large language models,'' in \emph{Proc. International Conference on Learning Representations}, 2022.
+
+\bibitem{baraldi2015shot}
+L. Baraldi, C. Grana, and R. Cucchiara, ``Shot and scene detection via hierarchical clustering for re-using broadcast video,'' in \emph{Proc. Computer Analysis of Images and Patterns}, 2015, pp. 801--811.
+
+\bibitem{hassanien2017deepsbd}
+A. Hassanien, M. Elgharib, A. Selim, S.-H. Bae, M. Hefeeda, and W. Matusik, ``Large-scale, fast and accurate shot boundary detection through spatio-temporal convolutional neural networks,'' \emph{arXiv preprint arXiv:1705.03281}, 2017.
 
 \bibitem{vaswani2017attention}
 A. Vaswani, N. Shazeer, N. Parmar, J. Uszkoreit, L. Jones, A. N. Gomez, L. Kaiser, and I. Polosukhin, ``Attention is all you need,'' in \emph{Proc. Advances in Neural Information Processing Systems}, 2017, pp. 5998--6008.
-
-\bibitem{tran2015c3d}
-D. Tran, L. Bourdev, R. Fergus, L. Torresani, and M. Paluri, ``Learning spatiotemporal features with 3D convolutional networks,'' in \emph{Proc. IEEE International Conference on Computer Vision}, 2015, pp. 4489--4497.
 
 \bibitem{guo2020spos}
 Z. Guo, X. Zhang, H. Mu, W. Heng, Z. Liu, Y. Wei, and J. Sun, ``Single path one-shot neural architecture search with uniform sampling,'' in \emph{Proc. European Conference on Computer Vision}, 2020, pp. 544--560.
 
 \bibitem{liu2019darts}
-H. Liu, K. Simonyan, and Y. Yiming, ``DARTS: Differentiable architecture search,'' in \emph{Proc. International Conference on Learning Representations}, 2019.
+H. Liu, K. Simonyan, and Y. Yang, ``DARTS: Differentiable architecture search,'' in \emph{Proc. International Conference on Learning Representations}, 2019.
+
+\bibitem{muller2019label}
+R. M\"uller, S. Kornblith, and G. E. Hinton, ``When does label smoothing help?'' in \emph{Proc. Advances in Neural Information Processing Systems}, 2019, pp. 4694--4703.
 
 \end{thebibliography}
 

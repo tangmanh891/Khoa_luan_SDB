@@ -1,13 +1,14 @@
 import argparse
 import json
 import pickle
+from collections.abc import Iterator
 from pathlib import Path
 
 import numpy as np
 import torch
 
 from autoshotv2 import runtime
-
+from autoshotv2.common import clean_key, load_logits
 
 DEFAULT_THRESHOLDS = np.array(
     [
@@ -70,7 +71,7 @@ def get_frames(video_path: Path, width: int = 48, height: int = 27) -> np.ndarra
     return runtime.decode_video_frames(video_path, width=width, height=height)
 
 
-def get_batches(frames: np.ndarray):
+def get_batches(frames: np.ndarray) -> Iterator[np.ndarray]:
     yield from runtime.iter_frame_batches(frames)
 
 
@@ -89,11 +90,11 @@ def load_checkpoint_config(checkpoint_path: Path) -> dict:
     return runtime.load_checkpoint_config(checkpoint_path)
 
 
-def load_model(checkpoint_path: Path, device: str):
+def load_model(checkpoint_path: Path, device: str) -> torch.nn.Module:
     return runtime.load_model(checkpoint_path, device)
 
 
-def predict_video_logits(model, video_path: Path, device: str) -> np.ndarray:
+def predict_video_logits(model: torch.nn.Module, video_path: Path, device: str) -> np.ndarray:
     return runtime.predict_video_logits(model, video_path, runtime.resolve_device(device))
 
 
@@ -101,37 +102,77 @@ def video_files(videos_dir: Path) -> list[Path]:
     return sorted(p for p in videos_dir.rglob("*") if p.is_file() and p.suffix.lower() in VIDEO_EXTENSIONS)
 
 
-def run_video_inference(checkpoint_path: Path, videos_dir: Path, out_logits_path: Path, device: str) -> dict:
+def ground_truth_keys(gt_path: Path) -> set[str]:
+    with gt_path.open("rb") as f:
+        gt = pickle.load(f)
+    return {clean_key(key) for key in gt}
+
+
+def filter_video_files_for_keys(files: list[Path], include_keys: set[str] | None) -> list[Path]:
+    if include_keys is None:
+        return files
+    available = {clean_key(path.stem): path for path in files}
+    missing = sorted(include_keys - set(available))
+    if missing:
+        sample = ", ".join(missing[:10])
+        raise FileNotFoundError(
+            f"Video source is missing {len(missing)} ground-truth videos. Missing sample: {sample}"
+        )
+    return [available[key] for key in sorted(include_keys)]
+
+
+def save_inference_logits(out_logits_path: Path, videos_dir: Path, logits: dict) -> None:
+    out_logits_path.parent.mkdir(parents=True, exist_ok=True)
+    tmp_path = out_logits_path.with_suffix(out_logits_path.suffix + ".tmp")
+    with tmp_path.open("wb") as f:
+        pickle.dump({"config": {"source": str(videos_dir)}, "logits": logits}, f, protocol=pickle.HIGHEST_PROTOCOL)
+    tmp_path.replace(out_logits_path)
+
+
+def load_resume_logits(out_logits_path: Path, resume: bool) -> dict:
+    if not resume or not out_logits_path.is_file():
+        return {}
+    logits = dict(load_logits(out_logits_path))
+    if logits:
+        print(f"resuming logits from {out_logits_path}: {len(logits)} videos already cached", flush=True)
+    return logits
+
+
+def run_video_inference(
+    checkpoint_path: Path,
+    videos_dir: Path,
+    out_logits_path: Path,
+    device: str,
+    include_keys: set[str] | None = None,
+    resume: bool = True,
+) -> dict:
     files = video_files(videos_dir)
+    total_files = len(files)
+    files = filter_video_files_for_keys(files, include_keys)
     if not files:
         raise FileNotFoundError(f"No video files found under {videos_dir}")
+    if include_keys is not None:
+        print(f"filtered video source: {len(files)}/{total_files} files match ground truth", flush=True)
 
     model = load_model(checkpoint_path, device)
-    logits = {}
+    logits = load_resume_logits(out_logits_path, resume=resume)
+    completed_keys = {clean_key(key) for key in logits}
     for index, video_path in enumerate(files, 1):
         pct = 100.0 * index / len(files)
+        key = video_path.stem
+        if clean_key(key) in completed_keys:
+            print(f"inference {pct:6.2f}% [{index}/{len(files)}] {video_path.name} [cached]", flush=True)
+            continue
         print(f"inference {pct:6.2f}% [{index}/{len(files)}] {video_path.name}", flush=True)
         logits[video_path.stem] = predict_video_logits(model, video_path, device)
+        completed_keys.add(clean_key(key))
+        save_inference_logits(out_logits_path, videos_dir, logits)
 
-    out_logits_path.parent.mkdir(parents=True, exist_ok=True)
-    with out_logits_path.open("wb") as f:
-        pickle.dump({"config": {"source": str(videos_dir)}, "logits": logits}, f, protocol=pickle.HIGHEST_PROTOCOL)
+    save_inference_logits(out_logits_path, videos_dir, logits)
     print(f"logits saved -> {out_logits_path}")
     return logits
 
 
-def load_logits(logits_path: Path) -> dict:
-    with logits_path.open("rb") as f:
-        payload = pickle.load(f)
-    return payload["logits"] if isinstance(payload, dict) and "logits" in payload else payload
-
-
-def clean_key(key: str) -> str:
-    return str(key).split(":", 1)[-1]
-
-
-def sigmoid_np(x: np.ndarray) -> np.ndarray:
-    return 1.0 / (1.0 + np.exp(-x))
 
 
 def logits_to_predictions(logits: dict, temperature: float, sigma: float) -> dict:
@@ -146,7 +187,9 @@ def predictions_to_scenes(predictions: np.ndarray) -> np.ndarray:
     return runtime.predictions_to_scenes(predictions)
 
 
-def evaluate_scenes(gt_scenes: np.ndarray, pred_scenes: np.ndarray, tolerance: int = 2, return_mistakes: bool = False):
+def evaluate_scenes(
+    gt_scenes: np.ndarray, pred_scenes: np.ndarray, tolerance: int = 2, return_mistakes: bool = False
+) -> tuple:
     """Canonical two-pointer scene-boundary matcher (tp, fp, fn).
 
     Adapted from https://github.com/gyglim/shot-detection-evaluation. This is the single
@@ -268,6 +311,8 @@ def main() -> None:
     parser.add_argument("--sigma", type=float, default=None)
     parser.add_argument("--threshold", type=float, default=None)
     parser.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
+    parser.add_argument("--filter-to-gt", action="store_true")
+    parser.add_argument("--no-resume", action="store_true")
     parser.add_argument("--no-eval", action="store_true")
     args = parser.parse_args()
 
@@ -285,7 +330,15 @@ def main() -> None:
     )
 
     if args.videos_dir:
-        logits = run_video_inference(checkpoint_path, Path(args.videos_dir), Path(args.out_logits), args.device)
+        include_keys = ground_truth_keys(Path(args.gt)) if args.filter_to_gt else None
+        logits = run_video_inference(
+            checkpoint_path,
+            Path(args.videos_dir),
+            Path(args.out_logits),
+            args.device,
+            include_keys=include_keys,
+            resume=not args.no_resume,
+        )
         logits_source = str(Path(args.out_logits))
     else:
         logits_path = Path(args.logits_cache)

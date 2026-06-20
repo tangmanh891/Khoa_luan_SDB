@@ -6,6 +6,7 @@ from fastapi.staticfiles import StaticFiles
 
 from app.api.routes_health import router as health_router
 from app.api.routes_jobs import router as jobs_router
+from app.api.routes_compare import router as compare_router
 from app.core.config import get_settings
 from app.db.mongo import close_mongo, connect_to_mongo
 from app.services.storage_service import ensure_storage_dirs
@@ -33,6 +34,7 @@ def create_app() -> FastAPI:
 
     app.include_router(health_router, prefix="/api")
     app.include_router(jobs_router, prefix="/api")
+    app.include_router(compare_router, prefix="/api")
     app.mount("/media", StaticFiles(directory=settings.storage_dir), name="media")
     return app
 

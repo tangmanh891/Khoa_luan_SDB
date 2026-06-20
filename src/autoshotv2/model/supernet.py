@@ -3,10 +3,9 @@ import math
 import numpy as np
 import torch
 import torch.nn as nn
-from torch.nn import init
 import torch.nn.functional as F
 from einops import rearrange
-from einops.layers.torch import Rearrange
+from torch.nn import init
 
 from autoshotv2.model.linear import Linear_
 
@@ -132,7 +131,7 @@ class TransNetV2Supernet(nn.Module):
 
         if self.color_hist_layer is not None:
             x = torch.cat([self.color_hist_layer(inputs), x], dim=2)
-        
+
         if transf_x is not None:
             x = torch.cat([transf_x, x], dim=2)
 
@@ -559,8 +558,8 @@ class Conv3DConfigurable(nn.Module):
         for layer in self.layers:
             x = layer(x)
         return x
-    
-    
+
+
 class Attention1D(nn.Module):
     def __init__(self,
                  dim_in,
@@ -581,14 +580,14 @@ class Attention1D(nn.Module):
         # head_dim = self.qkv_dim // num_heads
         self.scale = dim_out ** -0.5
         self.with_cls_token = with_cls_token
-        
+
         self.proj_q = nn.ModuleList()
         self.proj_k = nn.ModuleList()
         self.proj_v = nn.ModuleList()
         self.attn_drop = nn.ModuleList()
         self.proj = nn.ModuleList()
         self.proj_drop = nn.ModuleList()
-        
+
         for _ in range(n_layer):
             self.proj_q.append(nn.Linear(dim_in, dim_out, bias=qkv_bias))
             self.proj_k.append(nn.Linear(dim_in, dim_out, bias=qkv_bias))
@@ -597,14 +596,14 @@ class Attention1D(nn.Module):
             self.attn_drop.append(nn.Dropout(attn_drop))
             self.proj.append(nn.Linear(dim_out, dim_out))
             self.proj_drop.append(nn.Dropout(proj_drop))
-            
+
             dim_in = dim_out
 
     def forward(self, x, t, h, w):
         x = rearrange(x, 'b c t H W -> b t (c H W)')
         if self.n_layer == 0:
             return None
-        
+
         for idx in range(self.n_layer):
             q = rearrange(self.proj_q[idx](x), 'b t (h d) -> b h t d', h=self.num_heads)
             k = rearrange(self.proj_k[idx](x), 'b t (h d) -> b h t d', h=self.num_heads)

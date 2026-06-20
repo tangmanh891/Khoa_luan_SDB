@@ -3,16 +3,15 @@ from __future__ import annotations
 import logging
 import subprocess
 import threading
+from collections.abc import Iterator
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterator
 
 import numpy as np
 import torch
 from scipy.ndimage import gaussian_filter1d
 
 from autoshotv2.model import TransNetV2Supernet
-
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +37,7 @@ class PostprocessConfig:
     threshold: float = DEFAULT_THRESHOLD
 
     @classmethod
-    def from_mapping(cls, value: object) -> "PostprocessConfig":
+    def from_mapping(cls, value: object) -> PostprocessConfig:
         config = value if isinstance(value, dict) else {}
         return cls(
             temperature=float(config.get("temperature", DEFAULT_TEMPERATURE)),
@@ -121,8 +120,7 @@ def decode_video_frames(
     try:
         proc = subprocess.run(
             cmd,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            capture_output=True,
             check=True,
             timeout=timeout_sec,
         )

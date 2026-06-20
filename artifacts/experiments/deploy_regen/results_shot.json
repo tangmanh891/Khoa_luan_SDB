@@ -1,0 +1,105 @@
+{
+  "checkpoint": "D:\\Khoa luan tot nghiep\\Github AutoShot\\AutoShotV2\\AutoShotV2\\artifacts\\models\\deploy.pth",
+  "logits_source": "D:\\Khoa luan tot nghiep\\Github AutoShot\\AutoShotV2\\AutoShotV2\\artifacts\\experiments\\deploy_regen\\shot_test_logits.pkl",
+  "postprocess": {
+    "temperature": 0.38780461844336944,
+    "sigma": 2.0,
+    "threshold": 0.1
+  },
+  "videos_evaluated": 200,
+  "gt_videos": 200,
+  "missing_prediction_keys": [],
+  "extra_prediction_keys": [],
+  "best_sweep": {
+    "threshold": 0.10000000149011612,
+    "f1": 0.8545,
+    "precision": 0.8554360812425329,
+    "recall": 0.8537360890302067,
+    "tp": 2148,
+    "fp": 363,
+    "fn": 368
+  },
+  "deploy": {
+    "threshold": 0.1,
+    "f1": 0.8545,
+    "precision": 0.8554360812425329,
+    "recall": 0.8537360890302067,
+    "tp": 2148,
+    "fp": 363,
+    "fn": 368
+  },
+  "top_thresholds": [
+    {
+      "threshold": 0.10000000149011612,
+      "f1": 0.8545,
+      "precision": 0.8554360812425329,
+      "recall": 0.8537360890302067,
+      "tp": 2148,
+      "fp": 363,
+      "fn": 368
+    },
+    {
+      "threshold": 0.05999999865889549,
+      "f1": 0.8521939953810623,
+      "precision": 0.8261194029850746,
+      "recall": 0.8799682034976153,
+      "tp": 2214,
+      "fp": 466,
+      "fn": 302
+    },
+    {
+      "threshold": 0.15000000596046448,
+      "f1": 0.834276136601718,
+      "precision": 0.8821444395214887,
+      "recall": 0.791335453100159,
+      "tp": 1991,
+      "fp": 266,
+      "fn": 525
+    },
+    {
+      "threshold": 0.019999999552965164,
+      "f1": 0.8242180354856411,
+      "precision": 0.7634700101660454,
+      "recall": 0.8954689984101749,
+      "tp": 2253,
+      "fp": 698,
+      "fn": 263
+    },
+    {
+      "threshold": 0.20000000298023224,
+      "f1": 0.17823908375089478,
+      "precision": 0.89568345323741,
+      "recall": 0.09896661367249603,
+      "tp": 249,
+      "fp": 29,
+      "fn": 2267
+    },
+    {
+      "threshold": 0.20999999344348907,
+      "f1": 0.09193669932177845,
+      "precision": 0.8840579710144928,
+      "recall": 0.04848966613672496,
+      "tp": 122,
+      "fp": 16,
+      "fn": 2394
+    },
+    {
+      "threshold": 0.2199999988079071,
+      "f1": 0.06582472254114045,
+      "precision": 0.8865979381443299,
+      "recall": 0.03418124006359301,
+      "tp": 86,
+      "fp": 11,
+      "fn": 2430
+    },
+    {
+      "threshold": 0.23000000417232513,
+      "f1": 0.04416892677256877,
+      "precision": 0.8769230769230769,
+      "recall": 0.022655007949125595,
+      "tp": 57,
+      "fp": 8,
+      "fn": 2459
+    }
+  ]
+}

@@ -53,6 +53,6 @@ def _act(act_type, **kwargs):
         return result
     else:
         raise Exception("Not implemented !!!")
-    
+
 
     raise Exception("_act: Go here ..., maybe don\'t define some act")
