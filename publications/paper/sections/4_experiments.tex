@@ -112,32 +112,7 @@ On ClipShots, the peak F1 score of 0.7706 (Table~\ref{tab:extra_sweep_peaks}) al
 \noindent{\footnotesize $^\dagger$ Main result under per-dataset operating-point selection. Thresholds are optimized separately for each dataset to estimate dataset-specific attainable performance. BBC uses the primary deployment configuration because it exceeds the supplemental BBC peak. Fixed-threshold deployment results are reported in the preceding row.}
 \end{table}
 
-\begin{figure}[!t]
-\centering
-\begin{tikzpicture}[font=\small]
-\pgfmathsetmacro{\vone}{(\PaperBestShotFOne-0.70)*20}
-\pgfmathsetmacro{\vtwo}{(\PaperAutoShotShotFOne-0.70)*20}
-\pgfmathsetmacro{\vthree}{(\PaperTransNetShotFOne-0.70)*20}
-\fill[red!70] (0,2.0) rectangle (\vone,2.5);
-\node[right] at (\vone,2.25) {\PaperBestShotFOne};
-\node[left] at (0,2.25) {AutoShotV2};
-\fill[green!60!black] (0,1.1) rectangle (\vtwo,1.6);
-\node[right] at (\vtwo,1.35) {\PaperAutoShotShotFOne};
-\node[left] at (0,1.35) {AutoShot};
-\fill[blue!60] (0,0.2) rectangle (\vthree,0.7);
-\node[right] at (\vthree,0.45) {\PaperTransNetShotFOne};
-\node[left] at (0,0.45) {TransNetV2 (reported)};
-\draw[-{Stealth[length=4pt]}] (0,0) -- (5.5,0) node[right] {F1};
-\foreach \x/\lab in {0/0.70, 1/0.75, 2/0.80, 3/0.85, 4/0.90, 5/0.95} {
-  \draw (\x,0) -- (\x,-0.07) node[below, font=\scriptsize] {\lab};
-}
-\draw (0,0) -- (0,2.7);
-\end{tikzpicture}
-\caption{F1 comparison on SHOT. AutoShotV2 outperforms the reproduced
-AutoShot by \PaperBestVsAutoShotPP{} pp and reported TransNetV2
-by \PaperBestVsTransNetPP{} pp.}
-\label{fig:bars}
-\end{figure}
+
 
 \subsection{Fixed-Threshold Deployment Analysis}
 \label{subsec:fixed_deploy}
