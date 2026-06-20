@@ -54,7 +54,7 @@ def test_paper_snapshot_generated_tables_and_release_are_present():
     assert r"\newcommand{\PaperDeployShotFOne}{0.8545}" in macros
     assert r"\newcommand{\PaperDeployBBCFOne}{0.9656}" in macros
     assert r"\newcommand{\PaperDeployClipFOne}{0.7529}" in macros
-    assert r"\newcommand{\PaperDeployClipBestFOne}{0.7706}" in macros
+    assert r"\newcommand{\PaperBestClipFOne}{0.7706}" in macros
     assert r"\newcommand{\PaperDeployTemperature}{0.3878}" in macros
     assert r"\newcommand{\PaperBFourVsAOneShotPP}{1.62}" in macros
     assert r"\newcommand{\PaperBFourVsAOneClipPP}{4.57}" in macros

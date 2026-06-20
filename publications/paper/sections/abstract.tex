@@ -8,13 +8,13 @@ of repeating computationally expensive neural architecture search or updating th
 full backbone, AutoShotV2 freezes the searched feature extractor and trains a compact
 classification head on cached features.
 This paper reports two complementary evaluation protocols. The main comparison
-uses per-dataset operating-point selection to estimate the best attainable F1
-on each benchmark, while a fixed-threshold deployment protocol is reported
-separately to assess deployment robustness. Under per-dataset threshold
-selection, AutoShotV2 achieves F1 scores of 0.8607 on SHOT, 0.9656 on BBC,
-and 0.7706 on ClipShots, outperforming the reproduced AutoShot baseline by
-2.02, 1.02, and 0.57 percentage points, respectively. With a single fixed
-deployment threshold, AutoShotV2 achieves 0.8545 on SHOT, 0.9656 on BBC,
+selects the best configuration and decision threshold per dataset to estimate the
+best attainable F1 on each benchmark. A fixed-threshold deployment protocol
+is reported separately to assess deployment robustness. Under per-dataset configuration
+and operating-point selection, AutoShotV2 achieves F1 scores of 0.8607 on SHOT,
+0.9656 on BBC, and 0.7706 on ClipShots, outperforming the reproduced AutoShot baseline by
+2.02, 1.02, and 0.57 percentage points, respectively. Under the fixed-threshold
+deployment protocol, AutoShotV2 reaches F1 scores of 0.8545 on SHOT, 0.9656 on BBC,
 and 0.7529 on ClipShots.
 To isolate individual component contributions, we conduct a controlled ablation study
 under a frozen validation-only protocol. The analysis indicates that most of the

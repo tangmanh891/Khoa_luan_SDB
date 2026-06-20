@@ -310,7 +310,7 @@ def render_paper_tex_macros(manifest: dict[str, Any]) -> str:
         "PaperDeployShotFOne": f4(deploy["shot"]["f1"]),
         "PaperDeployBBCFOne": f4(deploy["bbc"]["f1"]),
         "PaperDeployClipFOne": f4(deploy["clipshots"]["f1"]),
-        "PaperDeployClipBestFOne": f4(best["clipshots"]),
+        "PaperBestClipFOne": f4(best["clipshots"]),
         "PaperDeployShotPrecision": f4(deploy["shot"]["precision"]),
         "PaperDeployShotRecall": f4(deploy["shot"]["recall"]),
         "PaperDeployClipPrecision": f4(deploy["clipshots"]["precision"]),
@@ -451,7 +451,7 @@ def render_paper_tex_tables(manifest: dict[str, Any]) -> str:
     }
     # The replication's component analysis is reported as deltas against the
     # A1 control only: its absolute scores come from a separate training run
-    # and would otherwise compete with the deployed-checkpoint headline.
+    # and would otherwise compete with the primary fixed-deployment checkpoint.
     a1_metrics = experiments["A1_phase2_bce_onehot"]["metrics"]
     delta_rows = []
     for identifier in ABLATION_ORDER:

@@ -84,12 +84,12 @@ avoid mixing absolute scales, replication analyses are reported as
 \emph{differences} against the internal BCE control (A1), while absolute F1
 values for deployment in the paper refer to the deployed checkpoint.
 
-\subsection{Main Results Under Per-Dataset Operating-Point Selection}
+\subsection{Main Results Under Per-Dataset Configuration and Operating-Point Selection}
 \label{subsec:main_results}
 
-Table~\ref{tab:overall} reports the main comparison under per-dataset operating-point selection. This protocol selects the best decision threshold for each evaluation dataset and is intended to measure the attainable dataset-specific performance of the frozen-feature refinement pipeline. Because this protocol is not a single-threshold deployment setting, we report the fixed deployment results separately in Section~\ref{subsec:fixed_deploy}.
+Table~\ref{tab:overall} reports the main comparison under per-dataset configuration and operating-point selection. This protocol selects the best configuration and decision threshold for each evaluation dataset to estimate the best attainable performance of the frozen-feature refinement pipeline. Because this protocol is not a single-threshold deployment setting, we report the fixed deployment results separately in Section~\ref{subsec:fixed_deploy}.
 
-Under this per-dataset selection protocol, AutoShotV2 reaches peak F1 scores of 0.8607 on SHOT, 0.9656 on BBC, and 0.7706 on ClipShots. These outcomes outperform the reproduced AutoShot baseline (0.8405 on SHOT, 0.9554 on BBC, and 0.7649 on ClipShots) by 2.02, 1.02, and 0.57 percentage points, respectively. On BBC, this configuration outperforms the reproduced TransNetV2 baseline (0.9593) by 0.63 percentage points.
+Under this per-dataset configuration and operating-point selection protocol, AutoShotV2 reaches peak F1 scores of 0.8607 on SHOT, 0.9656 on BBC, and 0.7706 on ClipShots. These outcomes outperform the reproduced AutoShot baseline (0.8405 on SHOT, 0.9554 on BBC, and 0.7649 on ClipShots) by 2.02, 1.02, and 0.57 percentage points, respectively. On BBC, this configuration outperforms the reproduced TransNetV2 baseline (0.9593) by 0.63 percentage points.
 
 On ClipShots, the peak F1 score of 0.7706 (Table~\ref{tab:extra_sweep_peaks}) also outperforms the reported literature scores of DSM (0.7030) by 6.76 percentage points and TransNet (V1) (0.7350) by 3.56 percentage points, and exceeds the reproduced TransNetV2 baseline (0.7454) by 2.52 percentage points. To distinguish protocol sources, baseline labels indicate whether they are cited from literature or evaluated within our pipeline. Specifically, reproduced baselines are evaluated using our pipeline, whereas reported baselines (for DSM, TransNet, and TransNetV2 on SHOT) are cited from their original publications. Note that the TransNetV2 model was not evaluated on SHOT in the original work; the reported SHOT score of 0.7993 is cited from \cite{zhu2023autoshot}.
 
@@ -109,7 +109,7 @@ On ClipShots, the peak F1 score of 0.7706 (Table~\ref{tab:extra_sweep_peaks}) al
 \end{tabular}
 }
 \vspace{0.5ex}
-\noindent{\footnotesize $^\dagger$ Main result under per-dataset operating-point selection. Thresholds are optimized separately for each dataset to estimate dataset-specific attainable performance. BBC uses the primary deployment configuration because it exceeds the supplemental BBC peak. Fixed-threshold deployment results are reported in the preceding row.}
+\noindent{\footnotesize $^\dagger$ Main result under per-dataset configuration and operating-point selection. Thresholds are optimized separately for each dataset to estimate dataset-specific attainable performance. BBC uses the primary deployment configuration because it exceeds the supplemental BBC peak. Fixed-threshold deployment results are reported in the preceding row.}
 \end{table}
 
 
