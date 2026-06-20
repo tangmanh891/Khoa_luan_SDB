@@ -7,6 +7,7 @@ import aiofiles
 from fastapi import APIRouter, BackgroundTasks, File, Form, HTTPException, UploadFile
 from fastapi.responses import FileResponse
 
+from app.api.routes_health import DEFAULT_PRESET, PRESETS
 from app.core.config import get_settings
 from app.db.mongo import get_database
 from app.services.job_serializer import serialize_job
@@ -17,7 +18,6 @@ from app.services.storage_service import (
     safe_video_extension,
     upload_dir,
 )
-from app.api.routes_health import PRESETS, DEFAULT_PRESET
 from app.worker.runner import process_job
 
 router = APIRouter(prefix="/jobs", tags=["jobs"])

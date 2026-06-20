@@ -63,7 +63,11 @@ def _analyze_with_autoshot(
     defaults = runtime.defaults
     temperature = float(settings.autoshot_default_temperature or defaults.temperature)
     sigma = float(settings.autoshot_default_sigma or defaults.sigma)
-    threshold = float(options.threshold if options.threshold is not None else (settings.autoshot_default_threshold or defaults.threshold))
+    threshold = float(
+        options.threshold
+        if options.threshold is not None
+        else (settings.autoshot_default_threshold or defaults.threshold)
+    )
 
     try:
         frames = decode_video_frames(video_path)

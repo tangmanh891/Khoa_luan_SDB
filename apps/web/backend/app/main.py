@@ -4,9 +4,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
+from app.api.routes_compare import router as compare_router
 from app.api.routes_health import router as health_router
 from app.api.routes_jobs import router as jobs_router
-from app.api.routes_compare import router as compare_router
 from app.core.config import get_settings
 from app.db.mongo import close_mongo, connect_to_mongo
 from app.services.storage_service import ensure_storage_dirs
