@@ -139,6 +139,71 @@ BBC & 0.12 & 0.9668 & 0.9628 & 0.9648 \\
 
 Table~\ref{tab:extra_sweep_peaks} shows that the supplemental configuration yields higher peaks on SHOT (+0.62~pp) and ClipShots (+1.77~pp) than the primary configuration. The ``per-dataset best'' row in Table~\ref{tab:overall} selects the best source per dataset: SHOT and ClipShots from the supplemental configuration, BBC from the primary (0.9656 vs.\ 0.9648). However, under a unified threshold ($\theta = 0.17$) the supplemental average F1 (0.8566) falls below the primary deployment average (0.8577), so we retain the primary configuration for fixed-threshold deployment.
 
+\subsection{Recall-Oriented Variant: AutoShotV2-HeatMap}
+\label{sec:heatmap_variant}
+
+Because gradual transitions account for most false negatives, we evaluate a
+training variant, \emph{AutoShotV2-HeatMap}, that targets recall. The intuition
+is that a hard one-hot target poorly matches the spread-out nature of a gradual
+transition, whose boundary extends over several frames rather than a single
+sharp cut. The variant keeps the frozen AutoShot@F1 backbone and retrains only
+the classification head with: (i) \textbf{soft heatmap labels} formed by a
+Gaussian ($\sigma_{\text{label}} = 3.0$) placed around each boundary frame, so
+neighboring frames receive smoothly decaying targets instead of an abrupt zero;
+(ii) \textbf{asymmetric label smoothing} ($\varepsilon = 0.1$) applied only to
+positive targets ($1.0 \rightarrow 0.9$), leaving negatives at $0$; and
+(iii) Focal Loss ($\gamma = 2.0$, $\alpha = 0.6$), many-hot weight $0.3$, and
+mixed-precision (AMP fp16) training. Post-processing uses $T^{*} = 0.268$ and
+$\sigma = 2.0$, and the 200 SHOT test videos are excluded from training to
+prevent leakage. Evaluation uses the same \texttt{mAP\_f1\_p\_fix\_r} protocol
+as above, so the scores are directly comparable to the deployed AutoShotV2.
+
+\begin{table}[!t]
+\caption{AutoShotV2-HeatMap Versus AutoShotV2 (Recall-Oriented Operating Point)}
+\label{tab:heatmap_variant}
+\centering
+\small
+\renewcommand{\arraystretch}{1.08}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{L{1.35in}C{0.5in}C{0.4in}C{0.55in}C{0.55in}C{0.5in}}
+\toprule
+\textbf{Model} & \textbf{Dataset} & \textbf{$\theta$} & \textbf{Prec.} & \textbf{Recall} & \textbf{F1} \\
+\midrule
+AutoShotV2 & SHOT & 0.10 & \PaperDeployShotPrecision & \PaperDeployShotRecall & \PaperDeployShotFOne \\
+AutoShotV2-HeatMap & SHOT & 0.10 & 0.8324 & \textbf{0.8804} & 0.8557 \\
+\midrule
+AutoShotV2 & ClipShots & 0.10 & \PaperDeployClipPrecision & \PaperDeployClipRecall & \PaperDeployClipFOne \\
+AutoShotV2-HeatMap & ClipShots & 0.15 & 0.6727 & 0.8629 & 0.7560 \\
+\midrule
+AutoShotV2 & BBC & 0.10 & -- & -- & \PaperDeployBBCFOne \\
+AutoShotV2-HeatMap & BBC & -- & -- & -- & -- \\
+\bottomrule
+\end{tabular}
+}
+\vspace{0.5ex}
+\noindent{\footnotesize ``--'' marks the BBC entries: the variant was not evaluated on BBC because the source videos were unavailable in our local environment. AutoShotV2-HeatMap rows report the threshold at which the variant peaks per dataset (SHOT peaks at $\theta = 0.10$).}
+\end{table}
+
+As summarized in Table~\ref{tab:heatmap_variant}, AutoShotV2-HeatMap is a
+\emph{recall-oriented operating point} rather than a higher-F1 model. On SHOT,
+at the same deployment threshold $\theta = 0.10$, recall rises from
+\PaperDeployShotRecall{} to $0.8804$ ($+2.67$~pp) while F1 stays comparable
+(\PaperDeployShotFOne{} $\rightarrow 0.8557$); the recall gain is traded for
+lower precision (\PaperDeployShotPrecision{} $\rightarrow 0.8324$). This is
+direct evidence that soft heatmap labels recover more boundaries, particularly
+gradual transitions. On ClipShots, the variant reaches F1 $= 0.7560$ (at
+$\theta = 0.15$), comparable to the AutoShotV2 fixed-threshold deployment
+(\PaperDeployClipFOne{}) and still below the oracle peak
+(\PaperBestClipFOne{}), with the same low-precision/high-recall pattern.
+Importantly, the variant does \emph{not} exceed the AutoShotV2 oracle peak
+(\PaperBestShotFOne{} on SHOT) in F1: its value lies in shifting the operating
+point toward recall at a fixed threshold, not in raising the capability
+ceiling. We therefore position AutoShotV2-HeatMap as a complementary
+configuration for applications where missed boundaries are costlier than false
+alarms (for example, editorial pre-processing or content indexing), widening the
+precision--recall trade-off space rather than replacing the balanced deployment
+model.
+
 \subsection{Controlled Component Analysis}
 
 All remaining analyses use Track 2: the controlled B4 replication whose

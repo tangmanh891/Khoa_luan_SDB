@@ -164,4 +164,54 @@ Nhận xét từ bảng phân rã thành phần:
 \end{figure}
 \FloatBarrier
 
+\section{Biến thể AutoShotV2-HeatMap: nhãn mềm dạng heatmap và làm trơn nhãn bất đối xứng}
+\label{sec:autoshotv2_heatmap}
+
+\textbf{Mục đích thí nghiệm:} Thí nghiệm này khảo sát một biến thể huấn luyện bổ sung của AutoShotV2, ký hiệu \textbf{AutoShotV2-HeatMap}, nhằm tăng khả năng phát hiện chuyển cảnh dần (gradual transition). Phân tích lỗi cho thấy phần lớn các trường hợp bỏ sót (false negative) rơi vào nhóm chuyển cảnh dần, nơi ranh giới trải dài trên nhiều khung hình thay vì một điểm cắt sắc nét. Giả thuyết của thí nghiệm là việc thay nhãn cứng một điểm (one-hot) bằng nhãn mềm phân bố quanh vùng ranh giới sẽ cung cấp tín hiệu giám sát phù hợp hơn với bản chất ``trải rộng'' của chuyển cảnh dần, qua đó nâng Recall.
+
+\textbf{Mô tả cấu hình:} AutoShotV2-HeatMap giữ nguyên mạng xương sống AutoShot@F1 (đóng băng trọng số) và chỉ huấn luyện lại tầng phân loại (ClassificationHead) trên đặc trưng đã trích sẵn, với các thay đổi sau ở phía nhãn và tối ưu:
+\begin{itemize}
+    \item \textbf{Nhãn mềm dạng heatmap:} thay nhãn one-hot bằng phân phối Gaussian (độ lệch chuẩn $\sigma_{\text{nhãn}}=3.0$) đặt quanh khung hình ranh giới, để các khung lân cận nhận giá trị mục tiêu giảm dần thay vì $0$ đột ngột.
+    \item \textbf{Làm trơn nhãn bất đối xứng (asymmetric label smoothing, $\varepsilon=0.1$):} chỉ áp dụng cho nhãn dương ($1.0 \rightarrow 0.9$), giữ nguyên nhãn âm ở $0$, nhằm giảm hiện tượng quá tự tin mà không làm nhiễu các khung nền.
+    \item \textbf{Hàm mất mát Focal} ($\gamma=2.0$, $\alpha=0.6$), nhánh nhãn nhiều điểm dương (many-hot) trọng số $0.3$, huấn luyện độ chính xác hỗn hợp (AMP fp16) trên GPU T4.
+    \item \textbf{Hậu xử lý:} hiệu chỉnh nhiệt độ $T^{*}=0.268$ và làm mượt Gaussian $\sigma=2.0$. Toàn bộ 200 video của tập kiểm tra SHOT chính thức được loại khỏi tập huấn luyện để tránh rò rỉ thông tin.
+\end{itemize}
+
+Việc đánh giá dùng cùng quy trình tính F1 chuẩn gốc của AutoShot (\texttt{mAP\_f1\_p\_fix\_r}) như các thí nghiệm phía trên, bảo đảm khả năng so sánh trực tiếp với cấu hình AutoShotV2 chính.
+
+\begin{table}[H]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.2}
+\caption[So sánh AutoShotV2-HeatMap với AutoShotV2]{So sánh AutoShotV2-HeatMap với cấu hình AutoShotV2 trên SHOT và ClipShots. Hàng AutoShotV2 lấy theo cấu hình triển khai ngưỡng cố định ($\theta=0.10$); hàng AutoShotV2-HeatMap báo cáo tại ngưỡng cho F1 cao nhất của biến thể trên mỗi tập (SHOT đạt đỉnh ngay tại $\theta=0.10$). BBC để ``--'' do biến thể chưa được đánh giá trên tập này (thiếu video gốc cục bộ).}
+\label{tab:autoshotv2_heatmap}
+\begin{tabular}{L{4.0cm}L{1.8cm}C{1.4cm}C{1.6cm}C{1.6cm}C{1.4cm}}
+\toprule
+\textbf{Mô hình} & \textbf{Bộ dữ liệu} & \textbf{Ngưỡng} & \textbf{Precision} & \textbf{Recall} & \textbf{F1} \\
+\midrule
+AutoShotV2 & SHOT & 0.10 & \ASVTwoShotPrecision & \ASVTwoShotRecall & \ASVTwoShotFOne \\
+AutoShotV2-HeatMap & SHOT & 0.10 & 0.8324 & \textbf{0.8804} & 0.8557 \\
+\midrule
+AutoShotV2 & ClipShots & 0.10 & 0.6661 & 0.8657 & \ASVTwoClipFOne \\
+AutoShotV2-HeatMap & ClipShots & 0.15 & 0.6727 & 0.8629 & 0.7560 \\
+\midrule
+AutoShotV2 & BBC & 0.10 & -- & -- & \ASVTwoBBCFOne \\
+AutoShotV2-HeatMap & BBC & -- & -- & -- & -- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Kết quả minh chứng:} Số liệu Precision/Recall/F1 của biến thể AutoShotV2-HeatMap so với AutoShotV2 được tổng hợp tại Bảng~\ref{tab:autoshotv2_heatmap}.
+
+\textbf{Thảo luận:} Kết quả ở Bảng~\ref{tab:autoshotv2_heatmap} cho thấy AutoShotV2-HeatMap là một \textit{điểm vận hành thiên về Recall} chứ không phải một mô hình có F1 cao hơn:
+\begin{itemize}
+    \item \textbf{Trên SHOT, tại cùng ngưỡng triển khai $\theta=0.10$:} biến thể nâng Recall từ $\ASVTwoShotRecall$ lên $0.8804$ ($+2.67$ điểm phần trăm) trong khi F1 giữ tương đương ($\ASVTwoShotFOne \rightarrow 0.8557$). Đây là bằng chứng trực tiếp cho giả thuyết: nhãn mềm dạng heatmap giúp mô hình bắt được nhiều ranh giới hơn, đặc biệt với chuyển cảnh dần. Mức tăng Recall này được đánh đổi bằng Precision giảm ($\ASVTwoShotPrecision \rightarrow 0.8324$), phản ánh việc mô hình dự đoán ``rộng tay'' hơn quanh vùng ranh giới mờ.
+    \item \textbf{Trên ClipShots:} biến thể đạt F1 $=0.7560$ (tại ngưỡng $0.15$), xấp xỉ cấu hình triển khai cố định của AutoShotV2 ($\ASVTwoClipFOne$) và vẫn thấp hơn mức trần oracle theo tập ($0.7706$ ở Bảng~\ref{tab:extra_sweep_peaks}). Xu hướng Precision thấp -- Recall cao lặp lại như trên SHOT, củng cố nhận định rằng ClipShots là miền cần cơ chế hiệu chỉnh theo miền riêng.
+    \item \textbf{So với mức trần oracle của AutoShotV2} ($0.8607$ trên SHOT, Bảng~\ref{tab:extra_sweep_peaks}): AutoShotV2-HeatMap không vượt qua về F1. Giá trị của biến thể nằm ở việc dịch điểm vận hành về phía Recall ở cùng một ngưỡng, chứ không phải nâng trần hiệu năng.
+    \item \textbf{BBC chưa được đánh giá:} do thiếu video gốc của BBC ở môi trường chạy cục bộ, biến thể AutoShotV2-HeatMap chưa có số liệu trên BBC; các ô tương ứng để ``--''.
+\end{itemize}
+
+Tóm lại, AutoShotV2-HeatMap đóng vai trò một \textbf{lựa chọn vận hành bổ sung} ưu tiên Recall, phù hợp với các kịch bản mà chi phí bỏ sót ranh giới cao hơn chi phí báo động giả (ví dụ tiền xử lý cho biên tập, lập chỉ mục nội dung). Biến thể này mở rộng không gian đánh đổi Precision--Recall của hệ thống chứ không thay thế cấu hình AutoShotV2 cân bằng được chọn làm giải pháp triển khai chính.
+
 

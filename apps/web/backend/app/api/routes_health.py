@@ -14,6 +14,11 @@ PRESETS: dict[str, dict] = {
         "filename": "autoshotv2.pth",
         "threshold": None,
     },
+    "autoshotv2_heatmap": {
+        "display_name": "AutoShot V2 HeatMap",
+        "filename": "autoshotv2_heatmap.pth",
+        "threshold": None,
+    },
     "best_shot": {
         "display_name": "AutoShotV2-SHOT",
         "filename": "ckpt_phase2_shot_f1_sweep_best.pth",
