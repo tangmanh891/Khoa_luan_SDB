@@ -108,7 +108,7 @@ Mục tiêu của khóa luận là cải thiện hiệu quả phát hiện ranh 
 Trong khuôn khổ khóa luận này, bài toán được giới hạn theo các phạm vi sau:
 \begin{itemize}
     \item \textbf{Miền dữ liệu:} Tập trung xử lý video ở định dạng đã giải nén, tức là làm việc trực tiếp trên chuỗi khung hình thay vì dữ liệu nén.
-    \item \textbf{Mục tiêu đầu ra:} Bài toán tập trung vào việc xác định vị trí biên thời gian (temporal boundary) của các shot; phân loại loại chuyển tiếp (Cut/Gradual) được nhận diện như ngữ cảnh phân tích nhưng không là mục tiêu thực nghiệm chính; chưa đi sâu vào việc hiểu ngữ nghĩa mức cao (như nhận diện hành động hay cảm xúc) bên trong shot.
+    \item \textbf{Mục tiêu đầu ra:} Bài toán tập trung vào việc xác định vị trí biên của các shot; chưa đi sâu vào việc hiểu ngữ nghĩa mức cao (như nhận diện hành động hay cảm xúc) bên trong shot.
     \item \textbf{Phương pháp luận:} Khóa luận tập trung vào việc ứng dụng và cải tiến các mô hình học sâu, cụ thể là mạng nơ-ron tích chập (CNN) và Transformer, thay vì các phương pháp dựa trên ngưỡng thủ công vốn có độ chính xác thấp hơn trên dữ liệu phức tạp.
 \end{itemize}
 
@@ -128,7 +128,6 @@ Trong khuôn khổ khóa luận này, bài toán được giới hạn theo các
 Để giải quyết các thách thức nêu trên, Khóa luận tiếp cận bài toán dựa trên các kỹ thuật tiên tiến trong lĩnh vực thị giác máy tính:
 \begin{itemize}
     \item \textbf{Mạng nơ-ron tích chập 3D (3D ConvNets):} Sử dụng các kiến trúc 3D CNN để trích xuất đồng thời đặc trưng không gian và thời gian, giúp mô hình nắm bắt được sự vận động liên tục của video tốt hơn so với phương pháp 2D truyền thống.
-    \item \textbf{Kiến trúc Transformer:} Tận dụng khả năng mô hình hóa phụ thuộc xa (long-range dependencies) của Transformer để xử lý các chuỗi khung hình dài, từ đó cải thiện khả năng phát hiện các chuyển cảnh dần kéo dài.
     \item \textbf{Tìm kiếm kiến trúc mạng nơ-ron (NAS):} Thay vì thiết kế thủ công, hướng tiếp cận này sử dụng NAS để tự động tối ưu thiết kế mô hình trong một không gian tìm kiếm chứa các khối 3D ConvNets và Transformer, nhằm đạt được cân bằng tốt giữa độ chính xác và chi phí tính toán.
     \item \textbf{Huấn luyện trên dữ liệu video ngắn chuyên biệt:} Sử dụng bộ dữ liệu SHOT \cite{zhu2023autoshot} -- bộ dữ liệu video ngắn quy mô lớn đầu tiên -- để huấn luyện và đánh giá, qua đó đảm bảo mô hình thích nghi với các đặc trưng của video ngắn hiện đại.
 \end{itemize}
@@ -149,7 +148,7 @@ Trên cơ sở hướng tiếp cận đã nêu, Khóa luận mang lại các đ�
 \begin{itemize}
     \item \textbf{Hệ thống hóa tri thức:} Trình bày có cấu trúc bối cảnh bài toán SBD cho video ngắn, từ phương pháp cổ điển đến học sâu và NAS, làm rõ khoảng trống nghiên cứu giữa dữ liệu truyền thống và dữ liệu video ngắn hiện đại.
     \item \textbf{Đóng góp về phương pháp:} Khóa luận thiết kế một quy trình tinh chỉnh hai pha cho bài toán phát hiện ranh giới cảnh quay trên video ngắn: tái sử dụng mạng xương sống AutoShot đã được tối ưu hóa bằng NAS, đóng băng trọng số mạng xương sống này để cô lập tác động của tầng đầu ra, huấn luyện lại tầng phân loại mới với hàm mất mát Focal và nhãn nhiều điểm dương, sau đó áp dụng hiệu chỉnh nhiệt độ và làm mượt Gaussian ở bước hậu xử lý. Quy trình này nhằm giảm ảnh hưởng của mất cân bằng lớp cực đoan, sai lệch chú thích thủ công và nhiễu xác suất theo thời gian.
-    \item \textbf{Đóng góp về kết quả thực nghiệm:} Trên tập SHOT, AutoShotV2 đạt F1 = \ASVTwoBestShotFOne{} ở ngưỡng cho F1 cao nhất theo đúng giao thức đánh giá của AutoShot gốc ($+\ASVTwoBestVsTransNetShotPP{}$ điểm phần trăm so với mô hình cơ sở TransNetV2 và $+\ASVTwoBestVsAutoShotShotPP{}$ điểm phần trăm so với AutoShot tự chạy lại); đồng thời cung cấp phân tích so sánh chéo trên BBC và ClipShots để đánh giá khả năng tổng quát hóa (chi tiết xem Chương~\ref{ch:bo_du_lieu_va_thuc_nghiem}).
+    \item \textbf{Đóng góp về kết quả thực nghiệm:} Trên tập SHOT, AutoShotV2 đạt F1 = \ASVTwoBestShotFOne{} theo lựa chọn tốt nhất trong quy trình đánh giá so sánh chính ($+\ASVTwoBestVsTransNetShotPP{}$ điểm phần trăm so với mô hình cơ sở TransNetV2) -- lưu ý đây là mức trần lạc quan khi chọn ngưỡng tối ưu cho riêng tập SHOT, không phải một cấu hình triển khai duy nhất; đồng thời báo cáo cấu hình triển khai ngưỡng cố định đạt F1 = \ASVTwoShotFOne{} và cung cấp phân tích so sánh chéo trên BBC, ClipShots để đánh giá khả năng tổng quát hóa (chi tiết xem Chương~\ref{ch:bo_du_lieu_va_thuc_nghiem}).
 \end{itemize}
 
 \section{Tổ chức khóa luận}
