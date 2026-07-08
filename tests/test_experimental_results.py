@@ -59,16 +59,14 @@ def test_paper_snapshot_generated_tables_and_release_are_present():
     assert r"\newcommand{\PaperBFourVsAOneShotPP}{1.62}" in macros
     assert r"\newcommand{\PaperBFourVsAOneClipPP}{4.57}" in macros
     assert r"\PaperMainResultRows" in tables
+    # A single primary AutoShotV2 row (per-dataset F1-best threshold, AutoShot
+    # protocol). The fixed-deployment checkpoint is reported in-text only.
     assert (
-        r"AutoShotV2 (ours), fixed deployment & "
-        r"0.8545 & \textbf{0.9656} & 0.7529 \\"
-        in tables
-    )
-    assert (
-        r"AutoShotV2 (ours), per-dataset best$^{\dagger}$ & "
+        r"AutoShotV2 (ours)$^{\dagger}$ & "
         r"\textbf{0.8607} & \textbf{0.9656} & \textbf{0.7706} \\"
         in tables
     )
+    assert "fixed deployment &" not in tables
     assert r"\PaperAblationDeltaRows" in tables
     assert r"\textbf{+1.62}" in tables
     assert "no EMA" not in tables

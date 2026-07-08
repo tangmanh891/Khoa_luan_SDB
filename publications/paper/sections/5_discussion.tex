@@ -7,8 +7,8 @@ whereas calibrated post-processing---Gaussian smoothing to change boundary
 decisions and temperature scaling to improve probability quality---provides
 the measured improvement. Because post-processing operates on cached logits,
 it can be re-tuned for a new deployment domain without retraining the
-representation. The fixed-deployment ClipShots result is limited primarily by
-aggregate precision (\PaperDeployClipPrecision): open-world content produces
+representation. On open-world ClipShots the primary limitation is precision
+(0.7011 at the F1-maximizing threshold): open-world content produces
 false-positive peaks that survive smoothing. A frozen representation cannot
 adapt to this distribution shift by construction, so closing the gap likely
 requires domain-adaptive components rather than further tuning of the present

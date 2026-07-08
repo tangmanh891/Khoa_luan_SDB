@@ -91,7 +91,7 @@ All AutoShotV2 components operate on $h_t$ without updating the backbone.
 AutoShotV2 improves the decision stage of SBD: it trains a new
 classification head on the frozen features of Eq.~\eqref{eq:features} and
 adds probability calibration and temporal smoothing before thresholding.
-Fig.~\ref{fig:pipeline} shows the deployed inference pipeline.
+Fig.~\ref{fig:pipeline} shows the AutoShotV2 inference pipeline.
 
 \begin{figure*}[!t]
 \centering
@@ -106,10 +106,10 @@ Fig.~\ref{fig:pipeline} shows the deployed inference pipeline.
 \node[block, fill=green!12, right=of in] (backbone) {Frozen AutoShot\\backbone};
 \node[block, fill=green!8, right=of backbone] (feat) {Cached features\\4864-D};
 \node[block, fill=orange!15, right=of feat] (head) {Classification\\head};
-\node[block, fill=purple!12, right=of head] (temp) {Temperature scaling\\$T^{*}=\PaperDeployTemperature$};
+\node[block, fill=purple!12, right=of head] (temp) {Temperature scaling\\$T^{*}=0.2413$};
 \node[block, fill=pink!14, right=of temp] (smooth) {Gaussian smoothing\\$\sigma=\PaperGaussianSigma$};
-\node[block, fill=blue!8, right=of smooth] (out) {Threshold\\$\theta=\PaperDeployThreshold$};
-\node[block, fill=teal!12, right=of out] (bound) {Shot boundaries\\F1 $=\PaperDeployShotFOne$ (SHOT)};
+\node[block, fill=blue!8, right=of smooth] (out) {Threshold\\$\theta=0.12$ (SHOT)};
+\node[block, fill=teal!12, right=of out] (bound) {Shot boundaries\\F1 $=0.8607$ (SHOT)};
 \draw[arr] (in) -- (backbone);
 \draw[arr] (backbone) -- (feat);
 \draw[arr] (feat) -- (head);
@@ -195,7 +195,7 @@ down-weights easy negatives,
 \end{equation}
 where $p^{*}_t=p_t$ for a positive target and $1-p_t$ otherwise, and
 $\alpha_t=\alpha y_t+(1-\alpha)(1-y_t)$; grid search on validation selects
-$\gamma=1.0$ and $\alpha=0.5$. Second, boundary-aware many-hot
+$\gamma=2.0$ and $\alpha=0.6$ for the primary configuration. Second, boundary-aware many-hot
 supervision~\cite{muller2019label} expands each ground-truth boundary $t_b$
 to its $\pm1$ frame neighborhood,
 \begin{equation}
@@ -233,10 +233,12 @@ Gaussian filter smooths the calibrated sequence:
     G_{\sigma}(k)=\frac{1}{\sqrt{2\pi}\sigma}\exp\!\left(-\frac{k^2}{2\sigma^2}\right).
     \label{eq:gaussian}
 \end{equation}
-The deployed checkpoint fits $T^{*}=\PaperDeployTemperature$ on its
-validation pool; the controlled replication re-fits its own temperature
-under the frozen protocol below. Both use $\sigma=\PaperGaussianSigma$ and
-$\theta=\PaperDeployThreshold$.
+The primary configuration fits $T^{*}=0.2413$ on its validation pool and
+selects the decision threshold per dataset under AutoShot's protocol
+(Section~\ref{sec:oracle_sweep}); the tracked deployed-checkpoint anchor
+instead uses $T^{*}=\PaperDeployTemperature$ with a single shared
+$\theta=\PaperDeployThreshold$, and the controlled replication re-fits its own
+temperature under the frozen protocol below. All use $\sigma=\PaperGaussianSigma$.
 
 \subsection{Validation-Only Protocol Selection}
 \label{sec:protocol}

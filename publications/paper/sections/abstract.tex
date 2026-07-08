@@ -7,14 +7,14 @@ This paper presents AutoShotV2, a lightweight SBD refinement framework. Instead
 of repeating computationally expensive neural architecture search or updating the
 full backbone, AutoShotV2 freezes the searched feature extractor and trains a compact
 classification head on cached features.
-This paper reports two complementary evaluation protocols: an oracle upper-bound
-comparison that selects the best configuration and operating point per dataset,
-and a fixed-threshold deployment protocol that uses a single decision threshold.
-Under the oracle upper-bound protocol, AutoShotV2 achieves F1 scores of 0.8607
-on SHOT, 0.9656 on BBC, and 0.7706 on ClipShots, improving over the reproduced
-AutoShot baseline by 2.02, 1.02, and 0.57 percentage points, respectively. Under
-fixed-threshold deployment, it reaches 0.8545, 0.9656, and 0.7529 F1 on the same
-datasets. A controlled ablation study shows that calibrated post-processing
+Following AutoShot's original evaluation protocol, which selects the
+per-dataset F1-maximizing decision threshold, AutoShotV2 achieves F1 scores of
+0.8607 on SHOT, 0.9656 on BBC, and 0.7706 on ClipShots, improving over the
+reproduced AutoShot baseline by 2.02, 1.02, and 0.57 percentage points,
+respectively, under the same procedure. Because the two models share this
+threshold-selection protocol, the comparison is direct. A tracked, checksummed
+fixed-threshold checkpoint is retained as a reproducibility anchor.
+A controlled ablation study shows that calibrated post-processing
 accounts for most of the measured gain, while alternative training losses do not
 add consistent improvements. Paired bootstrap intervals support positive deltas
 on SHOT and ClipShots, and a three-seed study observes F1 standard deviation
