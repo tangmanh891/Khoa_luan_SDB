@@ -39,6 +39,7 @@ KD & chưng cất tri thức (\textit{knowledge distillation}) & Chưng cất tr
 LS & Label Smoothing & Kỹ thuật làm mượt nhãn \textit{one-hot} để giảm quá khớp (\textit{overfitting}). \\
 TS & Temperature Scaling & Hiệu chỉnh nhiệt độ để hiệu chuẩn (\textit{calibrate}) phân phối xác suất đầu ra. \\
 LR & Learning Rate & Tốc độ học của thuật toán tối ưu. \\
+EMA & Exponential Moving Average & Trung bình trượt lũy thừa trọng số mô hình qua các bước huấn luyện, giúp làm trơn và ổn định trọng số cuối. \\
 CV & Cross-Validation & Kiểm định chéo; trong khóa luận dùng kiểm định chéo 5 phần để kiểm tra xu hướng kết quả. \\
 NLL & Negative Log-Likelihood & Hàm mục tiêu thường dùng khi hiệu chỉnh xác suất bằng temperature scaling. \\
 F1-score & Harmonic Mean of Precision and Recall & Chỉ số tổng hợp đánh giá cân bằng giữa Precision và Recall. \\
@@ -89,6 +90,8 @@ Checkpoint & Điểm lưu trữ trạng thái trọng số của mô hình trong
 Weight Decay & Suy giảm trọng số, một kỹ thuật chính quy hóa giúp tránh quá khớp (\textit{overfitting}) bằng cách phạt các trọng số lớn. \\
 Ablation & Nghiên cứu phân rã/thử nghiệm loại trừ để đánh giá đóng góp của từng thành phần trong mô hình. \\
 Grid Search & Tìm kiếm lưới, phương pháp quét qua một tập hợp các siêu tham số được định nghĩa trước để tìm cấu hình tối ưu. \\
+Evaluation Protocol & Giao thức đánh giá: quy ước tính và báo cáo chỉ số. Trong khóa luận, F1 được lấy ở ngưỡng cho giá trị cao nhất trên từng bộ dữ liệu, đúng theo mã đánh giá gốc của AutoShot, để so sánh công bằng giữa các mô hình. \\
+Heatmap Label & Nhãn mềm phân phối dạng Gaussian quanh vị trí ranh giới (thay cho nhãn một điểm dương), giúp mô hình bắt chuyển cảnh dần (\textit{gradual transition}) tốt hơn. \\
 \bottomrule
 \end{longtable}
 }

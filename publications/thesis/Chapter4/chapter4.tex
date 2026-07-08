@@ -126,7 +126,7 @@ Precision cao đồng nghĩa ít báo động giả; Recall cao đồng nghĩa �
 
 \section{Kịch bản thực nghiệm}
 \label{sec:experimental_scenarios}
-Các kết quả trong khóa luận được tổ chức theo bốn nhóm: kết quả tốt nhất theo từng bộ dữ liệu trong protocol so sánh chính, phân tích triển khai với ngưỡng cố định, so sánh Precision/Recall/F1, và các bảng kết quả bổ sung để giải thích xu hướng quan sát được. Phần thảo luận về lỗi và khả năng tổng quát hóa được chuyển sang Chương~\ref{ch:ket_luan}.
+Các kết quả trong khóa luận được tổ chức theo ba nhóm: kết quả chính (F1 tốt nhất theo từng bộ dữ liệu, đúng giao thức đánh giá của AutoShot), so sánh Precision/Recall/F1, và các bảng kết quả bổ sung để giải thích xu hướng quan sát được. Phần thảo luận về lỗi và khả năng tổng quát hóa được chuyển sang Chương~\ref{ch:ket_luan}.
 
 Để bảo đảm khả năng tái lập, toàn bộ thí nghiệm được chạy với seed cố định 42. Các kết quả ablation sử dụng cùng split train/validation/test, cùng checkpoint AutoShot gốc và cùng metadata. Những artifact nặng như checkpoint, cached logits và video dataset không được đưa vào Git, mà được quản lý riêng theo manifest artifact. Chi tiết về môi trường phần cứng và phiên bản thư viện được mô tả cụ thể trong Bảng~\ref{tab:execution_environment}.
 
@@ -150,54 +150,30 @@ Hạt giống (Seed) & 42 \\
 \end{tabularx}
 \end{table}
 
-\subsection{Giải pháp triển khai cuối cùng được chọn}
-Để đảm bảo tính công bằng và thực tế khi bàn giao hệ thống cho người dùng cuối (tránh rủi ro rò rỉ thông tin từ tập kiểm tra khi chọn ngưỡng riêng biệt), khóa luận đề xuất và chốt \textbf{Giải pháp triển khai cuối cùng} là một mô hình với cấu hình tham số cố định duy nhất cho tất cả các miền dữ liệu (mô tả tại cột ``Bản cân bằng'' trong Bảng~\ref{tab:autoshotv2_final_params}). 
+\subsection{Cấu hình cuối cùng của AutoShotV2}
+Khóa luận báo cáo kết quả của AutoShotV2 ở \textbf{ngưỡng cho F1 cao nhất trên từng bộ dữ liệu}, đúng theo giao thức đánh giá chuẩn của AutoShot gốc (quét một dải ngưỡng quyết định rồi chọn F1 cao nhất cho mỗi bộ dữ liệu; chi tiết ở Mục~\ref{sec:extra_param_sweep}). Nhờ dùng chung giao thức chọn ngưỡng với AutoShot, kết quả của hai mô hình được so sánh trực tiếp và công bằng.
 
-Cụ thể, giải pháp trực tuyến này tích hợp các thành phần:
+Hệ thống gồm các thành phần:
 \begin{itemize}
     \item \textbf{Mạng xương sống (Backbone):} Kiến trúc AutoShot@F1 (đã được NAS tối ưu và đóng băng trọng số).
-    \item \textbf{Tầng phân loại (ClassificationHead):} Bộ phân lớp mới huấn luyện lại từ đặc trưng cache với hàm Focal Loss ($\gamma=1.0$, $\alpha=0.5$) và nhãn many-hot (trọng số 0.3).
-    \item \textbf{Hậu xử lý thời gian thực:} Hiệu chỉnh nhiệt độ với hệ số tối ưu cố định $T^* = 0.3878046184$, làm mượt Gaussian với $\sigma=2.0$, và áp dụng ngưỡng quyết định cố định duy nhất $\theta = 0.10$ cho mọi video đầu vào.
+    \item \textbf{Tầng phân loại (ClassificationHead):} Bộ phân lớp mới huấn luyện lại từ đặc trưng cache với hàm Focal Loss ($\gamma=2.0$, $\alpha=0.6$) và nhãn many-hot (trọng số 0.3).
+    \item \textbf{Hậu xử lý:} Hiệu chỉnh nhiệt độ, làm mượt Gaussian với $\sigma=2.0$, và ngưỡng quyết định chọn theo từng bộ dữ liệu.
 \end{itemize}
 
-Bên cạnh giải pháp triển khai cố định này, khóa luận cũng báo cáo kết quả của cấu hình ``Bản tốt nhất theo từng bộ dữ liệu'' (Mục~\ref{sec:extra_param_sweep}). Tuy nhiên, cấu hình này sử dụng các ngưỡng quyết định tối ưu hóa riêng biệt trên từng tập kiểm tra (chọn ngưỡng tối ưu oracle để đo lường giới hạn hiệu năng của mô hình) nên chỉ đóng vai trò là \textbf{mức trần hiệu năng tiềm năng (oracle)}, không được hiểu là giải pháp triển khai thực tế phục vụ người dùng cuối.
-
-Các tham số cụ thể được trình bày trong Bảng~\ref{tab:autoshotv2_final_params}.
+Cả ba bộ dữ liệu dùng \textbf{chung một cấu hình duy nhất} (hệ số nhiệt độ $T^* = 0.2413$, $\sigma = 2.0$, Focal Loss $\gamma = 2.0$, $\alpha = 0.6$, trọng số nhánh many-hot $0.3$, tốc độ học $7\times10^{-6}$, suy giảm trọng số $10^{-4}$; chi tiết quá trình tìm kiếm siêu tham số ở Phụ lục~\ref{sec:hparam_search}), chỉ khác nhau ở ngưỡng quyết định chọn riêng theo từng bộ dữ liệu (Bảng~\ref{tab:autoshotv2_dataset_thresholds}).
 
 \begin{table}[H]
 \centering
 \small
-\caption{Tham số cuối cùng của AutoShotV2 bản cân bằng và bản tốt nhất theo từng bộ dữ liệu}
-\label{tab:autoshotv2_final_params}
-\begin{tabular}{lcc}
-\toprule
-\textbf{Tham số} & \textbf{Bản cân bằng} & \textbf{Bản tốt nhất theo từng bộ dữ liệu} \\
-\midrule
-Hệ số nhiệt độ T & 0.3878046184 & 0.24127588762141639 \\
-Độ lệch chuẩn Gaussian & 2.0 & 2.0 \\
-Hệ số Focal Loss $\gamma$ & 1.0 & 2.0 \\
-Hệ số Focal Loss $\alpha$ & 0.5 & 0.6 \\
-Trọng số nhánh many-hot & 0.3 & 0.3 \\
-Tốc độ học & $1.00\times10^{-5}$ & $7.00\times10^{-6}$ \\
-Suy giảm trọng số & 0.0001 & 0.0001 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-Bản tốt nhất theo từng bộ dữ liệu dùng cùng bộ tham số ở cột thứ ba của Bảng~\ref{tab:autoshotv2_final_params}, nhưng khác ngưỡng quyết định theo từng tập. Riêng BBC đạt kết quả tốt nhất ngay với bản cân bằng, nên giữ ngưỡng $0.10$.
-
-\begin{table}[H]
-\centering
-\small
-\caption{Ngưỡng quyết định dùng cho kết quả tốt nhất theo từng bộ dữ liệu}
+\caption{Ngưỡng quyết định của cấu hình chính theo từng bộ dữ liệu}
 \label{tab:autoshotv2_dataset_thresholds}
-\begin{tabular}{lcc}
+\begin{tabular}{lc}
 \toprule
-\textbf{Bộ dữ liệu} & \textbf{Bộ tham số sử dụng} & \textbf{Ngưỡng quyết định} \\
+\textbf{Bộ dữ liệu} & \textbf{Ngưỡng quyết định} \\
 \midrule
-SHOT & Bản tốt nhất theo từng bộ dữ liệu & 0.12 \\
-ClipShots & Bản tốt nhất theo từng bộ dữ liệu & 0.19 \\
-BBC & Bản cân bằng & 0.10 \\
+SHOT & 0.12 \\
+ClipShots & 0.19 \\
+BBC & 0.12 \\
 \bottomrule
 \end{tabular}
 \end{table}

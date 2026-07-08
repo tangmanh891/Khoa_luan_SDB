@@ -64,3 +64,54 @@ Các chỉ số được tính theo các công thức:
 \end{equation}
 
 Trong các thí nghiệm của khóa luận, F1-score được dùng làm tiêu chí so sánh chính giữa các mô hình vì đây là chỉ số phản ánh tốt nhất sự cân bằng giữa khả năng phát hiện đúng và khả năng hạn chế báo động giả.
+
+\section{Không gian tìm kiếm siêu tham số Pha 2}
+\label{sec:hparam_search}
+
+Cấu hình chính của AutoShotV2 (Mục~\ref{sec:extra_param_sweep}) được chọn từ một lượt tìm kiếm siêu tham số cho tầng phân loại Pha 2. Không gian tìm kiếm được tổng hợp ở Bảng~\ref{tab:hparam_space}. Nếu quét toàn bộ (full grid) sẽ có $4\times3\times3\times2 = 72$ cấu hình; do giới hạn tài nguyên tính toán, khóa luận chỉ huấn luyện $11$ cấu hình đại diện, liệt kê ở Bảng~\ref{tab:hparam_configs}. Hệ số nhiệt độ $T^*$ không nằm trong lưới tìm kiếm mà được ước lượng riêng bằng \textit{temperature scaling} trên tập xác thực; độ lệch chuẩn Gaussian $\sigma$ kế thừa từ AutoShotV1 (dò trong khoảng $0.5\to5$, bước $0.5$) và được cố định bằng $2.0$.
+
+\begin{table}[H]
+\centering
+\small
+\caption{Không gian tìm kiếm siêu tham số của tầng phân loại Pha 2}
+\label{tab:hparam_space}
+\begin{tabular}{lll}
+\toprule
+\textbf{Tham số} & \textbf{Giá trị đã thử} & \textbf{Ghi chú} \\
+\midrule
+$\gamma$ (Focal Loss) & $0.5,\ 1.0,\ 1.5,\ 2.0$ & Khoảng $0.5\to2.0$ \\
+$\alpha$ (Focal Loss) & $0.4,\ 0.5,\ 0.6$ & Khoảng $0.4\to0.6$ \\
+Trọng số many-hot & $0.2,\ 0.3,\ 0.4$ & Khoảng $0.2\to0.4$ \\
+Tốc độ học & $7\times10^{-6},\ 1\times10^{-5}$ & Khoảng $7\times10^{-6}\to1\times10^{-5}$ \\
+Suy giảm trọng số & $1\times10^{-4}$ & Cố định \\
+$\sigma$ (Gaussian) & $2.0$ & Kế thừa AutoShotV1 ($0.5\to5$, bước $0.5$) \\
+$T^*$ (nhiệt độ) & --- & Temperature scaling trên tập xác thực \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\small
+\caption{Mười một cấu hình siêu tham số đã huấn luyện (trên tổng số 72 của full grid)}
+\label{tab:hparam_configs}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Tên rút gọn} & \textbf{$\gamma$} & \textbf{$\alpha$} & \textbf{many-hot} & \textbf{Tốc độ học} \\
+\midrule
+\texttt{g0p5\_a0p50\_m0p30\_lr1e5} & 0.5 & 0.5 & 0.3 & $1\times10^{-5}$ \\
+\texttt{g1p0\_a0p40\_m0p30\_lr1e5} & 1.0 & 0.4 & 0.3 & $1\times10^{-5}$ \\
+\texttt{g1p0\_a0p50\_m0p20\_lr1e5} & 1.0 & 0.5 & 0.2 & $1\times10^{-5}$ \\
+\texttt{g1p0\_a0p50\_m0p30\_lr7e6} & 1.0 & 0.5 & 0.3 & $7\times10^{-6}$ \\
+\texttt{g1p0\_a0p50\_m0p40\_lr1e5} & 1.0 & 0.5 & 0.4 & $1\times10^{-5}$ \\
+\texttt{g1p0\_a0p60\_m0p30\_lr1e5} & 1.0 & 0.6 & 0.3 & $1\times10^{-5}$ \\
+\texttt{g1p5\_a0p50\_m0p30\_lr1e5} & 1.5 & 0.5 & 0.3 & $1\times10^{-5}$ \\
+\texttt{g1p5\_a0p50\_m0p40\_lr1e5} & 1.5 & 0.5 & 0.4 & $1\times10^{-5}$ \\
+\texttt{g1p5\_a0p60\_m0p30\_lr1e5} & 1.5 & 0.6 & 0.3 & $1\times10^{-5}$ \\
+\texttt{g2p0\_a0p50\_m0p30\_lr1e5} & 2.0 & 0.5 & 0.3 & $1\times10^{-5}$ \\
+\textbf{\texttt{g2p0\_a0p60\_m0p30\_lr7e6}} & \textbf{2.0} & \textbf{0.6} & \textbf{0.3} & $\mathbf{7\times10^{-6}}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent Cấu hình in đậm (\texttt{g2p0\_a0p60\_m0p30\_lr7e6}) cho F1 cao nhất trên SHOT và được chọn làm cấu hình chính của AutoShotV2.
