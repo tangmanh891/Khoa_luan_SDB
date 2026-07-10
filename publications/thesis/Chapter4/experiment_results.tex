@@ -30,17 +30,7 @@ AutoShotV2-HeatMap & + nhãn mềm dạng heatmap (thiên Recall) & 0.8557 & -- 
 \end{tabular}
 \end{table}
 
-\textbf{Nhận xét:} Bảng~\ref{tab:autoshotv2_results} cho thấy các kiến trúc thế hệ sau (từ TransNetV2 trở đi) vượt trội rõ rệt so với các công trình kinh điển (DSM, TransNet V1). Trong nhóm AutoShotV2, \textbf{cấu hình chính đạt F1 cao nhất trên SHOT ($0.8607$)} --- vượt AutoShot gốc tự chạy lại ($0.8405$, tức $+2.0$ điểm phần trăm) và cả các biến thể khác (HeatMap $0.8557$, only-Shot $0.8552$); trên ClipShots biến thể huấn luyện trên ClipShots kèm EMA đạt cao nhất ($0.7860$) trong khi biến thể chỉ dùng SHOT tụt còn $0.7241$ --- khẳng định ClipShots nhạy với dữ liệu và cấu hình theo miền; trên BBC khoảng cách giữa các phiên bản nhỏ ($0.949$--$0.966$). Vì mục tiêu đề tài là video ngắn, cấu hình chính được lựa chọn theo hiệu năng cao nhất trên SHOT, đồng thời vẫn giữ khả năng tổng quát hóa tốt trên BBC và ClipShots; chi tiết ngưỡng quyết định theo từng bộ được trình bày ở Mục~\ref{sec:extra_param_sweep}.
-
-\subsection{Phiên bản AutoShotV1 --- chỉ bổ sung làm mượt Gaussian}
-\label{sec:autoshotv1}
-
-AutoShotV1 giữ nguyên toàn bộ trọng số AutoShot@F1 và \textbf{không huấn luyện lại tham số nào}, chỉ bổ sung làm mượt Gaussian 1D ($\sigma = 2.0$, dò trên tập xác thực SHOT) lên chuỗi xác suất trước bước ngưỡng hóa (Mục~\ref{subsec:v2_gaussian}). Chỉ với bước hậu xử lý này, F1 trên SHOT tăng từ $0.8405$ (AutoShot tự chạy lại) lên $0.8477$ ($+0.72$ điểm phần trăm), với Precision $0.8558$ và Recall $0.8398$ --- một điểm vận hành thiên về Precision. Kết quả xác nhận làm mượt Gaussian là thành phần nền tảng có ích; AutoShotV2 đầy đủ bổ sung thêm Focal Loss, nhãn nhiều điểm dương và hiệu chỉnh nhiệt độ chủ yếu để nâng Recall và cân bằng lại Precision--Recall. Lưu ý AutoShotV1 khác cấu hình đối chứng $P1$ ở Mục~\ref{sec:ablation}: $P1$ có huấn luyện lại tầng phân loại bằng BCE, còn AutoShotV1 thì không.
-
-\subsection{Biến thể AutoShotV2-HeatMap --- nhãn mềm dạng heatmap}
-\label{sec:autoshotv2_heatmap}
-
-AutoShotV2-HeatMap giữ nguyên mạng xương sống, chỉ đổi phía nhãn khi huấn luyện lại tầng phân loại: thay nhãn một điểm dương (one-hot) bằng nhãn mềm phân phối Gaussian ($\sigma_{\text{nhãn}}=3.0$) quanh ranh giới, kèm làm trơn nhãn bất đối xứng ($\varepsilon=0.1$, chỉ áp cho nhãn dương), nhằm tăng khả năng bắt chuyển cảnh dần. Trên SHOT tại ngưỡng $\theta=0.10$, biến thể nâng Recall từ $0.8537$ (đầu phân loại cơ sở, không dùng nhãn heatmap) lên $0.8804$ ($+2.67$ điểm phần trăm) trong khi F1 giữ tương đương ($0.8557$), đổi lại Precision giảm còn $0.8324$. Trên ClipShots đạt F1 $0.7560$ (ngưỡng $0.15$). Như vậy HeatMap là một \textit{lựa chọn vận hành thiên về Recall}, phù hợp các kịch bản ưu tiên không bỏ sót ranh giới, chứ không nâng trần F1; BBC chưa được đánh giá do thiếu video gốc ở môi trường cục bộ.
+\textbf{Nhận xét:} Bảng~\ref{tab:autoshotv2_results} cho thấy các kiến trúc thế hệ sau (từ TransNetV2 trở đi) vượt trội rõ rệt so với các công trình kinh điển (DSM, TransNet V1). Trong nhóm AutoShotV2, \textbf{cấu hình chính đạt F1 cao nhất trên SHOT ($0.8607$)} --- vượt AutoShot gốc tự chạy lại ($0.8405$, tức $+2.0$ điểm phần trăm) và cả các biến thể khác (HeatMap $0.8557$, only-Shot $0.8552$); trên ClipShots biến thể huấn luyện trên ClipShots kèm EMA đạt cao nhất ($0.7860$) trong khi biến thể chỉ dùng SHOT tụt còn $0.7241$ --- khẳng định ClipShots nhạy với dữ liệu và cấu hình theo miền; trên BBC khoảng cách giữa các phiên bản nhỏ ($0.949$--$0.966$). Vì mục tiêu đề tài là video ngắn, cấu hình chính được lựa chọn theo hiệu năng cao nhất trên SHOT, đồng thời vẫn giữ khả năng tổng quát hóa tốt trên BBC và ClipShots; chi tiết ngưỡng quyết định theo từng bộ được trình bày ở Mục~\ref{sec:extra_param_sweep}. Hai phiên bản phụ trợ AutoShotV1 (chỉ bổ sung làm mượt Gaussian) và AutoShotV2-HeatMap (nhãn mềm dạng heatmap) chỉ được đưa vào bảng để so sánh; phần mô tả và phân tích chi tiết của chúng được trình bày ở Phụ lục~\ref{sec:variants_v1_heatmap}.
 
 \section{Kết quả chính: Precision, Recall, F1 theo từng bộ dữ liệu}
 \label{sec:extra_param_sweep}
@@ -57,11 +47,11 @@ Cấu hình chính dùng bộ siêu tham số: $T^*=0.2413$, $\sigma=2.0$, $\gam
 \setlength{\tabcolsep}{3pt}
 \begin{tabular}{L{3.0cm}C{1.8cm}C{2.0cm}C{1.8cm}C{1.5cm}C{2.4cm}}
 \toprule
-\textbf{Bộ dữ liệu} & \textbf{Ngưỡng} & \textbf{Precision} & \textbf{Recall} & \textbf{F1} & \textbf{$\Delta$F1 vs AutoShot} \\
+\textbf{Bộ dữ liệu} & \textbf{Ngưỡng} & \textbf{Precision} & \textbf{Recall} & \textbf{F1} & \textbf{$\Delta$F1 vs AutoShot (điểm \%)} \\
 \midrule
-SHOT & 0.12 & 0.8408 & 0.8816 & \textbf{0.8607} & $+0.0202$ \\
-ClipShots & 0.19 & 0.7011 & 0.8554 & \textbf{0.7706} & $+0.0057$ \\
-BBC & 0.12 & 0.9668 & 0.9628 & \textbf{0.9648} & $+0.0094$ \\
+SHOT & 0.12 & 0.8408 & 0.8816 & \textbf{0.8607} & $+2.02\%$ \\
+ClipShots & 0.19 & 0.7011 & 0.8554 & \textbf{0.7706} & $+0.57\%$ \\
+BBC & 0.12 & 0.9668 & 0.9628 & \textbf{0.9648} & $+0.94\%$ \\
 \bottomrule
 \end{tabular}
 \end{table}

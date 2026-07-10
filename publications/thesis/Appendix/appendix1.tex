@@ -115,3 +115,18 @@ $T^*$ (nhiệt độ) & --- & Temperature scaling trên tập xác thực \\
 \end{table}
 
 \noindent Cấu hình in đậm (\texttt{g2p0\_a0p60\_m0p30\_lr7e6}) cho F1 cao nhất trên SHOT và được chọn làm cấu hình chính của AutoShotV2.
+
+\section{Các phiên bản phụ trợ: AutoShotV1 và AutoShotV2-HeatMap}
+\label{sec:variants_v1_heatmap}
+
+Phương pháp chính của khóa luận là AutoShotV2 (cấu hình chính). Bên cạnh đó, hai phiên bản phụ trợ dưới đây được thực hiện để làm mốc so sánh; kết quả định lượng của chúng đã được đưa vào Bảng~\ref{tab:autoshotv2_results} ở Chương~\ref{ch:bo_du_lieu_va_thuc_nghiem}. Phụ lục này trình bày chi tiết cấu hình và phân tích của hai phiên bản đó.
+
+\subsection{Phiên bản AutoShotV1 --- chỉ bổ sung làm mượt Gaussian}
+\label{sec:autoshotv1}
+
+AutoShotV1 giữ nguyên toàn bộ trọng số AutoShot@F1 và \textbf{không huấn luyện lại tham số nào}, chỉ bổ sung làm mượt Gaussian 1D ($\sigma = 2.0$, dò trên tập xác thực SHOT) lên chuỗi xác suất trước bước ngưỡng hóa (Mục~\ref{subsec:v2_gaussian}). Chỉ với bước hậu xử lý này, F1 trên SHOT tăng từ $0.8405$ (AutoShot tự chạy lại) lên $0.8477$ ($+0.72$ điểm phần trăm), với Precision $0.8558$ và Recall $0.8398$ --- một điểm vận hành thiên về Precision. Kết quả xác nhận làm mượt Gaussian là thành phần nền tảng có ích; AutoShotV2 đầy đủ bổ sung thêm Focal Loss, nhãn nhiều điểm dương và hiệu chỉnh nhiệt độ chủ yếu để nâng Recall và cân bằng lại Precision--Recall. Lưu ý AutoShotV1 khác cấu hình đối chứng $P1$ ở Mục~\ref{sec:ablation}: $P1$ có huấn luyện lại tầng phân loại bằng BCE, còn AutoShotV1 thì không.
+
+\subsection{Biến thể AutoShotV2-HeatMap --- nhãn mềm dạng heatmap}
+\label{sec:autoshotv2_heatmap}
+
+AutoShotV2-HeatMap giữ nguyên mạng xương sống, chỉ đổi phía nhãn khi huấn luyện lại tầng phân loại: thay nhãn một điểm dương (one-hot) bằng nhãn mềm phân phối Gaussian ($\sigma_{\text{nhãn}}=3.0$) quanh ranh giới, kèm làm trơn nhãn bất đối xứng ($\varepsilon=0.1$, chỉ áp cho nhãn dương), nhằm tăng khả năng bắt chuyển cảnh dần. Trên SHOT tại ngưỡng $\theta=0.10$, biến thể nâng Recall từ $0.8537$ (đầu phân loại cơ sở, không dùng nhãn heatmap) lên $0.8804$ ($+2.67$ điểm phần trăm) trong khi F1 giữ tương đương ($0.8557$), đổi lại Precision giảm còn $0.8324$. Trên ClipShots đạt F1 $0.7560$ (ngưỡng $0.15$). Như vậy HeatMap là một \textit{lựa chọn vận hành thiên về Recall}, phù hợp các kịch bản ưu tiên không bỏ sót ranh giới, chứ không nâng trần F1; BBC chưa được đánh giá do thiếu video gốc ở môi trường cục bộ.
