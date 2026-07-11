@@ -14,7 +14,7 @@ Chương này trình bày nền tảng lý thuyết và các công trình liên 
 Các hướng nghiên cứu SBD có thể nhóm thành ba dòng chính, mỗi dòng có thế mạnh và giới hạn riêng (Hình~\ref{fig:deep_learning_methods}):
 \begin{itemize}
     \item \textbf{Hướng cổ điển dựa trên đặc trưng thủ công.} Các phương pháp so sánh histogram màu, chênh lệch pixel hoặc biên cạnh có ưu điểm dễ triển khai và chi phí tính toán thấp. Tuy nhiên, chúng phụ thuộc mạnh vào ngưỡng thủ công, kém bền vững trước nhiễu ánh sáng/chuyển động và thường khó xử lý chuyển cảnh dần \cite{Abdulhussain2018_SBD_MethodsChallenges}.
-    \item \textbf{Hướng học sâu CNN/Transformer.} Các mô hình như DeepSBD \cite{hassanien2017largescale} và TransNetV2 \cite{soucek2020transnetv2} học đặc trưng không-thời gian từ dữ liệu, cải thiện đáng kể độ chính xác (Precision) và độ bao phủ (Recall) trên nhiều bộ chuẩn. Tuy vậy, kiến trúc mạng xương sống được thiết kế thủ công vẫn có nguy cơ chưa tối ưu cho video ngắn có nhịp cắt cảnh dày đặc.
+    \item \textbf{Hướng học sâu CNN/Transformer.} Các mô hình như DeepSBD \cite{hassanien2017largescale} và TransNetV2 \cite{soucek2020transnetv2} học đặc trưng không-thời gian từ dữ liệu, cải thiện đáng kể độ chính xác dương và độ bao phủ trên nhiều bộ chuẩn. Tuy vậy, kiến trúc mạng xương sống được thiết kế thủ công vẫn có nguy cơ chưa tối ưu cho video ngắn có nhịp cắt cảnh dày đặc.
     \item \textbf{Hướng NAS cho SBD.} Thay vì thiết kế thủ công, NAS \cite{elsken2018_nas_survey,ren2020_nas_survey,white2023_nas1000} tự động tìm kiến trúc tốt nhất trong một không gian ứng viên. AutoShot \cite{zhu2023autoshot} cho thấy hướng này có tiềm năng vượt các mô hình cơ sở mạnh trên SHOT, nhưng hiệu quả tổng quát hóa sang các miền dữ liệu khác vẫn còn là câu hỏi mở.
 \end{itemize}
 
@@ -43,7 +43,7 @@ Một nhánh cổ điển khác sử dụng đặc trưng biên cạnh để đo
 \subsection{Hạn chế của phương pháp cổ điển trên video ngắn}
 Khi áp dụng vào video ngắn, các phương pháp cổ điển bộc lộ ba hạn chế cốt lõi:
 \begin{enumerate}
-    \item \textbf{Độ phụ thuộc ngưỡng cao:} Mỗi tập dữ liệu hoặc thậm chí từng video cần một ngưỡng riêng để cân bằng Precision--Recall. Trong video ngắn với nhịp cắt dày và phong cách hậu kỳ đa dạng, một ngưỡng cố định khó đạt hiệu quả tổng quát.
+    \item \textbf{Độ phụ thuộc ngưỡng cao:} Mỗi tập dữ liệu hoặc thậm chí từng video cần một ngưỡng riêng để cân bằng độ chính xác dương và độ bao phủ. Trong video ngắn với nhịp cắt dày và phong cách hậu kỳ đa dạng, một ngưỡng cố định khó đạt hiệu quả tổng quát.
     \item \textbf{Kém bền vững với nhiễu thị giác:} Đèn flash, chuyển động máy quay nhanh và hiệu ứng kỹ xảo trong nội bộ shot dễ tạo ra các đỉnh giả trong tín hiệu khoảng cách, dẫn đến cảnh báo giả.
     \item \textbf{Yếu với chuyển cảnh dần phức tạp:} Các hiệu ứng dissolve, wipe và morph có gradient thay đổi mượt theo thời gian, khiến độ đo dựa trên khác biệt liền kề không tạo ra đỉnh đủ rõ để vượt ngưỡng.
 \end{enumerate}
@@ -63,18 +63,18 @@ DeepSBD do Hassanien và cộng sự đề xuất \cite{hassanien2017largescale}
 \end{itemize}
 
 \subsection{TransNet và TransNetV2}
-TransNet \cite{soucek2019transnet} và TransNetV2 \cite{soucek2020transnetv2} là các mô hình cơ sở mạnh trong SBD hiện đại. TransNetV2 khai thác các khối tích chập giãn cho phép tăng trường tiếp nhận thời gian mà không tăng số tham số tương ứng. Cùng với kỹ thuật \textit{kernel factorization} tách 3D convolution thành chuỗi 2D + 1D convolution, TransNetV2 đạt mức cân bằng tốt giữa độ chính xác và chi phí tính toán.
+TransNet \cite{soucek2019transnet} và TransNetV2 \cite{soucek2020transnetv2} là các mô hình cơ sở mạnh trong SBD hiện đại. TransNetV2 khai thác các khối tích chập giãn cho phép tăng trường tiếp nhận thời gian mà không tăng số tham số tương ứng. Cùng với kỹ thuật phân tách hạt nhân tích chập, trong đó phép tích chập ba chiều được tách thành tích chập không gian hai chiều và tích chập thời gian một chiều, TransNetV2 đạt mức cân bằng tốt giữa độ chính xác và chi phí tính toán.
 
 Hai cải tiến đáng chú ý của TransNetV2 so với TransNet là:
 \begin{itemize}
     \item \textbf{Nhánh đặc trưng tương đồng (frame similarity branch):} Tính ma trận tương đồng giữa các khung hình trong cùng cửa sổ, cung cấp tín hiệu phụ trợ giúp mô hình phân biệt chuyển cảnh thật với nhiễu chuyển động.
-    \item \textbf{Hai đầu phân loại song song:} Một đầu dự đoán xác suất chuyển cảnh đơn-khung (single-frame chuyển cảnh), một đầu dự đoán xác suất "thuộc về một chuyển cảnh dần" (all-frames-of-chuyển cảnh). Hai tín hiệu này được kết hợp ở giai đoạn suy diễn để vừa định vị chính xác vị trí cut, vừa bao quát được toàn bộ vùng gradual.
+    \item \textbf{Hai đầu phân loại song song:} Một đầu dự đoán xác suất chuyển cảnh tại một khung đơn (single-frame), một đầu dự đoán xác suất ``thuộc về một chuyển cảnh dần'' (all-frame). Hai tín hiệu này được kết hợp ở giai đoạn suy diễn để vừa định vị chính xác vị trí chuyển cảnh đột ngột, vừa bao quát được toàn bộ vùng chuyển cảnh dần.
 \end{itemize}
 
 Tuy là mô hình cơ sở mạnh, TransNetV2 chủ yếu được tối ưu trên các bộ dữ liệu video dài (phim, tài liệu) như BBC Planet Earth. Khi áp dụng sang video ngắn có shot dày đặc, hiệu ứng chuyển cảnh phức tạp và nhiều nhiễu thị giác, kiến trúc mạng xương sống cố định bộc lộ giới hạn về tổng quát hóa. Chi tiết kiến trúc và hàm mục tiêu của TransNetV2 được trình bày đầy đủ trong Chương~\ref{ch:phuong_phap_de_xuat} (Phần A) vì TransNetV2 đóng vai trò mô hình cơ sở trực tiếp của khóa luận.
 
 \subsection{Tiếp cận Transformer và multi-modal}
-Sau thành công của Transformer \cite{vaswani2017attention} trong xử lý chuỗi, nhiều nghiên cứu SBD gần đây áp dụng cơ chế self-attention để mô hình hóa phụ thuộc xa giữa các khung hình. Esteve và cộng sự \cite{esteve2023shot} đề xuất một mô hình kết hợp 3D depthwise convolution với visual attention, cho thấy attention có thể bổ trợ tốt cho convolution trong việc phát hiện các chuyển cảnh dần dài. Theo cùng hướng, nhiều công trình khảo sát trong các tổng kết gần đây \cite{Kar2024_VideoSBD_IssuesChallengesSolutions} cho thấy xu hướng dùng kết hợp đa phương thức (kết hợp đặc trưng hình ảnh với âm thanh hoặc tín hiệu chuyển động) để tăng tính bền vững khi chuyển miền dữ liệu.
+Sau thành công của Transformer \cite{vaswani2017attention} trong xử lý chuỗi, nhiều nghiên cứu SBD gần đây áp dụng cơ chế tự chú ý để mô hình hóa phụ thuộc xa giữa các khung hình. Esteve và cộng sự \cite{esteve2023shot} đề xuất một mô hình kết hợp tích chập chiều sâu ba chiều với cơ chế chú ý thị giác, cho thấy cơ chế chú ý có thể bổ trợ tốt cho phép tích chập trong việc phát hiện các chuyển cảnh dần dài. Theo cùng hướng, nhiều công trình khảo sát trong các tổng kết gần đây \cite{Kar2024_VideoSBD_IssuesChallengesSolutions} cho thấy xu hướng dùng kết hợp đa phương thức (kết hợp đặc trưng hình ảnh với âm thanh hoặc tín hiệu chuyển động) để tăng tính bền vững khi chuyển miền dữ liệu.
 
 Mặc dù vậy, các phương pháp dựa trên Transformer thường có chi phí tính toán cao do độ phức tạp bậc hai theo độ dài chuỗi, và việc thiết kế thủ công không gian ứng viên cho từng đặc thù dữ liệu vẫn là vấn đề mở. Đây chính là động cơ dẫn đến hướng tiếp cận tiếp theo: để máy tự tìm kiến trúc thay vì thiết kế thủ công.
 
@@ -98,7 +98,7 @@ AutoShot \cite{zhu2023autoshot} là công trình tiêu biểu đưa NAS vào bà
     \item \textbf{Mô hình AutoShot:} Sử dụng SuperNet một lần bắn theo phong cách SPOS \cite{guo2020spos} trên không gian tìm kiếm gồm bốn biến thể khối tích chập giãn (DDCNNV2, A, B, C). Tổng kích thước không gian tìm kiếm vào khoảng 83.9 triệu kiến trúc ứng viên. Quá trình tìm kiếm sử dụng Bayesian Optimization, kèm hai kỹ thuật huấn luyện lại là \textit{Knowledge Distillation} \cite{hinton2015distilling} và \textit{Weight Grafting} theo entropy.
 \end{itemize}
 
-Trên tập SHOT, AutoShot cho thấy ưu thế rõ rệt so với mô hình cơ sở TransNetV2, xác nhận tiềm năng của hướng NAS trong môi trường shot ngắn và chuyển cảnh phức tạp. Tuy nhiên, AutoShot tập trung tối ưu phần mạng xương sống mà chưa khảo sát sâu các kỹ thuật ở tầng phân loại và hậu xử lý, bao gồm hàm mất mát Focal (Focal Loss), nhãn nhiều điểm dương (many-hot), hiệu chỉnh nhiệt độ (temperature scaling), và làm mượt Gaussian (Gaussian smoothing). Đây chính là khoảng trống mà phiên bản cải tiến \textit{AutoShotV2} của khóa luận hướng đến lấp đầy, được trình bày trong Phần B của Chương~\ref{ch:phuong_phap_de_xuat}.
+Trên tập SHOT, AutoShot cho thấy ưu thế rõ rệt so với mô hình cơ sở TransNetV2, xác nhận tiềm năng của hướng NAS trong môi trường shot ngắn và chuyển cảnh phức tạp. Tuy nhiên, AutoShot tập trung tối ưu phần mạng xương sống mà chưa khảo sát sâu các kỹ thuật ở tầng phân loại và hậu xử lý, bao gồm hàm mất mát Focal, nhãn nhiều điểm dương, hiệu chỉnh nhiệt độ và làm mượt Gaussian. Đây chính là khoảng trống mà phiên bản cải tiến \textit{AutoShotV2} của khóa luận hướng đến lấp đầy, được trình bày trong Phần B của Chương~\ref{ch:phuong_phap_de_xuat}.
 
 \section{So sánh tổng quan các công trình liên quan}
 \label{sec:method_comparison_table}

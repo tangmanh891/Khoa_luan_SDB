@@ -7,7 +7,7 @@
 \begin{quotation}
     \noindent
     \small\textit{
-   Chương này tập trung vào dữ liệu và kết quả thực nghiệm. Nội dung chính gồm đặc điểm của bộ dữ liệu SHOT, hai bộ dữ liệu đánh giá bổ sung BBC Planet Earth và ClipShots, các chỉ số Precision/Recall/F1, sau đó trình bày kết quả định lượng và nhận xét chính trên từng bộ dữ liệu.
+   Chương này tập trung vào dữ liệu và kết quả thực nghiệm. Nội dung chính gồm đặc điểm của bộ dữ liệu SHOT, hai bộ dữ liệu đánh giá bổ sung BBC Planet Earth và ClipShots, các chỉ số độ chính xác dương, độ bao phủ và F1, sau đó trình bày kết quả định lượng và nhận xét chính trên từng bộ dữ liệu.
     }
 \end{quotation}
 \vspace{1em} % Tạo khoảng cách nhỏ
@@ -45,12 +45,12 @@ SHOT được phân tích dựa trên các thách thức đặc thù của video
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.8\textwidth]{images/Anh42.png}
-    \caption[Minh họa các thách thức đặc thù trong SHOT]{Minh họa các thách thức đặc thù trong SHOT: (Hàng 1) Chuyển cảnh dần phức tạp, (Hàng 2) Cấu trúc tam phân, và (Hàng 3) Cảnh ảo.}
+    \caption[Minh họa các thách thức đặc thù trong SHOT]{Minh họa các thách thức đặc thù trong SHOT: hàng thứ nhất minh họa chuyển cảnh dần phức tạp, hàng thứ hai minh họa cấu trúc tam phân và hàng thứ ba minh họa cảnh ảo.}
     \label{fig:shot_challenges}
 \end{figure}
 \FloatBarrier
 
-Sự khác biệt giữa video ngắn và video truyền thống không chỉ nằm ở thời lượng mà còn ở nhịp độ và phong cách hậu kỳ (so sánh chi tiết xem Bảng~\ref{tab:dataset_comparison_detail} ở Mục~\ref{sec:dataset_summary}). Các thống kê chính phản ánh tính chất ngắn và nhanh của bộ dữ liệu:
+Sự khác biệt giữa video ngắn và video truyền thống không chỉ nằm ở thời lượng mà còn ở nhịp độ và phong cách hậu kỳ. Bảng~\ref{tab:dataset_comparison_detail} tại Mục~\ref{sec:dataset_summary} trình bày so sánh chi tiết. Các thống kê chính phản ánh tính chất ngắn và nhanh của bộ dữ liệu:
 \begin{itemize}
     \item \textbf{Độ dài trung bình video:} 39.5 giây
     \item \textbf{Độ dài trung bình cảnh:} 2.59 giây
@@ -74,10 +74,10 @@ Với các đặc điểm độc đáo phản ánh đúng thực tế của vide
 Ngoài bộ dữ liệu SHOT dành riêng cho video ngắn, các nghiên cứu về phát hiện ranh giới cảnh quay thường được đánh giá trên nhiều bộ dữ liệu chuẩn khác nhau để kiểm tra khả năng tổng quát hóa. Phần này giới thiệu chi tiết hai bộ dữ liệu phổ biến: BBC Planet Earth và ClipShots. Những bộ dữ liệu này đại diện cho các miền nội dung và thách thức khác nhau, giúp đánh giá toàn diện hiệu năng của các mô hình SBD.
 
 \subsection{Bộ dữ liệu BBC Planet Earth}
-\textbf{BBC Planet Earth}~\cite{baraldi2015rai} gồm 11 tập phim tài liệu thiên nhiên (~50 phút/tập, ~4.900 shot, shot TB 6.57 giây). Nội dung chất lượng cao với camera mượt mà (panning, zooming) và phong cách biên tập nghệ thuật sử dụng nhiều dissolve và fade. Thách thức chính là \textbf{gradual transition} phức tạp khiến ranh giới giữa hai shot không sắc nét như chuyển cảnh đột ngột.
+\textbf{BBC Planet Earth}~\cite{baraldi2015rai} gồm 11 tập phim tài liệu thiên nhiên. Mỗi tập dài khoảng 50 phút; toàn bộ dữ liệu có khoảng 4.900 cảnh quay, với độ dài cảnh quay trung bình 6,57 giây. Nội dung chất lượng cao với các chuyển động lia và thu phóng máy quay mượt mà và phong cách biên tập nghệ thuật sử dụng nhiều hiệu ứng chồng hình và mờ dần. Thách thức chính là \textbf{chuyển cảnh dần} phức tạp khiến ranh giới giữa hai shot không sắc nét như chuyển cảnh đột ngột.
 
 \subsection{Bộ dữ liệu ClipShots}
-\textbf{ClipShots}~\cite{tang2018clipshots} là bộ dữ liệu quy mô lớn từ YouTube và Weibo, gồm 4.039 video (TB 237 giây), 128.000+ chuyển cảnh đột ngột và 38.000+ chuyển cảnh dần được dán nhãn thủ công (shot TB 15.34 giây). Nội dung đa dạng (20+ danh mục) từ nghiệp dư đến chuyên nghiệp. Thách thức: thay đổi ánh sáng đột ngột, camera rung, hiệu ứng chuyển cảnh không quy ước (glitch, flash, zoom nhanh) và khoảng cách miền dữ liệu lớn.
+\textbf{ClipShots}~\cite{tang2018clipshots} là bộ dữ liệu quy mô lớn từ YouTube và Weibo, gồm 4.039 video với độ dài trung bình 237 giây, hơn 128.000 chuyển cảnh đột ngột và hơn 38.000 chuyển cảnh dần được dán nhãn thủ công. Độ dài cảnh quay trung bình là 15,34 giây và nội dung trải rộng trên hơn 20 danh mục từ nghiệp dư đến chuyên nghiệp. Thách thức: thay đổi ánh sáng đột ngột, camera rung, hiệu ứng chuyển cảnh không quy ước, chẳng hạn nhiễu hình, lóe sáng và thu phóng nhanh, cùng khoảng cách miền dữ liệu lớn.
 
 \subsection{So sánh tổng hợp các bộ dữ liệu}
 \label{sec:dataset_summary}
@@ -94,10 +94,10 @@ Loại nội dung & Phim tài liệu & Đa dạng & Video ngắn \\
 Số lượng video & 11 & 4{,}039 & 853 \\
 Độ dài TB video (s) & 2{,}945 & 237 & 39.5 \\
 Độ dài TB shot (s) & 6.57 & 15.34 & 2.59 \\
-Hard cuts & Nhiều & 128{,}000+ & 8{,}890 \\
-Gradual transitions & Rất nhiều & 38{,}000+ & 2{,}716 \\
+Chuyển cảnh đột ngột & Nhiều & 128{,}000+ & 8{,}890 \\
+Chuyển cảnh dần & Rất nhiều & 38{,}000+ & 2{,}716 \\
 Độ khó & Trung bình & Cao & Rất cao \\
-Thách thức chính & Gradual transitions & Đa dạng hiệu ứng & Nhịp độ nhanh \\
+Thách thức chính & Chuyển cảnh dần & Đa dạng hiệu ứng & Nhịp độ nhanh \\
 \bottomrule
 \end{tabularx}
 \caption{So sánh chi tiết các bộ dữ liệu đánh giá SBD}
@@ -114,7 +114,7 @@ Mỗi bộ dữ liệu đại diện cho một khía cạnh khác nhau của bà
 \section{Các chỉ số đánh giá hiệu quả mô hình}
 \label{sec:metrics}
 
-Do dữ liệu SBD mất cân bằng nghiêm trọng (khung hình không chuyển cảnh chiếm đa số), khóa luận dùng bộ ba chỉ số Precision, Recall và F1-score thay cho Độ chính xác. Ký hiệu: $N_c$ (TP), $N_m$ (FN), $N_f$ (FP) lần lượt là số ranh giới phát hiện đúng, bỏ sót, và báo động giả. Ngưỡng $\theta$ chuyển xác suất đầu ra thành quyết định nhị phân: dự đoán $> \theta$ được coi là ranh giới.
+Do dữ liệu SBD mất cân bằng nghiêm trọng (khung hình không chuyển cảnh chiếm đa số), khóa luận dùng bộ ba chỉ số độ chính xác dương (Precision), độ bao phủ (Recall) và chỉ số F1 thay cho độ chính xác tổng thể (Accuracy). Ký hiệu: $N_c$ (TP), $N_m$ (FN), $N_f$ (FP) lần lượt là số ranh giới phát hiện đúng, bỏ sót, và báo động giả. Ngưỡng $\theta$ chuyển xác suất đầu ra thành quyết định nhị phân: dự đoán $> \theta$ được coi là ranh giới.
 
 \begin{align}
     \text{Precision} &= \frac{N_c}{N_c + N_f}, \\
@@ -122,13 +122,13 @@ Do dữ liệu SBD mất cân bằng nghiêm trọng (khung hình không chuyể
     \text{F1} &= 2 \times \frac{\text{Precision} \times \text{Recall}}{\text{Precision} + \text{Recall}}.
 \end{align}
 
-Precision cao đồng nghĩa ít báo động giả; Recall cao đồng nghĩa ít bỏ sót ranh giới. F1 là trung bình điều hòa của hai chỉ số, được dùng làm tiêu chí so sánh chính giữa các phương pháp vì nó phản ánh đồng thời cả hai chiều. Việc đánh giá trên nhiều bộ dữ liệu (SHOT, ClipShots, BBC) là cần thiết để kiểm tra khả năng tổng quát hóa.
+Độ chính xác dương cao đồng nghĩa ít báo động giả; độ bao phủ cao đồng nghĩa ít bỏ sót ranh giới. F1 là trung bình điều hòa của hai chỉ số, được dùng làm tiêu chí so sánh chính giữa các phương pháp vì nó phản ánh đồng thời cả hai chiều. Việc đánh giá trên nhiều bộ dữ liệu (SHOT, ClipShots, BBC) là cần thiết để kiểm tra khả năng tổng quát hóa.
 
 \section{Kịch bản thực nghiệm}
 \label{sec:experimental_scenarios}
-Các kết quả trong khóa luận được tổ chức theo ba nhóm: kết quả chính (F1 tốt nhất theo từng bộ dữ liệu, đúng giao thức đánh giá của AutoShot), so sánh Precision/Recall/F1, và các bảng kết quả bổ sung để giải thích xu hướng quan sát được. Phần thảo luận về lỗi và khả năng tổng quát hóa được chuyển sang Chương~\ref{ch:ket_luan}.
+Các kết quả trong khóa luận được tổ chức theo ba nhóm: kết quả chính (F1 tốt nhất theo từng bộ dữ liệu, đúng giao thức đánh giá của AutoShot), so sánh độ chính xác dương, độ bao phủ và F1, và các bảng kết quả bổ sung để giải thích xu hướng quan sát được. Phần thảo luận về lỗi và khả năng tổng quát hóa được chuyển sang Chương~\ref{ch:ket_luan}.
 
-Để bảo đảm khả năng tái lập, toàn bộ thí nghiệm được chạy với seed cố định 42. Các kết quả ablation sử dụng cùng split train/validation/test, cùng checkpoint AutoShot gốc và cùng metadata. Những artifact nặng như checkpoint, cached logits và video dataset không được đưa vào Git, mà được quản lý riêng theo manifest artifact. Chi tiết về môi trường phần cứng và phiên bản thư viện được mô tả cụ thể trong Bảng~\ref{tab:execution_environment}.
+Để bảo đảm khả năng tái lập, toàn bộ thí nghiệm được chạy với hạt giống ngẫu nhiên cố định 42. Các kết quả thực nghiệm phân rã sử dụng cùng cách phân chia huấn luyện/xác thực/kiểm tra, cùng tệp trọng số AutoShot gốc và cùng siêu dữ liệu. Những tệp nặng như tệp trọng số, logit đã lưu đệm và bộ dữ liệu video không được đưa vào Git, mà được quản lý riêng theo bản kê tệp (manifest). Chi tiết về môi trường phần cứng và phiên bản thư viện được mô tả cụ thể trong Bảng~\ref{tab:execution_environment}.
 
 \begin{table}[H]
 \centering
@@ -151,16 +151,16 @@ Hạt giống (Seed) & 42 \\
 \end{table}
 
 \subsection{Cấu hình cuối cùng của AutoShotV2}
-Khóa luận báo cáo kết quả của AutoShotV2 ở \textbf{ngưỡng cho F1 cao nhất trên từng bộ dữ liệu}, đúng theo giao thức đánh giá chuẩn của AutoShot gốc (quét một dải ngưỡng quyết định rồi chọn F1 cao nhất cho mỗi bộ dữ liệu; chi tiết ở Mục~\ref{sec:extra_param_sweep}). Nhờ dùng chung giao thức chọn ngưỡng với AutoShot, kết quả của hai mô hình được so sánh trực tiếp và công bằng.
+Khóa luận báo cáo kết quả của AutoShotV2 ở \textbf{ngưỡng cho F1 cao nhất trên từng bộ dữ liệu}, đúng theo giao thức đánh giá chuẩn của AutoShot gốc. Giao thức này quét một dải ngưỡng quyết định rồi chọn F1 cao nhất cho mỗi bộ dữ liệu, như trình bày tại Mục~\ref{sec:extra_param_sweep}. Nhờ dùng chung giao thức chọn ngưỡng với AutoShot, kết quả của hai mô hình được so sánh trực tiếp và công bằng.
 
 Hệ thống gồm các thành phần:
 \begin{itemize}
-    \item \textbf{Mạng xương sống (Backbone):} Kiến trúc AutoShot@F1 (đã được NAS tối ưu và đóng băng trọng số).
-    \item \textbf{Tầng phân loại (ClassificationHead):} Bộ phân lớp mới huấn luyện lại từ đặc trưng cache với hàm Focal Loss ($\gamma=2.0$, $\alpha=0.6$) và nhãn many-hot (trọng số 0.3).
+    \item \textbf{Mạng xương sống:} Kiến trúc AutoShot@F1 (đã được NAS tối ưu và đóng băng trọng số).
+    \item \textbf{Tầng phân loại:} Bộ phân lớp mới huấn luyện lại từ đặc trưng đã lưu đệm với hàm mất mát Focal ($\gamma=2.0$, $\alpha=0.6$) và nhãn nhiều điểm dương với trọng số 0,3.
     \item \textbf{Hậu xử lý:} Hiệu chỉnh nhiệt độ, làm mượt Gaussian với $\sigma=2.0$, và ngưỡng quyết định chọn theo từng bộ dữ liệu.
 \end{itemize}
 
-Cả ba bộ dữ liệu dùng \textbf{chung một cấu hình duy nhất} (hệ số nhiệt độ $T^* = 0.2413$, $\sigma = 2.0$, Focal Loss $\gamma = 2.0$, $\alpha = 0.6$, trọng số nhánh many-hot $0.3$, tốc độ học $7\times10^{-6}$, suy giảm trọng số $10^{-4}$; chi tiết quá trình tìm kiếm siêu tham số ở Phụ lục~\ref{sec:hparam_search}), chỉ khác nhau ở ngưỡng quyết định chọn riêng theo từng bộ dữ liệu (Bảng~\ref{tab:autoshotv2_dataset_thresholds}).
+Cả ba bộ dữ liệu dùng \textbf{chung một cấu hình duy nhất}: hệ số nhiệt độ $T^* = 0.2413$, $\sigma = 2.0$, Focal Loss $\gamma = 2.0$, $\alpha = 0.6$, trọng số nhánh nhiều điểm dương $0.3$, tốc độ học $7\times10^{-6}$ và suy giảm trọng số $10^{-4}$. Phụ lục~\ref{sec:hparam_search} trình bày chi tiết quá trình tìm kiếm siêu tham số. Các bộ dữ liệu chỉ khác nhau ở ngưỡng quyết định được chọn riêng theo Bảng~\ref{tab:autoshotv2_dataset_thresholds}.
 
 \begin{table}[H]
 \centering
@@ -181,4 +181,4 @@ BBC & 0.12 \\
 \input{Chapter4/experiment_results}
 
 \section{Tổng kết chương}
-Chương này đã trình bày các bộ dữ liệu được sử dụng, đặc điểm chính của SHOT và hai bộ dữ liệu đánh giá bổ sung BBC, ClipShots, cùng bộ chỉ số Precision/Recall/F1. Trên cơ sở đó, chương báo cáo kết quả đánh giá AutoShotV2 trên từng bộ dữ liệu, so sánh với các mô hình tham chiếu và phân tích xu hướng Precision/Recall/F1. Những nội dung thảo luận sâu về lỗi còn tồn tại và khả năng tổng quát hóa được đặt ở Chương~\ref{ch:ket_luan}.
+Chương này đã trình bày các bộ dữ liệu được sử dụng, đặc điểm chính của SHOT và hai bộ dữ liệu đánh giá bổ sung BBC, ClipShots, cùng bộ chỉ số độ chính xác dương, độ bao phủ và F1. Trên cơ sở đó, chương báo cáo kết quả đánh giá AutoShotV2 trên từng bộ dữ liệu, so sánh với các mô hình tham chiếu và phân tích xu hướng độ chính xác dương, độ bao phủ và F1. Những nội dung thảo luận sâu về lỗi còn tồn tại và khả năng tổng quát hóa được đặt ở Chương~\ref{ch:ket_luan}.

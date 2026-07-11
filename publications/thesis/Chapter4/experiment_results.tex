@@ -25,17 +25,27 @@ AutoShotV1 & AutoShot@F1 + Gaussian, không huấn luyện lại & 0.8477 & -- &
 AutoShotV2 (chỉ Shot) & Huấn luyện lại tầng phân loại chỉ trên SHOT & 0.8552 & 0.9512 & 0.7241 \\
 AutoShotV2 (chỉ ClipShots) & Huấn luyện lại tầng phân loại chỉ trên ClipShots & 0.8371 & 0.9494 & 0.7638 \\
 AutoShotV2 (chỉ ClipShots + EMA) & Như trên, thêm trung bình trượt EMA trọng số & 0.8417 & 0.9604 & \textbf{0.7860} \\
-AutoShotV2-HeatMap & + nhãn mềm dạng heatmap (thiên Recall) & 0.8557 & -- & 0.7560 \\
+AutoShotV2-HeatMap & + nhãn mềm dạng heatmap (thiên độ bao phủ) & 0.8557 & -- & 0.7560 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\textbf{Nhận xét:} Bảng~\ref{tab:autoshotv2_results} cho thấy các kiến trúc thế hệ sau (từ TransNetV2 trở đi) vượt trội rõ rệt so với các công trình kinh điển (DSM, TransNet V1). Trong nhóm AutoShotV2, \textbf{cấu hình chính đạt F1 cao nhất trên SHOT ($0.8607$)} --- vượt AutoShot gốc tự chạy lại ($0.8405$, tức $+2.0$ điểm phần trăm) và cả các biến thể khác (HeatMap $0.8557$, only-Shot $0.8552$); trên ClipShots biến thể huấn luyện trên ClipShots kèm EMA đạt cao nhất ($0.7860$) trong khi biến thể chỉ dùng SHOT tụt còn $0.7241$ --- khẳng định ClipShots nhạy với dữ liệu và cấu hình theo miền; trên BBC khoảng cách giữa các phiên bản nhỏ ($0.949$--$0.966$). Vì mục tiêu đề tài là video ngắn, cấu hình chính được lựa chọn theo hiệu năng cao nhất trên SHOT, đồng thời vẫn giữ khả năng tổng quát hóa tốt trên BBC và ClipShots; chi tiết ngưỡng quyết định theo từng bộ được trình bày ở Mục~\ref{sec:extra_param_sweep}. Hai phiên bản phụ trợ AutoShotV1 (chỉ bổ sung làm mượt Gaussian) và AutoShotV2-HeatMap (nhãn mềm dạng heatmap) chỉ được đưa vào bảng để so sánh; phần mô tả và phân tích chi tiết của chúng được trình bày ở Phụ lục~\ref{sec:variants_v1_heatmap}.
+\textbf{Nhận xét:} Bảng~\ref{tab:autoshotv2_results} cho thấy các kiến trúc thế hệ sau (từ TransNetV2 trở đi) vượt trội rõ rệt so với các công trình kinh điển (DSM, TransNet V1). Trong nhóm AutoShotV2, \textbf{cấu hình chính đạt F1 cao nhất trên SHOT ($0.8607$)} --- vượt AutoShot gốc tự chạy lại ($0.8405$, tức $+2.0$ điểm phần trăm) và cả các biến thể khác (HeatMap $0.8557$, only-Shot $0.8552$); trên ClipShots biến thể huấn luyện trên ClipShots kèm EMA đạt cao nhất ($0.7860$) trong khi biến thể chỉ dùng SHOT tụt còn $0.7241$ --- khẳng định ClipShots nhạy với dữ liệu và cấu hình theo miền; trên BBC khoảng cách giữa các phiên bản nhỏ ($0.949$--$0.966$). Vì mục tiêu đề tài là video ngắn, cấu hình chính được lựa chọn theo hiệu năng cao nhất trên SHOT, đồng thời vẫn giữ khả năng tổng quát hóa tốt trên BBC và ClipShots; chi tiết ngưỡng quyết định theo từng bộ được trình bày ở Mục~\ref{sec:extra_param_sweep}.
 
-\section{Kết quả chính: Precision, Recall, F1 theo từng bộ dữ liệu}
+\subsection{Phiên bản AutoShotV1 --- chỉ bổ sung làm mượt Gaussian}
+\label{sec:autoshotv1}
+
+AutoShotV1 giữ nguyên toàn bộ trọng số AutoShot@F1 và \textbf{không huấn luyện lại tham số nào}, chỉ bổ sung làm mượt Gaussian 1D ($\sigma = 2.0$, dò trên tập xác thực SHOT) lên chuỗi xác suất trước bước ngưỡng hóa (Mục~\ref{subsec:v2_gaussian}). Chỉ với bước hậu xử lý này, F1 trên SHOT tăng từ $0.8405$ (AutoShot tự chạy lại) lên $0.8477$ ($+0.72$ điểm phần trăm), với độ chính xác dương $0.8558$ và độ bao phủ $0.8398$ --- một điểm vận hành thiên về độ chính xác dương. Kết quả xác nhận làm mượt Gaussian là thành phần nền tảng có ích; AutoShotV2 đầy đủ bổ sung thêm hàm mất mát Focal, nhãn nhiều điểm dương và hiệu chỉnh nhiệt độ chủ yếu để nâng độ bao phủ và cân bằng lại độ chính xác dương và độ bao phủ. Lưu ý AutoShotV1 khác cấu hình đối chứng $P1$ ở Mục~\ref{sec:ablation}: $P1$ có huấn luyện lại tầng phân loại bằng BCE, còn AutoShotV1 thì không.
+
+\subsection{Biến thể AutoShotV2-HeatMap --- nhãn mềm dạng heatmap}
+\label{sec:autoshotv2_heatmap}
+
+AutoShotV2-HeatMap giữ nguyên mạng xương sống, chỉ đổi phía nhãn khi huấn luyện lại tầng phân loại: thay nhãn một điểm dương bằng nhãn mềm phân phối Gaussian ($\sigma_{\text{nhãn}}=3.0$) quanh ranh giới, kèm làm trơn nhãn bất đối xứng ($\varepsilon=0.1$, chỉ áp dụng cho nhãn dương), nhằm tăng khả năng bắt chuyển cảnh dần. Trên SHOT tại ngưỡng $\theta=0.10$, biến thể nâng độ bao phủ từ $0.8537$ (đầu phân loại cơ sở, không dùng nhãn dạng bản đồ nhiệt) lên $0.8804$ ($+2.67$ điểm phần trăm) trong khi F1 giữ tương đương ($0.8557$), đổi lại độ chính xác dương giảm còn $0.8324$. Trên ClipShots đạt F1 $0.7560$ (ngưỡng $0.15$). Như vậy HeatMap là một \textit{lựa chọn vận hành thiên về độ bao phủ}, phù hợp các kịch bản ưu tiên không bỏ sót ranh giới, chứ không nâng trần F1; BBC chưa được đánh giá do thiếu video gốc ở môi trường cục bộ.
+
+\section{Kết quả chính: độ chính xác dương, độ bao phủ và F1 theo từng bộ dữ liệu}
 \label{sec:extra_param_sweep}
 
-\textbf{Mục đích thí nghiệm:} Mục này báo cáo kết quả chính của AutoShotV2 --- Precision, Recall và F1 tại \textbf{ngưỡng cho F1 cao nhất trên từng bộ dữ liệu}, đúng theo giao thức đánh giá của AutoShot gốc\footnote{Tương ứng hàm đánh giá \texttt{mAP\_f1\_p\_fix\_r} trong mã nguồn AutoShot gốc: quét một dải ngưỡng quyết định rồi lấy F1 cao nhất cho mỗi bộ dữ liệu.}. Nhờ dùng chung giao thức, con số của AutoShotV2 và AutoShot được so sánh trực tiếp và công bằng.
+\textbf{Mục đích thí nghiệm:} Mục này báo cáo kết quả chính của AutoShotV2 --- độ chính xác dương, độ bao phủ và F1 tại \textbf{ngưỡng cho F1 cao nhất trên từng bộ dữ liệu}, đúng theo giao thức đánh giá của AutoShot gốc\footnote{Tương ứng hàm đánh giá \texttt{mAP\_f1\_p\_fix\_r} trong mã nguồn AutoShot gốc: quét một dải ngưỡng quyết định rồi lấy F1 cao nhất cho mỗi bộ dữ liệu.}. Nhờ dùng chung giao thức, con số của AutoShotV2 và AutoShot được so sánh trực tiếp và công bằng.
 
 Cấu hình chính dùng bộ siêu tham số: $T^*=0.2413$, $\sigma=2.0$, $\gamma=2.0$, $\alpha=0.6$, trọng số nhãn nhiều điểm dương bằng $0.3$, tốc độ học bằng $7\times10^{-6}$ và suy giảm trọng số bằng $10^{-4}$ (chi tiết quá trình tìm kiếm siêu tham số ở Phụ lục~\ref{sec:hparam_search}). Cùng một cấu hình này được dùng cho cả ba bộ dữ liệu, chỉ khác ngưỡng quyết định chọn riêng cho từng bộ: SHOT tại $\theta=0.12$, ClipShots tại $\theta=0.19$ và BBC tại $\theta=0.10$.
 
@@ -47,29 +57,29 @@ Cấu hình chính dùng bộ siêu tham số: $T^*=0.2413$, $\sigma=2.0$, $\gam
 \setlength{\tabcolsep}{3pt}
 \begin{tabular}{L{3.0cm}C{1.8cm}C{2.0cm}C{1.8cm}C{1.5cm}C{2.4cm}}
 \toprule
-\textbf{Bộ dữ liệu} & \textbf{Ngưỡng} & \textbf{Precision} & \textbf{Recall} & \textbf{F1} & \textbf{$\Delta$F1 vs AutoShot (điểm \%)} \\
+\textbf{Bộ dữ liệu} & \textbf{Ngưỡng} & \textbf{Precision} & \textbf{Recall} & \textbf{F1} & \textbf{$\Delta$F1 vs AutoShot} \\
 \midrule
-SHOT & 0.12 & 0.8408 & 0.8816 & \textbf{0.8607} & $+2.02\%$ \\
-ClipShots & 0.19 & 0.7011 & 0.8554 & \textbf{0.7706} & $+0.57\%$ \\
-BBC & 0.12 & 0.9668 & 0.9628 & \textbf{0.9648} & $+0.94\%$ \\
+SHOT & 0.12 & 0.8408 & 0.8816 & \textbf{0.8607} & $+0.0202$ \\
+ClipShots & 0.19 & 0.7011 & 0.8554 & \textbf{0.7706} & $+0.0057$ \\
+BBC & 0.12 & 0.9668 & 0.9628 & \textbf{0.9648} & $+0.0094$ \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 \textbf{Kết quả minh chứng:} Các giá trị Precision/Recall/F1 và ngưỡng tương ứng được ghi nhận chi tiết tại Bảng~\ref{tab:extra_sweep_peaks}.
 
-\textbf{Thảo luận:} Trên SHOT --- bộ dữ liệu trọng tâm của đề tài --- AutoShotV2 đạt F1 $0.8607$, cao hơn AutoShot tự chạy lại $+2.0$ điểm phần trăm dưới cùng một giao thức chọn ngưỡng. Trên BBC, mô hình tổng quát hóa tốt ($0.9648$, cao hơn AutoShot $0.9554$ và TransNetV2 tự chạy lại $0.9593$). Trên ClipShots, F1 đạt $0.7706$ với Recall cao ($0.8554$) nhưng Precision thấp hơn hẳn ($0.7011$): mô hình bắt được phần lớn ranh giới thật nhưng vẫn sinh nhiều dự đoán dư thừa trên phân phối video thế giới mở đa dạng --- đây là hạn chế chính còn tồn tại trên miền dữ liệu này. Lưu ý ngưỡng $0.12$ và $0.19$ được lấy trên lưới mịn hơn dải ngưỡng mặc định của AutoShot, và được áp dụng đồng nhất cho cả AutoShotV2 lẫn các mô hình tham chiếu để bảo đảm so sánh công bằng.
+\textbf{Thảo luận:} Trên SHOT --- bộ dữ liệu trọng tâm của đề tài --- AutoShotV2 đạt F1 $0.8607$, cao hơn AutoShot tự chạy lại $+2.0$ điểm phần trăm dưới cùng một giao thức chọn ngưỡng. Trên BBC, mô hình tổng quát hóa tốt ($0.9648$, cao hơn AutoShot $0.9554$ và TransNetV2 tự chạy lại $0.9593$). Trên ClipShots, F1 đạt $0.7706$ với độ bao phủ cao ($0.8554$) nhưng độ chính xác dương thấp hơn hẳn ($0.7011$): mô hình bắt được phần lớn ranh giới thật nhưng vẫn sinh nhiều dự đoán dư thừa trên phân phối video thế giới mở đa dạng --- đây là hạn chế chính còn tồn tại trên miền dữ liệu này. Lưu ý ngưỡng $0.12$ và $0.19$ được lấy trên lưới mịn hơn dải ngưỡng mặc định của AutoShot, và được áp dụng đồng nhất cho cả AutoShotV2 lẫn các mô hình tham chiếu để bảo đảm so sánh công bằng.
 
 \section{Thực nghiệm phân rã thành phần}
 \label{sec:ablation}
 
-\textbf{Mục đích thí nghiệm:} Thực nghiệm phân rã thành phần (ablation study) này nhằm kiểm chứng độc lập và làm rõ đóng góp thực tế của từng đề xuất cải tiến (gồm hàm mất mát Focal, nhãn nhiều điểm dương ở giai đoạn huấn luyện; hiệu chỉnh nhiệt độ - temperature scaling, làm mượt Gaussian - Gaussian smoothing ở giai đoạn hậu xử lý) trên quy trình (pipeline) Pha 2 (đóng băng mạng xương sống) đối với hiệu năng cuối cùng của hệ thống, trả lời cho câu hỏi nghiên cứu RQ2.
+\textbf{Mục đích thí nghiệm:} Thực nghiệm phân rã thành phần này nhằm kiểm chứng độc lập và làm rõ đóng góp thực tế của từng đề xuất cải tiến, gồm hàm mất mát Focal và nhãn nhiều điểm dương ở giai đoạn huấn luyện, cùng hiệu chỉnh nhiệt độ và làm mượt Gaussian ở giai đoạn hậu xử lý. Thực nghiệm được tiến hành trên quy trình Pha 2 với mạng xương sống được đóng băng để đánh giá hiệu năng cuối cùng của hệ thống và trả lời câu hỏi nghiên cứu RQ2.
 
-Bảng~\ref{tab:ablation_controlled} phân tách đóng góp của từng thành phần trên quy trình Pha 2 --- chỉ huấn luyện lại tầng phân loại trên đặc trưng đã trích sẵn (đóng băng mạng xương sống) --- theo một ma trận đối chứng có kiểm soát. Lưu ý ma trận này chạy trên tập con metadata (dùng cho kiểm định chéo) với hệ số nhiệt độ riêng, nên F1 tuyệt đối không so trực tiếp được với kết quả chính ở Mục~\ref{sec:extra_param_sweep}; bảng chỉ nhằm đọc mức chênh $\Delta$F1 giữa các cấu hình thành phần.
+Bảng~\ref{tab:ablation_controlled} phân tách đóng góp của từng thành phần trên quy trình Pha 2 --- chỉ huấn luyện lại tầng phân loại trên đặc trưng đã trích sẵn trong khi mạng xương sống được đóng băng --- theo một ma trận đối chứng có kiểm soát. Lưu ý ma trận này chạy trên tập con siêu dữ liệu dùng cho kiểm định chéo với hệ số nhiệt độ riêng, nên F1 tuyệt đối không so trực tiếp được với kết quả chính ở Mục~\ref{sec:extra_param_sweep}; bảng chỉ nhằm đọc mức chênh $\Delta$F1 giữa các cấu hình thành phần.
 
 \begin{table}[H]
 \centering
-\caption[Ablation thành phần có kiểm soát trên Pha 2]{Ablation thành phần có kiểm soát trên Pha 2: $\Delta$F1 so với đối chứng A1 (điểm phần trăm). Số đậm đánh dấu cấu hình $B4$ được chọn làm cấu hình hậu xử lý chính.}
+\caption[Phân rã thành phần có kiểm soát trên Pha 2]{Phân rã thành phần có kiểm soát trên Pha 2: $\Delta$F1 so với đối chứng A1 (điểm phần trăm). Số đậm đánh dấu cấu hình $B4$ được chọn làm cấu hình hậu xử lý chính.}
 \label{tab:ablation_controlled}
 \small
 \begin{tabular}{L{5.0cm}C{2.2cm}C{2.2cm}C{2.4cm}}
@@ -81,16 +91,16 @@ Bảng~\ref{tab:ablation_controlled} phân tách đóng góp của từng thành
 \end{tabular}
 \end{table}
 
-\textbf{Kết quả minh chứng:} Ma trận kết quả ablation có kiểm soát được chi tiết hóa tại Bảng~\ref{tab:ablation_controlled}.
+\textbf{Kết quả minh chứng:} Ma trận kết quả phân rã có kiểm soát được chi tiết hóa tại Bảng~\ref{tab:ablation_controlled}.
 
-\textbf{Thảo luận:} Trong ma trận đối chứng có kiểm soát ở Bảng~\ref{tab:ablation_controlled}, quá trình ablation được thực hiện trên quy trình Pha 2 bằng cách huấn luyện tầng phân loại trên đặc trưng đã trích sẵn (đóng băng mạng xương sống). Cấu hình đối chứng (control) là $A1$ (huấn luyện với hàm BCE và nhãn một điểm dương (one-hot)). Quá trình hậu xử lý trong thí nghiệm này sử dụng hệ số nhiệt độ $T^*=0.6618$ (khác hệ số nhiệt độ của cấu hình chính do chạy trên tập con metadata dùng cho cross-validation). Mô hình AutoShot gốc $A0$ đóng vai trò mốc tham chiếu. Số đậm trong bảng đánh dấu cấu hình $B4$ được chọn làm cấu hình hậu xử lý chính trong ma trận đối chứng chứ không phải giá trị lớn nhất của cột.
+\textbf{Thảo luận:} Trong ma trận đối chứng có kiểm soát ở Bảng~\ref{tab:ablation_controlled}, quá trình phân rã được thực hiện trên quy trình Pha 2 bằng cách huấn luyện tầng phân loại trên đặc trưng đã trích sẵn trong khi mạng xương sống được đóng băng. Cấu hình đối chứng $A1$ được huấn luyện với hàm BCE và nhãn một điểm dương. Quá trình hậu xử lý trong thí nghiệm này sử dụng hệ số nhiệt độ $T^*=0.6618$, khác hệ số nhiệt độ của cấu hình chính do được xác định trên tập con siêu dữ liệu dùng cho kiểm định chéo. Mô hình AutoShot gốc $A0$ đóng vai trò mốc tham chiếu. Số đậm trong bảng đánh dấu cấu hình $B4$ được chọn làm cấu hình hậu xử lý chính trong ma trận đối chứng chứ không phải giá trị lớn nhất của cột.
 
-Trong ma trận đối chứng này, hậu xử lý là đòn bẩy lớn nhất: $B4$ (Hiệu chỉnh nhiệt độ + Làm mượt Gaussian) nâng F1 rõ rệt so với đối chứng $A1$ trên SHOT ($+1.6$ điểm phần trăm) và ClipShots ($+4.6$ điểm phần trăm), trong khi hàm mất mát Focal hay nhãn nhiều điểm dương riêng lẻ gần như không thay đổi. Cấu hình $P1$ (chỉ làm mượt Gaussian) tuy tăng mạnh ClipShots nhưng làm giảm BBC xuống dưới ngưỡng guardrail, nên không được chọn; B4 giữ BBC gần như không đổi, cung cấp bằng chứng thực nghiệm rằng hiệu chỉnh nhiệt độ kết hợp làm mượt Gaussian là hướng hậu xử lý ổn định nhất trong thí nghiệm đối chứng.
+Trong ma trận đối chứng này, hậu xử lý là đòn bẩy lớn nhất: $B4$ (Hiệu chỉnh nhiệt độ + Làm mượt Gaussian) nâng F1 rõ rệt so với đối chứng $A1$ trên SHOT ($+1.6$ điểm phần trăm) và ClipShots ($+4.6$ điểm phần trăm), trong khi hàm mất mát Focal hay nhãn nhiều điểm dương riêng lẻ gần như không thay đổi. Cấu hình $P1$ (chỉ làm mượt Gaussian) tuy tăng mạnh ClipShots nhưng làm giảm BBC xuống dưới ngưỡng bảo vệ, nên không được chọn; B4 giữ BBC gần như không đổi, cung cấp bằng chứng thực nghiệm rằng hiệu chỉnh nhiệt độ kết hợp làm mượt Gaussian là hướng hậu xử lý ổn định nhất trong thí nghiệm đối chứng.
 
 Nhận xét từ bảng phân rã thành phần:
 \begin{itemize}
     \item \textbf{Hậu xử lý là thành phần tác động lớn nhất:} Làm mượt Gaussian, đặc biệt khi kết hợp với hiệu chỉnh nhiệt độ ở $B4$, cải thiện rõ rệt trên ClipShots và SHOT; các thành phần huấn luyện như hàm mất mát Focal hay nhãn nhiều điểm dương chỉ tạo thay đổi nhỏ hoặc không ổn định khi đứng độc lập.
-    \item \textbf{ClipShots vẫn là miền thử thách cực lớn:} Việc tinh chỉnh tầng phân loại chưa thể giúp mô hình vượt qua baseline gốc một cách ổn định trên ClipShots ở các cấu hình đối chứng, củng cố nhận định rằng miền dữ liệu thế giới mở này cần các cơ chế hiệu chỉnh nhiệt độ hoặc làm mượt thích nghi miền riêng biệt.
+    \item \textbf{ClipShots vẫn là miền thử thách cực lớn:} Việc tinh chỉnh tầng phân loại chưa thể giúp mô hình vượt qua mô hình cơ sở gốc một cách ổn định trên ClipShots ở các cấu hình đối chứng, củng cố nhận định rằng miền dữ liệu thế giới mở này cần các cơ chế hiệu chỉnh nhiệt độ hoặc làm mượt thích nghi miền riêng biệt.
 \end{itemize}
 
 \begin{figure}[H]
@@ -133,7 +143,7 @@ Nhận xét từ bảng phân rã thành phần:
   \node[below, font=\scriptsize] at (\x,-0.25) {\v};
 }
 \end{tikzpicture}
-\caption[So sánh F1 trên tập SHOT]{So sánh F1 giữa các mô hình trên tập SHOT (200 video kiểm tra). AutoShotV2 đạt F1 = \ASVTwoBestShotFOne{} theo lựa chọn tốt nhất trong protocol so sánh chính, cải thiện $+\ASVTwoBestVsAutoShotShotPP{}$ điểm phần trăm so với AutoShot tự chạy lại và $+\ASVTwoBestVsTransNetShotPP{}$ điểm phần trăm so với TransNetV2 mô hình cơ sở.}
+\caption[So sánh F1 trên tập SHOT]{So sánh F1 giữa các mô hình trên tập SHOT (200 video kiểm tra). AutoShotV2 đạt F1 = \ASVTwoBestShotFOne{} theo lựa chọn tốt nhất trong giao thức so sánh chính, cải thiện $+\ASVTwoBestVsAutoShotShotPP{}$ điểm phần trăm so với AutoShot tự chạy lại và $+\ASVTwoBestVsTransNetShotPP{}$ điểm phần trăm so với TransNetV2 mô hình cơ sở.}
 \label{fig:f1_comparison}
 \end{figure}
 \FloatBarrier

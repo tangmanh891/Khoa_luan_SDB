@@ -42,10 +42,10 @@ Yêu cầu:
 pip install -r publications/thesis/requirements.txt
 
 # Build vào publications/thesis/build/
-.\scripts\build_thesis.ps1 -Target all
+.\scripts\build_thesis.ps1 -Target pdf
 
 # Build và cập nhật hai file chuẩn trong publications/thesis/releases/
-.\scripts\build_thesis.ps1 -Target all -Release
+.\scripts\build_thesis.ps1 -Target pdf -Release
 ```
 
 Quy trình PDF dùng `pdflatex`, `biber`, rồi `pdflatex` hai lần. Không dùng

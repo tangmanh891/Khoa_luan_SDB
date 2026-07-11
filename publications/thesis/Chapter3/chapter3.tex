@@ -15,7 +15,7 @@
 \newcolumntype{Q}{>{\raggedright\arraybackslash}X}
 
 \section{Tổng quan hướng tiếp cận}
-Khóa luận tiếp cận bài toán theo hướng kế thừa một mạng xương sống (backbone) phát hiện ranh giới cảnh quay (SBD) đã được tối ưu bằng tìm kiếm kiến trúc mạng (Neural Architecture Search - NAS), sau đó tập trung cải thiện các thành phần ở tầng đầu ra. Cụ thể, AutoShot được dùng làm mô hình nền tảng; phần mạng xương sống được giữ nguyên để bảo toàn lợi ích của quá trình tìm kiếm kiến trúc, còn AutoShotV2 bổ sung tầng phân loại (ClassificationHead) mới, hàm mất mát Focal (Focal Loss), nhãn nhiều điểm dương (many-hot), hiệu chỉnh nhiệt độ (temperature scaling) và làm mượt Gaussian (Gaussian smoothing) nhằm xử lý mất cân bằng lớp, tăng tín hiệu giám sát quanh ranh giới và ổn định chuỗi xác suất dự đoán theo thời gian.
+Khóa luận tiếp cận bài toán theo hướng kế thừa một mạng xương sống (backbone) phát hiện ranh giới cảnh quay (SBD) đã được tối ưu bằng tìm kiếm kiến trúc mạng (Neural Architecture Search - NAS), sau đó tập trung cải thiện các thành phần ở tầng đầu ra. Cụ thể, AutoShot được dùng làm mô hình nền tảng; phần mạng xương sống được giữ nguyên để bảo toàn lợi ích của quá trình tìm kiếm kiến trúc, còn AutoShotV2 bổ sung tầng phân loại (ClassificationHead) mới, hàm mất mát Focal (Focal Loss), nhãn nhiều điểm dương, hiệu chỉnh nhiệt độ (temperature scaling) và làm mượt Gaussian (Gaussian smoothing) nhằm xử lý mất cân bằng lớp, tăng tín hiệu giám sát quanh ranh giới và ổn định chuỗi xác suất dự đoán theo thời gian.
 
 \noindent
 Hai mục tiếp theo hệ thống hóa hai khối kiến thức nền tảng được khóa luận kế thừa: \textbf{(i)} các nguyên lý và kỹ thuật của Neural Architecture Search (Mục~\ref{sec:nas}) -- là công cụ trung tâm mà AutoShot vận dụng để tìm ra kiến trúc tối ưu cho SBD, và \textbf{(ii)} mô hình TransNetV2 (Mục~\ref{sec:transnetv2}) -- là mô hình cơ sở trực tiếp để khóa luận so sánh và cải tiến. Sơ đồ luồng xử lý và kiến trúc tổng quan của toàn bộ hệ thống được minh họa chi tiết trong Hình~\ref{fig:overall_flowchart}.
@@ -173,10 +173,10 @@ So với TransNetV1, TransNetV2 cải thiện F1-score đáng kể trên các b�
 \textbf{Thành phần} & \textbf{TransNetV1} & \textbf{TransNetV2} \\
 \midrule
 Chuẩn hóa & Không có & BatchNorm sau mỗi tích chập \\
-Kết nối & Tuần tự & Skip connection sau mỗi 2 khối \\
-Kernel tích chập & 3D đầy đủ & Phân tách không gian–thời gian \\
+Kết nối & Tuần tự & Kết nối tắt sau mỗi 2 khối \\
+Hạt nhân tích chập & 3D đầy đủ & Phân tách không gian–thời gian \\
 Nhánh bổ sung & Không có & Learned + Histogram similarity \\
-Đầu ra & Một head & Hai heads (single + all frame) \\
+Đầu ra & Một đầu phân loại & Hai đầu phân loại (single + all frame) \\
 Dữ liệu huấn luyện & Nhân tạo 100\% & Nhân tạo 85\% + Thực 15\% \\
 \midrule
 F1 ClipShots & 73.5\% & 77.9\% \\
@@ -185,7 +185,7 @@ F1 BBC Planet Earth & 92.9\% & 96.2\% \\
 \end{tabularx}
 \end{table}
 
-Mỗi thay đổi trong Bảng~\ref{tab:transnetv1_v2} giải quyết một vấn đề cụ thể. BatchNorm và skip connection ổn định quá trình huấn luyện khi mô hình sâu hơn. Phân tách kernel giảm nguy cơ quá khớp trên dữ liệu nhân tạo có phân phối hạn chế. Nhánh similarity cung cấp tín hiệu bổ sung không thể học được chỉ từ tích chập cục bộ. Hai heads buộc mô hình phân biệt giữa "tại đâu là ranh giới" và "vùng nào là chuyển cảnh", hai câu hỏi bổ sung cho nhau. Cuối cùng, bổ sung dữ liệu thực vào 15\% tập huấn luyện thu hẹp khoảng cách phân phối giữa huấn luyện và kiểm thử.
+Mỗi thay đổi trong Bảng~\ref{tab:transnetv1_v2} giải quyết một vấn đề cụ thể. BatchNorm và kết nối tắt ổn định quá trình huấn luyện khi mô hình sâu hơn. Phân tách hạt nhân giảm nguy cơ quá khớp trên dữ liệu nhân tạo có phân phối hạn chế. Nhánh đặc trưng tương đồng cung cấp tín hiệu bổ sung không thể học được chỉ từ tích chập cục bộ. Hai đầu phân loại buộc mô hình phân biệt giữa "tại đâu là ranh giới" và "vùng nào là chuyển cảnh", hai câu hỏi bổ sung cho nhau. Cuối cùng, bổ sung dữ liệu thực vào 15\% tập huấn luyện thu hẹp khoảng cách phân phối giữa huấn luyện và kiểm thử.
 
 \subsection{Kiến trúc mô hình}
 \label{subsec:transnetv2_arch}
@@ -221,7 +221,7 @@ TransNetV2 xử lý chuỗi khung hình đầu vào có kích thước $48 \time
 \subsubsection{Khối tích chập giãn nở DDCNN}
 \label{subsubsec:ddcnn}
 
-Xương sống của TransNetV2 là 6 khối tích chập giãn nở (Dilated DCNN — DDCNN) xếp chồng tuần tự. Mỗi khối DDCNN gồm 4 nhánh tích chập song song với độ giãn nở (dilation) theo chiều thời gian tăng dần theo cấp số nhân: $d \in \{1, 2, 4, 8\}$. Đầu ra của 4 nhánh được nối ghép (concatenate) theo chiều kênh, tiếp theo là BatchNorm và ReLU. Sau mỗi hai khối DDCNN, một skip connection và lớp pooling trung bình không gian được thêm vào để ổn định luồng gradient và giảm dần độ phân giải không gian.
+Xương sống của TransNetV2 là 6 khối tích chập giãn nở (Dilated DCNN — DDCNN) xếp chồng tuần tự. Mỗi khối DDCNN gồm 4 nhánh tích chập song song với độ giãn nở (dilation) theo chiều thời gian tăng dần theo cấp số nhân: $d \in \{1, 2, 4, 8\}$. Đầu ra của 4 nhánh được nối ghép (concatenate) theo chiều kênh, tiếp theo là BatchNorm và ReLU. Sau mỗi hai khối DDCNN, một kết nối tắt và lớp pooling trung bình không gian được thêm vào để ổn định luồng gradient và giảm dần độ phân giải không gian.
 
 Hình~\ref{fig:ddcnn_block} minh họa cấu trúc chi tiết của một khối DDCNN với 4 nhánh dilation song song.
 
@@ -264,7 +264,7 @@ Hình~\ref{fig:ddcnn_block} minh họa cấu trúc chi tiết của một khối
     \label{fig:ddcnn_block}
 \end{figure}
 
-Nhờ cấu trúc giãn nở, trường nhìn thời gian (temporal receptive field) tại khối DDCNN thứ $k$ có thể được tính theo quy nạp. Với kernel thời gian kích thước $K = 3$ và 4 nhánh dilation $\{1, 2, 4, 8\}$, trường nhìn cộng dồn sau $k$ khối là:
+Nhờ cấu trúc giãn nở, trường nhìn thời gian (temporal receptive field) tại khối DDCNN thứ $k$ có thể được tính theo quy nạp. Với hạt nhân thời gian kích thước $K = 3$ và 4 nhánh dilation $\{1, 2, 4, 8\}$, trường nhìn cộng dồn sau $k$ khối là:
 \begin{equation}
     R_k = R_{k-1} + 2 \cdot (K - 1) \cdot \sum_{d \in \{1,2,4,8\}} d
     = R_{k-1} + 2 \cdot 2 \cdot 15 = R_{k-1} + 60,
@@ -275,13 +275,13 @@ với $R_0 = 1$ (một khung hình đơn lẻ). Cơ chế cộng dồn cho $R_1 
 \subsubsection{Phân tách tích chập không gian–thời gian}
 \label{subsubsec:factorized_conv}
 
-Thay vì dùng kernel tích chập 3D đầy đủ kích thước $k \times k \times k$, TransNetV2 phân tách mỗi phép tích chập thành hai bước tuần tự nhằm giảm số tham số và buộc mạng học riêng biệt hai loại thông tin:
+Thay vì dùng hạt nhân tích chập 3D đầy đủ kích thước $k \times k \times k$, TransNetV2 phân tách mỗi phép tích chập thành hai bước tuần tự nhằm giảm số tham số và buộc mạng học riêng biệt hai loại thông tin:
 \begin{enumerate}
-    \item \textbf{Tích chập không gian 2D} với kernel $1 \times k \times k$: xử lý từng khung hình trong chuỗi một cách độc lập theo hai chiều không gian (height, width), học đặc trưng nội dung thị giác như cạnh, kết cấu, vùng màu.
-    \item \textbf{Tích chập thời gian 1D giãn nở} với kernel $k \times 1 \times 1$ và độ giãn nở $d$: xử lý chuỗi đặc trưng theo trục thời gian, học sự biến đổi chuyển động và chuyển cảnh.
+    \item \textbf{Tích chập không gian 2D} với hạt nhân $1 \times k \times k$: xử lý từng khung hình trong chuỗi một cách độc lập theo hai chiều không gian (height, width), học đặc trưng nội dung thị giác như cạnh, kết cấu, vùng màu.
+    \item \textbf{Tích chập thời gian 1D giãn nở} với hạt nhân $k \times 1 \times 1$ và độ giãn nở $d$: xử lý chuỗi đặc trưng theo trục thời gian, học sự biến đổi chuyển động và chuyển cảnh.
 \end{enumerate}
 
-Phân tách giảm số tham số còn $\approx 44\%$ so với kernel 3D đầy đủ: với $k=3$ và $C_{in}=C_{out}=C_{mid}=C$, tỉ lệ là $(9C^2+3C^2)/(27C^2)=12/27\approx44\%$, tức tiết kiệm $\approx56\%$ tham số bất kể số kênh. Ngoài lợi ích về bộ nhớ, việc ép xử lý không gian trước rồi mới xử lý thời gian tạo ra thiên kiến quy nạp phù hợp với SBD: nội dung khung thay đổi theo không gian, còn chuyển cảnh là hiện tượng theo thời gian — hai biến đổi nên được mô hình hóa riêng biệt.
+Phân tách giảm số tham số còn $\approx 44\%$ so với hạt nhân 3D đầy đủ: với $k=3$ và $C_{in}=C_{out}=C_{mid}=C$, tỉ lệ là $(9C^2+3C^2)/(27C^2)=12/27\approx44\%$, tức tiết kiệm $\approx56\%$ tham số bất kể số kênh. Ngoài lợi ích về bộ nhớ, việc ép xử lý không gian trước rồi mới xử lý thời gian tạo ra thiên kiến quy nạp phù hợp với SBD: nội dung khung thay đổi theo không gian, còn chuyển cảnh là hiện tượng theo thời gian — hai biến đổi nên được mô hình hóa riêng biệt.
 
 \subsubsection{Nhánh đặc trưng tương đồng và hai đầu phân loại}
 \label{subsubsec:similarity_branch}
@@ -371,22 +371,22 @@ Bảng~\ref{tab:transnetv2_params} tổng hợp các siêu tham số chính, ph�
 Độ phân giải đầu vào & $48 \times 27 \times 3$ \\
 Độ dài chuỗi huấn luyện & 100 khung hình \\
 Bước trượt suy diễn & 50 khung hình \\
-Kích thước batch & 16 \\
+Kích thước lô & 16 \\
 Tốc độ học & 0.01 \\
 Momentum (SGD) & 0.9 \\
-Số epoch huấn luyện & 50 \\
+Số chu kỳ huấn luyện & 50 \\
 Trọng số loss $(\lambda_1, \lambda_2)$ & 5.0, 0.1 \\
 Chính quy hóa $(\lambda_{\mathrm{reg}})$ & $10^{-4}$ \\
 Trường nhìn thời gian hiệu quả & $\approx$ 97 khung hình \\
 Tổng số tham số & $\approx$ 6.5 triệu \\
-Bộ nhớ GPU (batch 16) & $\approx$ 2 GB \\
+Bộ nhớ GPU (lô 16) & $\approx$ 2 GB \\
 Thời gian huấn luyện (V100) & $\approx$ 17 giờ \\
 \bottomrule
 \end{tabularx}
 \end{table}
 
 \noindent
-Từ nền tảng NAS và TransNetV2 đã trình bày, các mục tiếp theo cụ thể hóa khung NAS thành hai mô hình. Trước hết, Mục~\ref{sec:autoshot} mô tả AutoShot --- một instance của khung NAS với 83.9 triệu kiến trúc ứng viên, dùng SuperNet kết hợp Bayesian Optimization để chọn mạng xương sống phù hợp với phân phối video ngắn của SHOT. Tiếp theo, Mục~\ref{sec:autoshotv2} trình bày đóng góp của khóa luận: biến thể AutoShotV2 đóng băng mạng xương sống đã được NAS tối ưu, chỉ huấn luyện lại tầng phân loại với Focal Loss, nhãn many-hot, Gaussian smoothing và temperature scaling --- nhằm cô lập đóng góp của tầng đầu ra so với mạng xương sống.
+Từ nền tảng NAS và TransNetV2 đã trình bày, các mục tiếp theo cụ thể hóa khung NAS thành hai mô hình. Trước hết, Mục~\ref{sec:autoshot} mô tả AutoShot --- một instance của khung NAS với 83.9 triệu kiến trúc ứng viên, dùng SuperNet kết hợp Bayesian Optimization để chọn mạng xương sống phù hợp với phân phối video ngắn của SHOT. Tiếp theo, Mục~\ref{sec:autoshotv2} trình bày đóng góp của khóa luận: biến thể AutoShotV2 đóng băng mạng xương sống đã được NAS tối ưu, chỉ huấn luyện lại tầng phân loại với hàm mất mát Focal, nhãn nhiều điểm dương, làm mượt Gaussian và hiệu chỉnh nhiệt độ --- nhằm cô lập đóng góp của tầng đầu ra so với mạng xương sống.
 
 \section{Mô hình AutoShot — nền tảng kế thừa từ TransNetV2}
 \label{sec:autoshot}
@@ -394,7 +394,7 @@ Từ nền tảng NAS và TransNetV2 đã trình bày, các mục tiếp theo c�
 \subsection{Động lực kế thừa từ TransNetV2}
 \label{subsec:autoshot_motivation}
 
-AutoShot~\cite{zhu2023autoshot} bắt đầu từ một nhận xét thực nghiệm: TransNetV2~\cite{soucek2020transnetv2} là mô hình cơ sở mạnh cho SBD, nhưng chỉ đạt F1 = 79.9\% trên SHOT, thấp hơn kỳ vọng khi chuyển sang miền video ngắn. Vấn đề không nằm ở toàn bộ quy trình TransNetV2, vì các quyết định như cửa sổ trượt, nhánh similarity và hai đầu phân loại vẫn phù hợp. Điểm cần tối ưu là \textbf{backbone}: TransNetV2 dùng cùng một dạng DDCNN cho 6 vị trí, trong khi video ngắn có nhịp cắt nhanh, hiệu ứng chỉnh màu dày đặc và phân phối chuyển cảnh khác video dài.
+AutoShot~\cite{zhu2023autoshot} bắt đầu từ một nhận xét thực nghiệm: TransNetV2~\cite{soucek2020transnetv2} là mô hình cơ sở mạnh cho SBD, nhưng chỉ đạt F1 = 79.9\% trên SHOT, thấp hơn kỳ vọng khi chuyển sang miền video ngắn. Vấn đề không nằm ở toàn bộ quy trình TransNetV2, vì các quyết định như cửa sổ trượt, nhánh similarity và hai đầu phân loại vẫn phù hợp. Điểm cần tối ưu là \textbf{mạng xương sống}: TransNetV2 dùng cùng một dạng DDCNN cho 6 vị trí, trong khi video ngắn có nhịp cắt nhanh, hiệu ứng chỉnh màu dày đặc và phân phối chuyển cảnh khác video dài.
 
 Vì vậy, AutoShot không thay thế TransNetV2 từ đầu. Mô hình giữ lại quy trình đã được kiểm chứng, rồi dùng Neural Architecture Search (NAS) để chọn cấu hình mạng xương sống phù hợp hơn với SHOT và ClipShots. Cách tổ chức này giúp so sánh công bằng: nếu hiệu năng tăng, nguyên nhân chính đến từ cơ chế chọn kiến trúc bằng NAS chứ không phải từ việc đổi toàn bộ quy trình suy diễn hay hàm mục tiêu.
 
@@ -421,9 +421,9 @@ Hàm mất mát (WCE hai nhánh) & Kế thừa & Giữ nguyên \\
 Suy diễn sliding window & Kế thừa & Giữ nguyên \\
 \midrule
 Loại khối mạng xương sống & \textbf{Mới} & 4 biến thể DDCNNV2/A/B/C \\
-Khối Transformer (vị trí 7) & \textbf{Mới} & Tùy chọn self-attention \\
+Khối Transformer (vị trí 7) & \textbf{Mới} & Tùy chọn tầng tự chú ý \\
 Quy trình NAS (SuperNet + BO) & \textbf{Mới} & Tìm kiếm kiến trúc tự động \\
-chưng cất tri thức & \textbf{Mới} & Học từ nhãn mềm \\
+Chưng cất tri thức & \textbf{Mới} & Học từ nhãn mềm \\
 Weight Grafting & \textbf{Mới} & Kết hợp trọng số theo entropy \\
 \bottomrule
 \end{tabularx}
@@ -483,7 +483,7 @@ Không gian tìm kiếm của AutoShot được thiết kế hẹp có chủ đ�
 \subsubsection{Bốn biến thể khối tích chập}
 \label{subsubsec:four_variants}
 
-Hình~\ref{fig:autoshot_blocks} minh họa bốn biến thể khối tích chập 3D phân tách trong không gian tìm kiếm. Tất cả đều kế thừa nguyên tắc tích chập phân tách từ TransNetV2 (Mục~\ref{subsubsec:factorized_conv}), nhưng khác nhau ở cách chia sẻ spatial convolution và cách ghép đặc trưng spatial--temporal. Bảng~\ref{tab:block_variants} tóm tắt vai trò của từng biến thể.
+Hình~\ref{fig:autoshot_blocks} minh họa bốn biến thể khối tích chập 3D phân tách trong không gian tìm kiếm. Tất cả đều kế thừa nguyên tắc tích chập phân tách từ TransNetV2 (Mục~\ref{subsubsec:factorized_conv}), nhưng khác nhau ở cách chia sẻ tích chập không gian và cách ghép đặc trưng không gian--thời gian. Bảng~\ref{tab:block_variants} tóm tắt vai trò của từng biến thể.
 
 \begin{figure}[H]
     \centering
@@ -568,7 +568,7 @@ DDCNNV2C  & Tuần tự vào temporal  & Add   & Kết hợp DDCNNV2A + B \\
 \end{tabularx}
 \end{table}
 
-Bảng~\ref{tab:block_variants} là nguồn so sánh chính giữa bốn biến thể; điểm cốt lõi cần ghi nhớ là không gian tìm kiếm phủ hai trục thiết kế: \textit{cách chia sẻ spatial convolution} (riêng biệt như V2 vs. dùng chung như V2A, V2C) và \textit{cách ghép spatial--temporal} (Concat như V2/V2A vs. Add lấy cảm hứng P3D như V2B/V2C). Đưa cả hai cơ chế Concat và Add vào không gian tìm kiếm cho phép NAS tự cân nhắc giữa tính phân tách thông tin (Concat) và sự ổn định gradient kiểu ResNet (Add) phù hợp nhất với từng vị trí trong mạng xương sống của video ngắn.
+Bảng~\ref{tab:block_variants} là nguồn so sánh chính giữa bốn biến thể; điểm cốt lõi cần ghi nhớ là không gian tìm kiếm phủ hai trục thiết kế: \textit{cách chia sẻ tích chập không gian} (riêng biệt như V2 vs. dùng chung như V2A, V2C) và \textit{cách ghép không gian--thời gian} (Concat như V2/V2A vs. Add lấy cảm hứng P3D như V2B/V2C). Đưa cả hai cơ chế Concat và Add vào không gian tìm kiếm cho phép NAS tự cân nhắc giữa tính phân tách thông tin (Concat) và sự ổn định gradient kiểu ResNet (Add) phù hợp nhất với từng vị trí trong mạng xương sống của video ngắn.
 
 \subsubsection{Kích thước không gian tìm kiếm}
 \label{subsubsec:search_space_size}
@@ -582,7 +582,7 @@ Với 4 loại khối và các tùy chọn siêu tham số như mô tả trong B
     \item Tổng mỗi khối tích chập: $6 + 6 + 2 + 2 = 16$ cấu hình
 \end{itemize}
 
-Khối Transformer thứ 7 có 5 tùy chọn về số lớp self-attention: $\{0, 1, 2, 3, 4\}$. Các 6 khối tích chập được cấu hình độc lập, nên tổng số kiến trúc trong không gian tìm kiếm là:
+Khối Transformer thứ 7 có 5 tùy chọn về số lớp tự chú ý: $\{0, 1, 2, 3, 4\}$. Các 6 khối tích chập được cấu hình độc lập, nên tổng số kiến trúc trong không gian tìm kiếm là:
 \begin{equation}
     |\mathcal{A}| = 16^6 \times 5 = 16{,}777{,}216 \times 5 = 83{,}886{,}080 \approx 83.9 \text{ triệu kiến trúc.}
     \label{eq:search_space_size}
@@ -595,7 +595,7 @@ Không gian gần 84 triệu kiến trúc này quá lớn để duyệt toàn b�
 
 Áp dụng khung NAS đã trình bày ở Mục~\ref{sec:nas}, AutoShot cụ thể hóa ba thành phần không gian tìm kiếm, search strategy và performance estimation thành quy trình hai lớp dưới đây.
 
-AutoShot áp dụng One-Shot NAS kết hợp Tối ưu hóa Bayesian. Có thể nhìn quy trình ở hai lớp: \textbf{lớp tìm kiếm} gồm huấn luyện SuperNet và chọn kiến trúc bằng BO; \textbf{lớp hoàn thiện mô hình} gồm retraining, chưng cất tri thức và Weight Grafting. Hình~\ref{fig:autoshot_pipeline} tóm tắt toàn bộ luồng 5 pha từ thiết kế không gian tìm kiếm đến mô hình cuối cùng.
+AutoShot áp dụng One-Shot NAS kết hợp Tối ưu hóa Bayesian. Có thể nhìn quy trình ở hai lớp: \textbf{lớp tìm kiếm} gồm huấn luyện SuperNet và chọn kiến trúc bằng BO; \textbf{lớp hoàn thiện mô hình} gồm huấn luyện lại, chưng cất tri thức và Weight Grafting. Hình~\ref{fig:autoshot_pipeline} tóm tắt toàn bộ luồng 5 pha từ thiết kế không gian tìm kiếm đến mô hình cuối cùng.
 
 \begin{figure}[H]
     \centering
@@ -604,8 +604,8 @@ AutoShot áp dụng One-Shot NAS kết hợp Tối ưu hóa Bayesian. Có thể 
         \node[draw, rounded corners, fill=blue!12, text width=3.0cm, minimum height=1.25cm, align=center] (p1) at (0,0) {(1) Thiết kế\\không gian tìm kiếm\\$83.9$M kiến trúc};
         \node[draw, rounded corners, fill=green!12, text width=3.2cm, minimum height=1.25cm, align=center] (p2) at (4.1,0) {(2) Huấn luyện SuperNet\\Single-Path\\One-Shot};
         \node[draw, rounded corners, fill=orange!18, text width=3.2cm, minimum height=1.25cm, align=center] (p3) at (8.4,0) {(3) Bayesian Optimization\\GP + PoF\\chọn $\alpha^*$};
-        \node[draw, rounded corners, fill=purple!12, text width=3.0cm, minimum height=1.25cm, align=center] (p4) at (12.4,0) {(4) Retraining\\kiến trúc $\alpha^*$};
-        \node[draw, rounded corners, fill=teal!14, text width=3.2cm, minimum height=1.25cm, align=center] (p5) at (16.7,0) {(5) Tinh chỉnh cuối\\chưng cất tri thức\\+ Weight Grafting};
+        \node[draw, rounded corners, fill=purple!12, text width=3.0cm, minimum height=1.25cm, align=center] (p4) at (12.4,0) {(4) Huấn luyện lại\\kiến trúc $\alpha^*$};
+        \node[draw, rounded corners, fill=teal!14, text width=3.2cm, minimum height=1.25cm, align=center] (p5) at (16.7,0) {(5) Tinh chỉnh cuối\\Chưng cất tri thức\\+ Weight Grafting};
 
         \draw[->, thick] (p1) -- (p2);
         \draw[->, thick] (p2) -- (p3);
@@ -630,13 +630,13 @@ Chiến lược \textit{Single-Path One-Shot} hoạt động như sau: tại m�
     \theta_{\mathrm{super}}[\alpha^{(n)}] - lr \cdot \nabla_{\theta[\alpha^{(n)}]} \mathcal{L}(\alpha^{(n)}, \mathcal{B}^{(n)}),
     \label{eq:supernet_update}
 \end{equation}
-trong đó $\alpha^{(n)}$ là kiến trúc được lấy mẫu tại bước $n$, $\mathcal{B}^{(n)}$ là batch dữ liệu, và $\mathcal{L}$ là hàm mất mát giống phương trình~\eqref{eq:transnetv2_loss}.
+trong đó $\alpha^{(n)}$ là kiến trúc được lấy mẫu tại bước $n$, $\mathcal{B}^{(n)}$ là lô dữ liệu (batch), và $\mathcal{L}$ là hàm mất mát giống phương trình~\eqref{eq:transnetv2_loss}.
 
-Chiến lược lấy mẫu đồng đều đảm bảo mọi kiến trúc con được huấn luyện với xác suất bằng nhau, tránh thiên lệch về một loại khối nhất định. Điều này quan trọng để trọng số chia sẻ $\theta_{\mathrm{super}}$ phản ánh khả năng chung của tất cả kiến trúc, không bị áp đảo bởi một số ít kiến trúc chiếm ưu thế. Sau khi huấn luyện 12 epoch, $\theta_{\mathrm{super}}$ đóng vai trò oracle đánh giá nhanh: cho bất kỳ kiến trúc $\alpha$, điểm F1 ước tính được tính bằng cách nạp $\theta_{\mathrm{super}}$ và suy diễn trên tập xác thực mà không cần huấn luyện lại.
+Chiến lược lấy mẫu đồng đều đảm bảo mọi kiến trúc con được huấn luyện với xác suất bằng nhau, tránh thiên lệch về một loại khối nhất định. Điều này quan trọng để trọng số chia sẻ $\theta_{\mathrm{super}}$ phản ánh khả năng chung của tất cả kiến trúc, không bị áp đảo bởi một số ít kiến trúc chiếm ưu thế. Sau khi huấn luyện 12 chu kỳ (epoch), $\theta_{\mathrm{super}}$ đóng vai trò oracle đánh giá nhanh: cho bất kỳ kiến trúc $\alpha$, điểm F1 ước tính được tính bằng cách nạp $\theta_{\mathrm{super}}$ và suy diễn trên tập xác thực mà không cần huấn luyện lại.
 
 Thuật toán~\ref{alg:supernet_training} mô tả quy trình huấn luyện SuperNet; điểm mới so với TransNetV2 là bước lấy mẫu kiến trúc $\alpha$ ở đầu mỗi vòng lặp (iteration) và chỉ cập nhật có chọn lọc theo $\alpha$.
 
-Dù trọng số chia sẻ (shared) không tối ưu cho bất kỳ kiến trúc con cụ thể nào, \textit{thứ tự xếp hạng} giữa các kiến trúc con khi dùng trọng số chia sẻ tương quan cao với thứ tự khi huấn luyện độc lập~\cite{ren2020_nas_survey}, đủ để BO hướng dẫn tìm kiếm. Sau 12 epoch, hàm đánh giá nhanh chỉ cần nạp $\theta_{\mathrm{super}}$ vào $\alpha$ và suy diễn trên tập xác thực (Thuật toán~\ref{alg:transnetv2_inference}), mất vài giây thay vì nhiều giờ.
+Dù trọng số chia sẻ (shared) không tối ưu cho bất kỳ kiến trúc con cụ thể nào, \textit{thứ tự xếp hạng} giữa các kiến trúc con khi dùng trọng số chia sẻ tương quan cao với thứ tự khi huấn luyện độc lập~\cite{ren2020_nas_survey}, đủ để BO hướng dẫn tìm kiếm. Sau 12 chu kỳ huấn luyện, hàm đánh giá nhanh chỉ cần nạp $\theta_{\mathrm{super}}$ vào $\alpha$ và suy diễn trên tập xác thực (Thuật toán~\ref{alg:transnetv2_inference}), mất vài giây thay vì nhiều giờ.
 
 \begin{algorithm}[H]
 \caption{SuperNet Training (Single-Path One-Shot)}
@@ -667,7 +667,7 @@ Dù trọng số chia sẻ (shared) không tối ưu cho bất kỳ kiến trúc
 
 Sau khi có $\theta_{\mathrm{super}}$, AutoShot tiến hành tìm kiến trúc tối ưu bằng Tối ưu hóa Bayesian (BO) với mô hình đại diện Quá trình Gauss (GP). BO phù hợp với bài toán này vì: (1) không gian kiến trúc rời rạc và không khả vi, (2) mỗi lần đánh giá tuy rẻ hơn huấn luyện đầy đủ nhưng vẫn tốn thời gian, và (3) cần tìm cực trị toàn cục trong không gian 83.9M điểm với ngân sách hữu hạn.
 
-GP với kernel Hamming (đo khoảng cách giữa hai chuỗi cấu hình theo số vị trí khác biệt) duy trì phân phối hậu nghiệm $f(\alpha) \mid \mathcal{D}_n \sim \mathcal{GP}(\mu_n(\alpha), \sigma_n^2(\alpha))$ dựa trên các quan sát đã thu thập. Hàm thu thập \textit{Probability of Feasibility} (PoF) hướng dẫn lựa chọn ứng viên tiếp theo:
+GP với hạt nhân Hamming (đo khoảng cách giữa hai chuỗi cấu hình theo số vị trí khác biệt) duy trì phân phối hậu nghiệm $f(\alpha) \mid \mathcal{D}_n \sim \mathcal{GP}(\mu_n(\alpha), \sigma_n^2(\alpha))$ dựa trên các quan sát đã thu thập. Hàm thu thập \textit{Probability of Feasibility} (PoF) hướng dẫn lựa chọn ứng viên tiếp theo:
 \begin{equation}
     \mathrm{PoF}(\alpha) = \Phi\!\left(\frac{\mu_n(\alpha) - f_{\mathrm{best}}}{\sigma_n(\alpha)}\right),
     \label{eq:pof}
@@ -724,10 +724,10 @@ Tổng thể, quy trình AutoShot đắt hơn TransNetV2 vì phải trả chi ph
 \toprule
 \textbf{Pha} & \textbf{Mô tả} & \textbf{Phần cứng} & \textbf{Thời gian ước tính} \\
 \midrule
-1. Huấn luyện SuperNet & 12 epoch, single-path & 8× V100 & $\approx$ 12--16 giờ \\
+1. Huấn luyện SuperNet & 12 chu kỳ, một đường đơn & 8× V100 & $\approx$ 12--16 giờ \\
 2. Tìm kiếm kiến trúc & 4800 đánh giá (GP + PoF) & 8× V100 & $\approx$ 40--50 giờ \\
-3. Huấn luyện lại (Retraining) & 12 epoch với $\alpha^*$ & 1× V100 & $\approx$ 12 giờ \\
-4. Chưng cất tri thức (KD) & 12 epoch, student học từ teacher & 1× V100 & $\approx$ 12 giờ \\
+3. Huấn luyện lại (Retraining) & 12 chu kỳ với $\alpha^*$ & 1× V100 & $\approx$ 12 giờ \\
+4. Chưng cất tri thức (KD) & 12 chu kỳ, học sinh học từ giáo viên & 1× V100 & $\approx$ 12 giờ \\
 5. Ghép trọng số & Tính entropy + nội suy trọng số & CPU & $<$ 1 giờ \\
 \midrule
 \textbf{Tổng} & & & \textbf{$\approx$ 76--91 giờ} \\
@@ -740,16 +740,16 @@ So với TransNetV2 ($\approx17$ giờ, 1 GPU), AutoShot tốn 4--5 lần thời
 \subsection{Huấn luyện lại và tinh chỉnh mô hình}
 \label{subsec:autoshot_retrain}
 
-Sau khi BO chọn được kiến trúc $\alpha^*$, AutoShot không dùng trực tiếp trọng số chia sẻ (shared) của SuperNet làm mô hình cuối. Kiến trúc này được huấn luyện lại từ đầu trong 12 epoch với cùng hàm mục tiêu như TransNetV2 (phương trình~\eqref{eq:transnetv2_loss}). Bước huấn luyện lại giúp loại bỏ nhiễu do chia sẻ trọng số (weight sharing) gây ra: trong SuperNet, mỗi đường đi chỉ được cập nhật rời rạc theo lấy mẫu; trong mô hình cuối, toàn bộ tham số của $\alpha^*$ được tối ưu liên tục cho một kiến trúc cố định.
+Sau khi BO chọn được kiến trúc $\alpha^*$, AutoShot không dùng trực tiếp trọng số chia sẻ (shared) của SuperNet làm mô hình cuối. Kiến trúc này được huấn luyện lại từ đầu trong 12 chu kỳ huấn luyện với cùng hàm mục tiêu như TransNetV2 (phương trình~\eqref{eq:transnetv2_loss}). Bước huấn luyện lại giúp loại bỏ nhiễu do chia sẻ trọng số (weight sharing) gây ra: trong SuperNet, mỗi đường đi chỉ được cập nhật rời rạc theo lấy mẫu; trong mô hình cuối, toàn bộ tham số của $\alpha^*$ được tối ưu liên tục cho một kiến trúc cố định.
 
 Sau khi huấn luyện lại, AutoShot áp dụng hai kỹ thuật tinh chỉnh không làm thay đổi kiến trúc: chưng cất tri thức và Weight Grafting. Vì vậy, phần này cần được hiểu là giai đoạn \textit{hoàn thiện trọng số}, không phải tiếp tục tìm kiếm kiến trúc.
 
-\subsubsection{chưng cất tri thức — trích xuất tri thức}
+\subsubsection{Chưng cất tri thức — trích xuất tri thức}
 \label{subsubsec:kd}
 
-chưng cất tri thức (KD) \cite{hinton2015distilling} sử dụng mô hình ứng viên tốt nhất sau bước huấn luyện lại làm \textit{giáo viên} (teacher), hướng dẫn quá trình học của \textit{học sinh} (student) — cũng là kiến trúc $\alpha^*$ nhưng khởi tạo ngẫu nhiên. Ý tưởng cốt lõi: thay vì học từ nhãn cứng (nhãn cứng) nhị phân $\{0, 1\}$, student học từ nhãn mềm (nhãn mềm) của teacher.
+Chưng cất tri thức (KD) \cite{hinton2015distilling} sử dụng mô hình ứng viên tốt nhất sau bước huấn luyện lại làm \textit{mô hình giáo viên}, hướng dẫn quá trình học của \textit{mô hình học sinh} — cũng là kiến trúc $\alpha^*$ nhưng khởi tạo ngẫu nhiên. Ý tưởng cốt lõi: thay vì học từ nhãn cứng nhị phân $\{0, 1\}$, học sinh học từ nhãn mềm của giáo viên.
 
-Nhãn mềm $\tilde{y}^{(j)}_{i,t}$ là xác suất dự đoán của teacher tại khung $t$ của chuỗi $i$, nhánh $j \in \{1, 2\}$. Hàm mất mát KD:
+Nhãn mềm $\tilde{y}^{(j)}_{i,t}$ là xác suất dự đoán của giáo viên tại khung $t$ của chuỗi $i$, nhánh $j \in \{1, 2\}$. Hàm mất mát KD:
 \begin{equation}
     \mathcal{L}_{\mathrm{distill}}
     = -\frac{1}{KM} \sum_{i=1}^{K} \sum_{t=1}^{M}
@@ -759,18 +759,18 @@ Nhãn mềm $\tilde{y}^{(j)}_{i,t}$ là xác suất dự đoán của teacher t�
       \Bigr],
     \label{eq:kd_loss}
 \end{equation}
-trong đó $\tilde{y}^{(j)}$ là nhãn mềm của teacher (cố định, không có gradient qua teacher), $\hat{y}^{(j)}$ là dự đoán của student, và $\lambda_1 = 5.0$, $\lambda_2 = 0.1$ như trong phương trình~\eqref{eq:transnetv2_loss}.
+trong đó $\tilde{y}^{(j)}$ là nhãn mềm của giáo viên (cố định, không có gradient qua giáo viên), $\hat{y}^{(j)}$ là dự đoán của học sinh, và $\lambda_1 = 5.0$, $\lambda_2 = 0.1$ như trong phương trình~\eqref{eq:transnetv2_loss}.
 
-So sánh với phương trình~\eqref{eq:transnetv2_loss}, sự khác biệt duy nhất là nhãn ground-truth $y^{(j)}$ được thay bằng nhãn mềm $\tilde{y}^{(j)}$ từ teacher. Nhãn mềm mang nhiều thông tin hơn nhãn nhị phân: chúng phản ánh độ không chắc chắn của teacher, đặc biệt tại các khung hình thuộc vùng chuyển cảnh dần hay các chuyển cảnh đột ngột có nền màu tương đồng. Nhờ đó, student học được phân phối xác suất trơn tru hơn, ít kích hoạt cực đoan hơn và bền vững hơn trước các biến thể rìa ranh giới — đây là cốt lõi của "giảng dạy về sự không chắc chắn" trong KD.
+So sánh với phương trình~\eqref{eq:transnetv2_loss}, sự khác biệt duy nhất là nhãn chuẩn $y^{(j)}$ được thay bằng nhãn mềm $\tilde{y}^{(j)}$ từ giáo viên. Nhãn mềm mang nhiều thông tin hơn nhãn nhị phân: chúng phản ánh độ không chắc chắn của giáo viên, đặc biệt tại các khung hình thuộc vùng chuyển cảnh dần hay các chuyển cảnh đột ngột có nền màu tương đồng. Nhờ đó, học sinh học được phân phối xác suất trơn tru hơn, ít kích hoạt cực đoan hơn và bền vững hơn trước các biến thể rìa ranh giới — đây là cốt lõi của "giảng dạy về sự không chắc chắn" trong KD.
 
-Trong AutoShot, teacher và student có \textit{cùng kiến trúc} $\alpha^*$ — đây là trường hợp KD tự học (self-distillation). Khác với KD truyền thống (teacher lớn hơn student), tự học giúp student thoát khỏi cực trị cục bộ mà retraining trước đó có thể đã rơi vào, do điểm khởi đầu ngẫu nhiên khác nhau.
+Trong AutoShot, giáo viên và học sinh có \textit{cùng kiến trúc} $\alpha^*$ — đây là trường hợp KD tự học (self-distillation). Khác với KD truyền thống (giáo viên lớn hơn học sinh), tự học giúp học sinh thoát khỏi cực trị cục bộ mà bước huấn luyện lại trước đó có thể đã rơi vào, do điểm khởi đầu ngẫu nhiên khác nhau.
 
 \subsubsection{Weight Grafting — ghép trọng số theo entropy}
 \label{subsubsec:grafting}
 
 Weight Grafting là kỹ thuật kết hợp trọng số từ hai mô hình dựa trên entropy của phân phối trọng số, giả định rằng lớp có entropy trọng số cao hơn đã học được biểu diễn phong phú và đa dạng hơn.
 
-Cho hai mô hình $M_1$ (sau retraining) và $M_2$ (sau KD) với trọng số lớp $l$ lần lượt là $W_1^{(l)}$ và $W_2^{(l)}$, entropy được ước tính bằng histogram $B = 10$ bin trên phân phối của các giá trị trọng số:
+Cho hai mô hình $M_1$ (sau huấn luyện lại) và $M_2$ (sau KD) với trọng số lớp $l$ lần lượt là $W_1^{(l)}$ và $W_2^{(l)}$, entropy được ước tính bằng histogram $B = 10$ bin trên phân phối của các giá trị trọng số:
 \begin{equation}
     H(W^{(l)}) = -\sum_{b=1}^{B} p_b \log p_b, \quad p_b = \frac{|\{w \in W^{(l)} : w \in \mathrm{bin}_b\}|}{|W^{(l)}|},
     \label{eq:weight_entropy}
@@ -795,7 +795,7 @@ Một điểm thực tế quan trọng: trong AutoShot, Weight Grafting được
 \subsection{Kiến trúc tối ưu của AutoShot}
 \label{subsec:autoshot_optimal}
 
-Nhóm tác giả tiến hành tìm kiếm hai lần với hai tiêu chí đánh giá khác nhau, thu được hai kiến trúc có đặc điểm bổ sung cho nhau: AutoShot@F1 tối ưu cân bằng precision--recall, còn AutoShot@Precision ưu tiên giảm dương tính giả.
+Nhóm tác giả tiến hành tìm kiếm hai lần với hai tiêu chí đánh giá khác nhau, thu được hai kiến trúc có đặc điểm bổ sung cho nhau: AutoShot@F1 tối ưu cân bằng độ chính xác dương và độ bao phủ, còn AutoShot@Precision ưu tiên giảm dương tính giả.
 
 Bảng~\ref{tab:autoshot_architectures} tổng hợp kiến trúc tìm được cho hai tiêu chí:
 
@@ -843,19 +843,19 @@ Không gian kiến trúc & 1 kiến trúc cố định & 83.9M ứng viên \\
 Khối tích chập chính & DDCNNV2 cố định & DDCNNV2/A/B/C được chọn theo từng vị trí \\
 Thành phần giữ nguyên & Sliding window, similarity branch, two-head output & Kế thừa các thành phần này từ TransNetV2 \\
 Chiến lược tìm kiếm & Không có & Single-Path One-Shot + Bayesian Optimization \\
-Kỹ thuật sau tìm kiếm & Huấn luyện trực tiếp & Retraining, chưng cất tri thức và Weight Grafting \\
+Kỹ thuật sau tìm kiếm & Huấn luyện trực tiếp & Huấn luyện lại, chưng cất tri thức và Weight Grafting \\
 Chi phí huấn luyện & $\approx$17 giờ trên 1$\times$V100 & $\approx$76--91 giờ trên 8$\times$V100 \\
 Quy mô tham số & $\approx$6.5M & $\approx$6.7M \\
 \midrule
 Hiệu năng chính trên SHOT & F1 = 0.7993 (79.9\%) & \textbf{F1 = 0.8405 (84.1\%)} \\
-Precision trên SHOT & Khoảng 80\% & \textbf{93.9\%} với AutoShot@Precision \\
+Độ chính xác dương trên SHOT & Khoảng 80\% & \textbf{93.9\%} với AutoShot@Precision \\
 \bottomrule
 \end{tabularx}
 \end{table}
 
 \subsubsection{Nhận xét ưu và nhược điểm tương đối}
 
-\textbf{Ưu điểm của AutoShot so với TransNetV2.} Mức tăng từ 0.7993 lên 0.8405 F1 trên SHOT là đáng kể, nhất là khi AutoShot không lớn hơn TransNetV2 theo số tham số. Điểm chính không nằm ở việc mở rộng năng lực mô hình, mà ở việc thay đổi cách chọn kiến trúc: NAS tìm cấu hình khối tích chập phù hợp hơn với phân phối video ngắn của SHOT. AutoShot@Precision cũng cho thấy cùng một không gian kiến trúc có thể được tối ưu theo mục tiêu khác, đạt precision 93.9\% khi cần giảm dương tính giả trong hệ thống biên tập bán tự động.
+\textbf{Ưu điểm của AutoShot so với TransNetV2.} Mức tăng từ 0.7993 lên 0.8405 F1 trên SHOT là đáng kể, nhất là khi AutoShot không lớn hơn TransNetV2 theo số tham số. Điểm chính không nằm ở việc mở rộng năng lực mô hình, mà ở việc thay đổi cách chọn kiến trúc: NAS tìm cấu hình khối tích chập phù hợp hơn với phân phối video ngắn của SHOT. AutoShot@Precision cũng cho thấy cùng một không gian kiến trúc có thể được tối ưu theo mục tiêu khác, đạt độ chính xác dương 93.9\% khi cần giảm dương tính giả trong hệ thống biên tập bán tự động.
 
 \textbf{Hạn chế của AutoShot.} Đánh đổi chính là chi phí NAS và độ khó tái lập. Quy trình AutoShot cần nhiều pha hơn TransNetV2, tiêu tốn khoảng 76--91 giờ trên 8 GPU V100 so với khoảng 17 giờ trên 1 GPU V100 của TransNetV2. Ngoài ra, kiến trúc tìm được gắn chặt với mục tiêu và tập validation dùng trong tìm kiếm; khả năng tổng quát hóa sang các bộ dữ liệu khác được phân tích riêng ở Chương~\ref{ch:ket_luan}.
 
@@ -867,22 +867,22 @@ Tóm lại, AutoShot kế thừa phần lớn quy trình hiệu quả của Tran
 \subsection{Động lực và chiến lược tổng thể}
 \label{subsec:v2_motivation}
 
-AutoShot@F1 đạt F1 = 0.8405 với BCE chuẩn và nhãn một điểm dương (one-hot). Tầng phân loại vẫn còn hai hạn chế: \textbf{(i)} mất cân bằng lớp nghiêm trọng (ranh giới chiếm <1\% khung hình); \textbf{(ii)} tín hiệu cứng nhắc không chịu sai lệch chú thích. AutoShotV2 áp dụng chiến lược \textbf{đóng băng mạng xương sống + huấn luyện lại tầng phân loại}: khóa toàn bộ trọng số AutoShot@F1, huấn luyện bộ phân lớp mới từ đầu trên các đặc trưng đã được lưu bộ nhớ đệm. Quyết định này được thúc đẩy bởi ba lý do thực tế: \textbf{(a)} NAS đã tối ưu mạng xương sống với chi phí lớn (~76--91 giờ trên 8$\times$V100, Bảng~\ref{tab:autoshot_complexity}), nên kết quả không nên bị mất đi qua một lần huấn luyện toàn mạng nữa; \textbf{(b)} đóng băng mạng xương sống cô lập đóng góp của tầng phân loại, làm mọi cải thiện F1 đều có thể quy về thiết kế tầng phân loại; \textbf{(c)} chỉ huấn luyện tầng phân loại trên đặc trưng đã bộ nhớ đệm giúp giảm chi phí huấn luyện lại từ hàng chục giờ xuống còn vài chục phút trên một GPU phổ thông, cho phép thử nghiệm nhanh nhiều cấu hình phân rã.
+AutoShot@F1 đạt F1 = 0.8405 với BCE chuẩn và nhãn một điểm dương. Tầng phân loại vẫn còn hai hạn chế. Thứ nhất, dữ liệu mất cân bằng lớp nghiêm trọng do các khung hình ranh giới chiếm dưới 1\% tổng số khung hình. Thứ hai, tín hiệu nhãn cứng nhắc không dung nạp sai lệch chú thích. AutoShotV2 áp dụng chiến lược \textbf{đóng băng mạng xương sống + huấn luyện lại tầng phân loại}: khóa toàn bộ trọng số AutoShot@F1, huấn luyện bộ phân lớp mới từ đầu trên các đặc trưng đã được lưu bộ nhớ đệm. Quyết định này dựa trên ba lý do thực tế: NAS đã tối ưu mạng xương sống với chi phí khoảng 76--91 giờ trên 8$\times$V100 theo Bảng~\ref{tab:autoshot_complexity}; việc đóng băng mạng xương sống giúp cô lập đóng góp của tầng phân loại; và chỉ huấn luyện tầng phân loại trên đặc trưng đã lưu vào bộ nhớ đệm giúp giảm chi phí huấn luyện lại từ hàng chục giờ xuống còn vài chục phút trên một GPU phổ thông.
 
-Khóa luận trình bày cải tiến theo hai bước tăng dần. \textbf{AutoShotV1} là bước tối giản nhất: giữ nguyên toàn bộ trọng số của AutoShot@F1 (mạng xương sống lẫn tầng phân loại) và chỉ bổ sung làm mượt Gaussian (Gaussian smoothing) ở khâu hậu xử lý --- không huấn luyện lại bất kỳ tham số nào, chỉ dò hệ số $\sigma$ trên tập xác thực. \textbf{AutoShotV2} là phiên bản đầy đủ: đóng băng mạng xương sống nhưng huấn luyện lại tầng phân loại với Focal Loss và nhãn nhiều điểm dương (many-hot), kết hợp hiệu chỉnh nhiệt độ (temperature scaling) và làm mượt Gaussian ở hậu xử lý. Kết quả định lượng của AutoShotV1 được trình bày ở Mục~\ref{sec:autoshotv1}; phần còn lại của mục này tập trung mô tả AutoShotV2.
+Khóa luận trình bày cải tiến theo hai bước tăng dần. \textbf{AutoShotV1} là bước tối giản nhất: giữ nguyên toàn bộ trọng số của AutoShot@F1, bao gồm mạng xương sống và tầng phân loại và chỉ bổ sung làm mượt Gaussian ở khâu hậu xử lý --- không huấn luyện lại bất kỳ tham số nào, chỉ dò hệ số $\sigma$ trên tập xác thực. \textbf{AutoShotV2} là phiên bản đầy đủ: đóng băng mạng xương sống nhưng huấn luyện lại tầng phân loại với hàm mất mát Focal và nhãn nhiều điểm dương, kết hợp hiệu chỉnh nhiệt độ và làm mượt Gaussian ở hậu xử lý. Kết quả định lượng của AutoShotV1 được trình bày ở Mục~\ref{sec:autoshotv1}; phần còn lại của mục này tập trung mô tả AutoShotV2.
 
-\subsection{Kiến trúc tầng phân loại (ClassificationHead)}
+\subsection{Kiến trúc tầng phân loại}
 \label{subsec:v2_head}
 
 Tương tự AutoShot, AutoShotV2 thiết kế một tầng phân loại với hai nhánh song song đặt sau lớp trích xuất đặc trưng 4864-D:
 \begin{enumerate}
     \item \textbf{fc1}: Linear(4864 $\to$ 1024) + ReLU --- nén đặc trưng về không gian thấp hơn.
     \item \textbf{Dropout}($p = 0.5$) --- chính quy hóa để tránh quá khớp trên tập huấn luyện nhỏ.
-    \item \textbf{cls\_layer1}: Linear(1024 $\to$ 1) --- nhánh chính với \textbf{nhãn một điểm dương (one-hot)}, học định vị ranh giới chính xác.
-    \item \textbf{cls\_layer2}: Linear(1024 $\to$ 1) --- nhánh phụ với \textbf{nhãn nhiều điểm dương (many-hot)}, học ngữ cảnh vùng quanh ranh giới.
+    \item \textbf{cls\_layer1}: Linear(1024 $\to$ 1) --- nhánh chính với \textbf{nhãn một điểm dương}, học định vị ranh giới chính xác.
+    \item \textbf{cls\_layer2}: Linear(1024 $\to$ 1) --- nhánh phụ với \textbf{nhãn nhiều điểm dương}, học ngữ cảnh vùng quanh ranh giới.
 \end{enumerate}
 
-Toàn bộ đặc trưng mạng xương sống được \textbf{tính trước và lưu cache} vào file \texttt{.pickle} trước khi huấn luyện, giúp mỗi epoch chỉ cần chạy qua bộ phân lớp nhỏ thay vì toàn mạng mạng xương sống 55 MB, tăng tốc đáng kể vòng lặp huấn luyện.
+Toàn bộ đặc trưng mạng xương sống được \textbf{tính trước và lưu vào bộ nhớ đệm} trong file \texttt{.pickle} trước khi huấn luyện, giúp mỗi chu kỳ huấn luyện chỉ cần chạy qua bộ phân lớp nhỏ thay vì toàn bộ mạng xương sống 55 MB, tăng tốc đáng kể vòng lặp huấn luyện.
 
 \begin{figure}[H]
 \centering
@@ -917,7 +917,7 @@ Toàn bộ đặc trưng mạng xương sống được \textbf{tính trước v
 \draw[arr] (oh.south)  -- ++(0,-0.4) -| ([xshift=-1.35cm]loss.north);
 \draw[arr] (mh.south)  -- ++(0,-0.4) -| ([xshift=1.35cm]loss.north);
 \end{tikzpicture}
-\caption[Kiến trúc tầng phân loại trong AutoShotV2]{Kiến trúc tầng phân loại (ClassificationHead) trong AutoShotV2. Tầng phân loại này nhận đặc trưng 4864-D từ mạng xương sống (đóng băng) và sinh hai đầu ra song song: nhánh một điểm dương (one-hot) định vị ranh giới chính xác và nhánh nhiều điểm dương (many-hot) học ngữ cảnh vùng biên.}
+\caption[Kiến trúc tầng phân loại trong AutoShotV2]{Kiến trúc tầng phân loại trong AutoShotV2. Tầng phân loại này nhận đặc trưng 4864-D từ mạng xương sống đã đóng băng và sinh hai đầu ra song song: nhánh một điểm dương định vị ranh giới chính xác và nhánh nhiều điểm dương học ngữ cảnh vùng biên.}
 \label{fig:v2_head_arch}
 \end{figure}
 \FloatBarrier
@@ -929,7 +929,7 @@ Trong video ngắn, khung hình tại ranh giới chiếm chưa đến 1\% tổn
 \begin{equation}
     \mathcal{L}_{\text{BCE}} = -\left[y\log(p) + (1-y)\log(1-p)\right]
 \end{equation}
-Đặt $p_t$ là xác suất gán cho lớp đúng ($p_t = p$ nếu $y=1$; $p_t = 1-p$ nếu $y=0$), BCE viết gọn thành $\mathcal{L}_{\text{BCE}} = -\log(p_t)$. Khi tổng hợp giá trị mất mát (loss) trên toàn bộ lô (batch), các mẫu âm dễ (mẫu âm dễ - khung không có chuyển cảnh, rất dễ phân loại) áp đảo về số lượng và kéo gradient theo hướng ``luôn dự đoán không có ranh giới''.
+Đặt $p_t$ là xác suất gán cho lớp đúng ($p_t = p$ nếu $y=1$; $p_t = 1-p$ nếu $y=0$), BCE viết gọn thành $\mathcal{L}_{\text{BCE}} = -\log(p_t)$. Khi tổng hợp giá trị mất mát trên toàn bộ lô, các mẫu âm dễ (khung không có chuyển cảnh, rất dễ phân loại) áp đảo về số lượng và kéo gradient theo hướng ``luôn dự đoán không có ranh giới''.
 
 Khác với AutoShot gốc dùng BCE có trọng số $\lambda_1, \lambda_2$ trên nhãn one-hot (phương trình~\eqref{eq:transnetv2_loss}), AutoShotV2 thay BCE bằng \textbf{Focal Loss}~\cite{Lin2017FocalLoss} --- được thiết kế chuyên cho mất cân bằng lớp trong bài toán phát hiện --- với nhân tử động $(1-p_t)^{\gamma}$ làm giảm trực tiếp đóng góp của các mẫu âm dễ ngay trong từng mẫu, thay vì chỉ cân bằng giữa hai nhánh:
 \begin{equation}
@@ -939,14 +939,14 @@ Khác với AutoShot gốc dùng BCE có trọng số $\lambda_1, \lambda_2$ tr�
 
 Nhân tử $(1-p_t)^{\gamma}$ là điểm mấu chốt. Với một \textit{mẫu âm dễ} ($p_t \approx 0.99$), nhân tử gần bằng 0, đóng góp vào tổng giá trị mất mát gần như biến mất. Với một \textit{mẫu khó (hard example)} --- khung ranh giới chỉ dự đoán được $p_t \approx 0.3$ --- nhân tử vẫn lớn, buộc mô hình tiếp tục học. Focal Loss ưu tiên các mẫu khó: ranh giới mờ, chuyển cảnh dần, hay thay đổi ánh sáng dễ gây nhầm lẫn. Nếu $\gamma = 0$, hàm mất mát Focal quay về BCE có trọng số $\alpha$.
 
-Tham số $\gamma \in \{1.0, 2.0\}$ và $\alpha \in \{0.5, 0.75\}$ được chọn qua \textbf{tìm kiếm lưới} (8 tổ hợp), đánh giá theo F1 trên tập xác thực. Cấu hình tốt nhất: $\boldsymbol{\gamma = 1.0}$, $\boldsymbol{\alpha = 0.5}$. Khác với BCE có trọng số (BCE có trọng số - chỉ điều chỉnh trọng số tĩnh giữa hai lớp) hoặc hàm mất mát cân bằng lớp (hàm mất mát cân bằng lớp - dựa trên số mẫu hữu hiệu), Focal Loss điều chỉnh \textit{động} theo độ khó của từng mẫu --- phù hợp với SBD nơi mức độ khó biến thiên mạnh giữa chuyển cảnh đột ngột, chuyển cảnh dần và các trường hợp ánh sáng đột biến. Trong tìm kiếm lưới, $\gamma=1.0$ thắng $\gamma=2.0$ do nhánh nhiều điểm dương (Mục~\ref{subsec:v2_manyhot}) đã cung cấp thêm tín hiệu giám sát cho vùng biên, nên hệ số làm sắc quá mạnh khiến gradient ở các khung biên bị triệt tiêu sớm.
+Tham số $\gamma \in \{1.0, 2.0\}$ và $\alpha \in \{0.5, 0.75\}$ được chọn qua \textbf{tìm kiếm theo lưới} (8 tổ hợp), đánh giá theo F1 trên tập xác thực. Cấu hình tốt nhất: $\boldsymbol{\gamma = 1.0}$, $\boldsymbol{\alpha = 0.5}$. Khác với BCE có trọng số (chỉ điều chỉnh trọng số tĩnh giữa hai lớp) hoặc hàm mất mát cân bằng lớp (dựa trên số mẫu hữu hiệu), Focal Loss điều chỉnh \textit{động} theo độ khó của từng mẫu --- phù hợp với SBD nơi mức độ khó biến thiên mạnh giữa chuyển cảnh đột ngột, chuyển cảnh dần và các trường hợp ánh sáng đột biến. Trong tìm kiếm theo lưới, $\gamma=1.0$ thắng $\gamma=2.0$ do nhánh nhiều điểm dương (Mục~\ref{subsec:v2_manyhot}) đã cung cấp thêm tín hiệu giám sát cho vùng biên, nên hệ số làm sắc quá mạnh khiến gradient ở các khung biên bị triệt tiêu sớm.
 
-\subsection{Nhãn nhiều điểm dương (many-hot) --- giám sát vùng biên}
+\subsection{Nhãn nhiều điểm dương --- giám sát vùng biên}
 \label{subsec:v2_manyhot}
 
-Nhãn một điểm dương (one-hot) chuẩn chỉ gán giá trị 1 tại đúng một khung hình ranh giới và 0 cho tất cả còn lại. Cách biểu diễn này chính xác về định vị, nhưng quá cứng nhắc trong thực tiễn SBD vì hai lý do: \textbf{(i)} chú thích thủ công có thể lệch $\pm1$ frame so với ranh giới thực sự; \textbf{(ii)} chuyển cảnh dần kéo dài trên nhiều frame, nên các khung lân cận ranh giới cũng mang tín hiệu chuyển cảnh đáng kể.
+Nhãn một điểm dương chuẩn chỉ gán giá trị 1 tại đúng một khung hình ranh giới và 0 cho tất cả còn lại. Cách biểu diễn này chính xác về định vị, nhưng quá cứng nhắc trong thực tiễn SBD vì hai lý do: \textbf{(i)} chú thích thủ công có thể lệch $\pm1$ frame so với ranh giới thực sự; \textbf{(ii)} chuyển cảnh dần kéo dài trên nhiều frame, nên các khung lân cận ranh giới cũng mang tín hiệu chuyển cảnh đáng kể.
 
-AutoShotV2 bổ sung một nhánh giám sát phụ với \textbf{nhãn nhiều điểm dương (many-hot)}~\cite{Muller2019LabelSmoothing}: tất cả các khung trong phạm vi $\pm1$ frame quanh ranh giới đều được coi là dương:
+AutoShotV2 bổ sung một nhánh giám sát phụ với \textbf{nhãn nhiều điểm dương}~\cite{Muller2019LabelSmoothing}: tất cả các khung trong phạm vi $\pm1$ khung hình quanh ranh giới đều được coi là dương:
 \begin{equation}
     y_{\text{many-hot}}[t] =
     \begin{cases}
@@ -961,9 +961,9 @@ Hàm mất mát kết hợp hai nhánh với trọng số khác nhau:
     \label{eq:total_loss}
 \end{equation}
 
-Nhánh một điểm dương (one-hot) giữ vai trò chính: định vị ranh giới sắc nét tại đúng thời điểm chuyển cảnh. Nhánh nhiều điểm dương (many-hot) đóng vai trò phụ (hệ số 0.3): dạy mô hình rằng các khung lân cận ranh giới là những mẫu ``gần đúng'' và không nên bị phạt nặng khi dự đoán lệch nhẹ. Hệ số 0.3 được chọn nhỏ hơn 1 để nhánh phụ hỗ trợ mà không lấn át định vị chính xác.
+Nhánh một điểm dương giữ vai trò chính: định vị ranh giới sắc nét tại đúng thời điểm chuyển cảnh. Nhánh nhiều điểm dương đóng vai trò phụ với hệ số 0.3: dạy mô hình rằng các khung lân cận ranh giới là những mẫu ``gần đúng'' và không nên bị phạt nặng khi dự đoán lệch nhẹ. Hệ số 0.3 được chọn nhỏ hơn 1 để nhánh phụ hỗ trợ mà không lấn át định vị chính xác.
 
-Bán kính $\pm 1$ frame được chọn căn cứ vào phân phối sai số chú thích thực tế trên SHOT: phần lớn ranh giới thủ công được đánh lệch không quá một khung so với chuyển cảnh đột ngột thật, và chuyển cảnh dần thường kéo dài 3--5 khung sao cho ba khung trung tâm $\{t-1, t, t+1\}$ mang tín hiệu chuyển cảnh rõ nhất. Mở rộng sang $\pm 2$ frame trong thử nghiệm sơ bộ làm tăng nhiễu giám sát vì các khung biên xa hơn (như $t \pm 2$) thường đã thuộc shot lân cận, gây nhầm chuyển cảnh đột ngột với chuyển cảnh dần và làm giảm precision.
+Bán kính $\pm 1$ khung hình được chọn căn cứ vào phân phối sai số chú thích thực tế trên SHOT: phần lớn ranh giới thủ công được đánh lệch không quá một khung so với chuyển cảnh đột ngột thật, và chuyển cảnh dần thường kéo dài 3--5 khung sao cho ba khung trung tâm $\{t-1, t, t+1\}$ mang tín hiệu chuyển cảnh rõ nhất. Mở rộng sang $\pm 2$ khung hình trong thử nghiệm sơ bộ làm tăng nhiễu giám sát vì các khung biên xa hơn, chẳng hạn $t \pm 2$, thường đã thuộc cảnh quay lân cận, gây nhầm chuyển cảnh đột ngột với chuyển cảnh dần và làm giảm độ chính xác dương.
 
 \begin{figure}[H]
 \centering
@@ -992,15 +992,15 @@ Bán kính $\pm 1$ frame được chọn căn cứ vào phân phối sai số ch
 \draw[-{Stealth[length=4.5pt]}, dashed, gray!70] (3*1.05, 1.6) -- (3*1.05, 1.2);
 \node[font=\scriptsize, gray!80] at (3*1.05, 1.8) {boundary};
 \end{tikzpicture}
-\caption[Minh họa nhãn một điểm dương và nhiều điểm dương]{Minh họa nhãn một điểm dương (one-hot) và nhiều điểm dương (many-hot). Nhãn một điểm dương chỉ gán 1 tại đúng khung ranh giới $t$; nhãn nhiều điểm dương mở rộng thêm $t\pm1$, cung cấp tín hiệu gradient dày đặc hơn quanh vùng ranh giới.}
+\caption[Minh họa nhãn một điểm dương và nhiều điểm dương]{Minh họa nhãn một điểm dương và nhãn nhiều điểm dương. Nhãn một điểm dương chỉ gán 1 tại đúng khung ranh giới $t$; nhãn nhiều điểm dương mở rộng thêm $t\pm1$, cung cấp tín hiệu gradient dày đặc hơn quanh vùng ranh giới.}
 \label{fig:v2_onehot_manyhot}
 \end{figure}
 \FloatBarrier
 
-\subsection{Gaussian Smoothing --- triệt tiêu nhiễu đơn lẻ}
+\subsection{Làm mượt Gaussian --- triệt tiêu nhiễu đơn lẻ}
 \label{subsec:v2_gaussian}
 
-Sau khi mô hình sinh chuỗi xác suất $p[t]$, tín hiệu này thường chứa các đỉnh nhọn hẹp do nhiễu cục bộ: một khung đơn lẻ có xác suất cao bất thường vì flash sáng, rung máy, hoặc biến đổi màu sắc đột ngột. Nếu ngưỡng hóa trực tiếp, các đỉnh nhiễu dễ bị nhận nhầm là ranh giới cảnh. AutoShotV2 áp dụng \textbf{Gaussian smoothing 1D} với $\sigma = 2.0$ lên chuỗi xác suất trước bước ngưỡng hóa:
+Sau khi mô hình sinh chuỗi xác suất $p[t]$, tín hiệu này thường chứa các đỉnh nhọn hẹp do nhiễu cục bộ: một khung đơn lẻ có xác suất cao bất thường vì lóe sáng, rung máy, hoặc biến đổi màu sắc đột ngột. Nếu ngưỡng hóa trực tiếp, các đỉnh nhiễu dễ bị nhận nhầm là ranh giới cảnh. AutoShotV2 áp dụng \textbf{làm mượt Gaussian 1D} với $\sigma = 2.0$ lên chuỗi xác suất trước bước ngưỡng hóa:
 \begin{equation}
     \hat{p}[t] = \sum_{k} G_\sigma(k)\cdot p[t-k], \quad G_\sigma(k) = \frac{1}{\sqrt{2\pi}\,\sigma}\,e^{-k^2/(2\sigma^2)}
     \label{eq:gaussian_smooth}
@@ -1008,12 +1008,12 @@ Sau khi mô hình sinh chuỗi xác suất $p[t]$, tín hiệu này thường ch
 
 Phép biến đổi này là \textit{lấy trung bình có trọng số theo trục thời gian}: xác suất tại $t$ sau làm mượt phụ thuộc vào các khung lân cận, với trọng số giảm dần theo dạng chuông Gaussian. Hạt nhân Gaussian được chuẩn hóa nên chủ yếu \textit{phân phối lại} xác suất trong vùng lân cận.
 
-Nguyên tắc hoạt động: ranh giới thật tạo phản hồi nhất quán trên vài khung liên tiếp --- sau smoothing, các khung ``hỗ trợ lẫn nhau'' và đỉnh xác suất được giữ lại. Nhiễu đơn lẻ không được hàng xóm ủng hộ bị kéo xuống đáng kể. Tham số $\sigma = 2.0$ được chốt sau khi quét $\sigma \in \{1.0, 1.5, 2.0, 2.5, 3.0\}$ trên tập xác thực của SHOT: giá trị nhỏ hơn ($\sigma \le 1.5$) chưa đủ triệt nhiễu flash, trong khi giá trị lớn hơn ($\sigma \ge 2.5$) làm phẳng cả các đỉnh ranh giới thật và đẩy ngưỡng tối ưu xuống vùng quá nhỏ, kém ổn định. So với bộ lọc trung vị (median filter) --- một lựa chọn hậu xử lý phổ biến khác --- hạt nhân Gaussian (kernel Gaussian) giữ được dạng đỉnh khi ranh giới được nhiều khung liên tiếp hỗ trợ và tránh hiện tượng cắt phẳng đột ngột, phù hợp hơn với phân phối xác suất sigmoid của tầng phân loại.
+Nguyên tắc hoạt động: ranh giới thật tạo phản hồi nhất quán trên vài khung liên tiếp --- sau khi làm mượt, các khung ``hỗ trợ lẫn nhau'' và đỉnh xác suất được giữ lại. Nhiễu đơn lẻ không được hàng xóm ủng hộ bị kéo xuống đáng kể. Tham số $\sigma = 2.0$ được chốt sau khi quét $\sigma \in \{1.0, 1.5, 2.0, 2.5, 3.0\}$ trên tập xác thực của SHOT: giá trị nhỏ hơn ($\sigma \le 1.5$) chưa đủ triệt nhiễu lóe sáng, trong khi giá trị lớn hơn ($\sigma \ge 2.5$) làm phẳng cả các đỉnh ranh giới thật và đẩy ngưỡng tối ưu xuống vùng quá nhỏ, kém ổn định. So với bộ lọc trung vị (median filter) --- một lựa chọn hậu xử lý phổ biến khác --- hạt nhân Gaussian giữ được dạng đỉnh khi ranh giới được nhiều khung liên tiếp hỗ trợ và tránh hiện tượng cắt phẳng đột ngột, phù hợp hơn với phân phối xác suất sigmoid của tầng phân loại.
 
 \subsection{Hiệu chỉnh nhiệt độ (Temperature Scaling) --- hiệu chỉnh xác suất}
 \label{subsec:v2_temperature}
 
-Sau huấn luyện, phân phối xác suất đầu ra của mô hình có thể chưa được hiệu chỉnh tốt (poorly calibrated): mô hình có thể \textit{thiếu tự tin (under-confident)} (xác suất bị nén về gần 0.5 dù nhiều mẫu khá chắc chắn) hoặc \textit{quá tự tin (over-confident)}. Trong SBD, hiệu chỉnh xác suất trực tiếp ảnh hưởng đến việc chọn ngưỡng tối ưu.
+Sau huấn luyện, phân phối xác suất đầu ra của mô hình có thể chưa được hiệu chỉnh tốt: mô hình có thể thiếu tự tin, nghĩa là xác suất bị nén về gần 0,5 dù nhiều mẫu đã được phân loại khá chắc chắn, hoặc quá tự tin. Trong SBD, hiệu chỉnh xác suất trực tiếp ảnh hưởng đến việc chọn ngưỡng tối ưu.
 
 AutoShotV2 áp dụng \textbf{hiệu chỉnh nhiệt độ}~\cite{Guo2017Calibration}: tìm hệ số vô hướng $T^*$ tối thiểu hóa mất mát NLL (Negative Log-Likelihood) trên tập xác thực mà không huấn luyện lại bất kỳ tham số nào:
 \begin{equation}
@@ -1022,16 +1022,16 @@ AutoShotV2 áp dụng \textbf{hiệu chỉnh nhiệt độ}~\cite{Guo2017Calibra
 \end{equation}
 trong đó $z$ là logit trước sigmoid. Điểm quan trọng: hiệu chỉnh nhiệt độ \textit{không thay đổi thứ tự tương đối} giữa các dự đoán (phép chia cho $T > 0$ là đơn điệu), chỉ hiệu chỉnh mức độ tự tin. Nếu $T > 1$, phân phối bị làm phẳng; nếu $T < 1$, phân phối trở nên sắc hơn và các giá trị bị đẩy xa khỏi 0.5.
 
-Trên tập SHOT, hệ số tối ưu tìm được thỏa $T^* < 1$, cho thấy mô hình đang \textit{thiếu tự tin (under-confident)} --- nhiều dự đoán đúng nhưng xác suất chưa đủ ``dứt khoát''. Chia logit cho $T^* < 1$ làm sắc hóa phân phối, đẩy các dự đoán rõ ràng ra xa vùng trung tính. Hệ quả: ngưỡng quyết định tối ưu dịch về vùng nhỏ hơn so với ngưỡng của AutoShot gốc; giá trị $T^*$ và ngưỡng cụ thể của từng cấu hình được báo cáo ở Chương~\ref{ch:bo_du_lieu_va_thuc_nghiem}.
+Trên tập SHOT, hệ số tối ưu tìm được thỏa $T^* < 1$, cho thấy mô hình đang \textit{thiếu tự tin} --- nhiều dự đoán đúng nhưng xác suất chưa đủ ``dứt khoát''. Chia logit cho $T^* < 1$ làm sắc hóa phân phối, đẩy các dự đoán rõ ràng ra xa vùng trung tính. Hệ quả: ngưỡng quyết định tối ưu dịch về vùng nhỏ hơn so với ngưỡng của AutoShot gốc; giá trị $T^*$ và ngưỡng cụ thể của từng cấu hình được báo cáo ở Chương~\ref{ch:bo_du_lieu_va_thuc_nghiem}.
 
-Khoảng tìm kiếm $T \in [0.1, 10.0]$ được chọn theo khuyến nghị của Guo et al.\ \cite{Guo2017Calibration} cho bài toán phân loại nhị phân: cận dưới $0.1$ cho phép sắc hóa rất mạnh khi mô hình thiếu tự tin (under-confident), còn cận trên $10.0$ phủ trường hợp quá tự tin (over-confident) mà không gặp rủi ro chia cho giá trị quá lớn làm gradient triệt tiêu. So với hiệu chỉnh Platt (Platt scaling - học hai tham số affine $a, b$ trên logit) hoặc hồi quy đơn điệu (isotonic regression - hàm bậc thang không tham số), hiệu chỉnh nhiệt độ chỉ có một tham số duy nhất nên không có nguy cơ quá khớp (quá khớp) trên tập xác thực nhỏ và giữ nguyên thứ tự xếp hạng dự đoán --- một tính chất then chốt để ngưỡng hóa nhị phân của SBD vẫn ổn định sau hiệu chỉnh.
+Khoảng tìm kiếm $T \in [0.1, 10.0]$ được chọn theo khuyến nghị của Guo et al.\ \cite{Guo2017Calibration} cho bài toán phân loại nhị phân: cận dưới $0.1$ cho phép sắc hóa rất mạnh khi mô hình thiếu tự tin, còn cận trên $10.0$ phủ trường hợp quá tự tin mà không gặp rủi ro chia cho giá trị quá lớn làm gradient triệt tiêu. So với hiệu chỉnh Platt (Platt scaling - học hai tham số affine $a, b$ trên logit) hoặc hồi quy đơn điệu (isotonic regression - hàm bậc thang không tham số), hiệu chỉnh nhiệt độ chỉ có một tham số duy nhất nên ít có nguy cơ quá khớp trên tập xác thực nhỏ và giữ nguyên thứ tự xếp hạng dự đoán --- một tính chất then chốt để ngưỡng hóa nhị phân của SBD vẫn ổn định sau hiệu chỉnh.
 
 \subsection{Quy trình huấn luyện lại và thuật toán tổng thể}
 \label{subsec:v2_training}
 
-Tầng phân loại (ClassificationHead) được huấn luyện lại theo chiến lược hai pha~\cite{Loshchilov2016SGDR}: khởi động tuyến tính trong 4 epoch (tốc độ học - LR từ 0 đến $10^{-5}$) rồi giảm nhiệt cosine đến tối đa 20 epoch. Cấu hình chạy cuối không dùng cơ chế dừng sớm, nhằm giữ cùng ngân sách huấn luyện cho các biến thể thực nghiệm phân rã.
+Tầng phân loại được huấn luyện lại theo chiến lược hai pha~\cite{Loshchilov2016SGDR}: khởi động tuyến tính trong 4 chu kỳ huấn luyện, với tốc độ học tăng từ 0 đến $10^{-5}$, sau đó giảm tốc độ học theo hàm cosin trong tổng số tối đa 20 chu kỳ huấn luyện. Cấu hình chạy cuối không dùng cơ chế dừng sớm, nhằm giữ cùng ngân sách huấn luyện cho các biến thể thực nghiệm phân rã.
 
 \section{Tổng kết chương}
 \label{sec:chap3_conclusion}
 
-Chương này đã trình bày hướng tiếp cận kế thừa AutoShot và cải tiến ở tầng đầu ra để hình thành AutoShotV2. Các nội dung chính gồm nền tảng NAS và TransNetV2, mô hình AutoShot gốc, kiến trúc tầng phân loại mới, Focal Loss, nhãn many-hot, Gaussian smoothing, hiệu chỉnh nhiệt độ và quy trình huấn luyện lại. Chương~\ref{ch:bo_du_lieu_va_thuc_nghiem} tiếp theo mô tả dữ liệu, thiết lập thực nghiệm và kết quả đánh giá.
+Chương này đã trình bày hướng tiếp cận kế thừa AutoShot và cải tiến ở tầng đầu ra để hình thành AutoShotV2. Các nội dung chính gồm nền tảng NAS và TransNetV2, mô hình AutoShot gốc, kiến trúc tầng phân loại mới, hàm mất mát Focal, nhãn nhiều điểm dương, làm mượt Gaussian, hiệu chỉnh nhiệt độ và quy trình huấn luyện lại. Chương~\ref{ch:bo_du_lieu_va_thuc_nghiem} tiếp theo mô tả dữ liệu, thiết lập thực nghiệm và kết quả đánh giá.
