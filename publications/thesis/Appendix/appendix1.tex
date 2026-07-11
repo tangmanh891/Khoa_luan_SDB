@@ -22,19 +22,19 @@ $V=\{f_1,\dots,f_n\}$ & Chuỗi khung hình đầu vào & Video gồm $n$ khung 
 $f_i$ & Khung hình thứ $i$ & Phần tử cơ bản của video đầu vào. \\
 $B=\{b_1,\dots,b_m\}$ & Tập ranh giới cảnh quay & Tập hợp các vị trí bắt đầu shot mới trong video. \\
 $b_j$ & Ranh giới thứ $j$ & Một mốc thời gian biểu thị sự chuyển từ shot hiện tại sang shot kế tiếp. \\
-$\hat{y}_{single}$ & Dự đoán single-frame & Xác suất ranh giới tại khung hình trung tâm. \\
-$\hat{y}_{all}$ & Dự đoán all-frame / many-hot & Xác suất trên vùng lân cận quanh ranh giới, dùng để hỗ trợ huấn luyện. \\
+$\hat{y}_{single}$ & Dự đoán trên một khung hình & Xác suất ranh giới tại khung hình trung tâm. \\
+$\hat{y}_{all}$ & Dự đoán trên toàn bộ khung hình & Xác suất trên vùng lân cận quanh ranh giới, dùng để hỗ trợ huấn luyện. \\
 $p[t]$ & Xác suất tại thời điểm $t$ & Giá trị đầu ra của mô hình trước hoặc sau hậu xử lý. \\
 $z[t]$ & Logit tại thời điểm $t$ & Giá trị đầu ra trước hàm sigmoid hoặc trước bước hiệu chỉnh nhiệt độ. \\
 $\theta$ & Ngưỡng quyết định & Ngưỡng chuyển xác suất sang quyết định có ranh giới hay không (ngưỡng $> \theta \Rightarrow$ có ranh giới). \\
 $\theta_{\text{best}}$ & Ngưỡng tốt nhất & Ngưỡng cho F1 cao nhất trên một bộ dữ liệu hoặc một thiết lập đánh giá cụ thể. \\
-$T^*$ & Nhiệt độ tối ưu & Hệ số hiệu chỉnh xác suất trong temperature scaling. \\
-$\sigma$ & Độ lệch chuẩn Gaussian & Tham số điều khiển mức làm mượt của Gaussian smoothing. \\
-$\gamma$ & Tham số tập trung & Tham số $\gamma$ của Focal Loss, điều khiển mức ưu tiên mẫu khó. \\
-$\alpha$ & Tham số cân bằng & Tham số $\alpha$ của Focal Loss, điều chỉnh tỉ lệ giữa lớp dương và âm. \\
-$\eta_t$ & Tốc độ học tại bước $t$ & Tốc độ học theo lịch trình Cosine với khởi động dần. \\
-$K$ & Số fold kiểm định chéo & Số phần chia dữ liệu trong kiểm định chéo; khóa luận dùng $K=5$ ở thí nghiệm bổ sung. \\
-$\mathcal{D}_k$ & Fold thứ $k$ & Phần dữ liệu giữ lại để đánh giá trong lần kiểm định chéo thứ $k$. \\
+$T^*$ & Nhiệt độ tối ưu & Hệ số hiệu chỉnh xác suất trong hiệu chỉnh nhiệt độ. \\
+$\sigma$ & Độ lệch chuẩn Gaussian & Tham số điều khiển mức làm mượt của phép làm mượt Gaussian. \\
+$\gamma$ & Tham số tập trung & Tham số $\gamma$ của hàm mất mát Focal, điều khiển mức ưu tiên mẫu khó. \\
+$\alpha$ & Tham số cân bằng & Tham số $\alpha$ của hàm mất mát Focal, điều chỉnh tỉ lệ giữa lớp dương và âm. \\
+$\eta_t$ & Tốc độ học tại bước $t$ & Tốc độ học theo lịch trình cosin với khởi động dần. \\
+$K$ & Số phần kiểm định chéo & Số phần chia dữ liệu trong kiểm định chéo; khóa luận dùng $K=5$ ở thí nghiệm bổ sung. \\
+$\mathcal{D}_k$ & Phần thứ $k$ & Phần dữ liệu giữ lại để đánh giá trong lần kiểm định chéo thứ $k$. \\
 $TP,FP,FN$ & Các biến đếm đánh giá & Lần lượt là dự đoán đúng ranh giới, báo động giả và ranh giới bị bỏ sót. \\
 $\mathcal{A}$ & Không gian tìm kiếm NAS & Tập hợp toàn bộ kiến trúc ứng viên trong bài toán NAS. \\
 $\mathcal{L}$ & Hàm mất mát tổng & Đại lượng tối ưu trong quá trình huấn luyện mô hình. \\
@@ -44,60 +44,60 @@ $\mathcal{L}$ & Hàm mất mát tổng & Đại lượng tối ưu trong quá tr
 
 \section{Quy ước đánh giá}
 
-Trong bài toán phát hiện ranh giới cảnh quay, dữ liệu thường mất cân bằng mạnh do số khung hình nền lớn hơn rất nhiều số khung hình thuộc ranh giới. Vì vậy, khóa luận không dùng Độ chính xác làm chỉ số chính mà ưu tiên bộ ba Precision, Recall và F1-score.
+Trong bài toán phát hiện ranh giới cảnh quay, dữ liệu thường mất cân bằng mạnh do số khung hình nền lớn hơn rất nhiều số khung hình thuộc ranh giới. Vì vậy, khóa luận không dùng độ chính xác tổng thể làm chỉ số chính mà ưu tiên bộ ba độ chính xác dương, độ bao phủ và chỉ số F1.
 
 \begin{itemize}
-    \item \textbf{True Positive (TP):} mô hình dự đoán đúng một ranh giới cảnh quay.
-    \item \textbf{False Positive (FP):} mô hình dự đoán có ranh giới nhưng thực tế không có.
-    \item \textbf{False Negative (FN):} mô hình bỏ sót một ranh giới có thật trong dữ liệu gán nhãn.
+    \item \textbf{Dự đoán dương đúng (TP):} mô hình dự đoán đúng một ranh giới cảnh quay.
+    \item \textbf{Dự đoán dương sai (FP):} mô hình dự đoán có ranh giới nhưng thực tế không có.
+    \item \textbf{Bỏ sót mẫu dương (FN):} mô hình bỏ sót một ranh giới có thật trong dữ liệu gán nhãn.
 \end{itemize}
 
-Các chỉ số được tính theo các công thức:
+Các chỉ số được tính theo các công thức sau, trong đó $P$ là độ chính xác dương và $R$ là độ bao phủ:
 \begin{equation}
-    Precision = \frac{TP}{TP + FP}
+    P = \frac{TP}{TP + FP}
 \end{equation}
 \begin{equation}
-    Recall = \frac{TP}{TP + FN}
+    R = \frac{TP}{TP + FN}
 \end{equation}
 \begin{equation}
-    F1 = 2 \times \frac{Precision \times Recall}{Precision + Recall}
+    F_1 = 2 \times \frac{P \times R}{P + R}
 \end{equation}
 
-Trong các thí nghiệm của khóa luận, F1-score được dùng làm tiêu chí so sánh chính giữa các mô hình vì đây là chỉ số phản ánh tốt nhất sự cân bằng giữa khả năng phát hiện đúng và khả năng hạn chế báo động giả.
+Trong các thí nghiệm của khóa luận, chỉ số F1 được dùng làm tiêu chí so sánh chính giữa các mô hình vì đây là chỉ số phản ánh tốt nhất sự cân bằng giữa khả năng phát hiện đúng và khả năng hạn chế báo động giả.
 
 \section{Không gian tìm kiếm siêu tham số Pha 2}
 \label{sec:hparam_search}
 
-Cấu hình chính của AutoShotV2 (Mục~\ref{sec:extra_param_sweep}) được chọn từ một lượt tìm kiếm siêu tham số cho tầng phân loại Pha 2. Không gian tìm kiếm được tổng hợp ở Bảng~\ref{tab:hparam_space}. Nếu quét toàn bộ (full grid) sẽ có $4\times3\times3\times2 = 72$ cấu hình; do giới hạn tài nguyên tính toán, khóa luận chỉ huấn luyện $11$ cấu hình đại diện, liệt kê ở Bảng~\ref{tab:hparam_configs}. Hệ số nhiệt độ $T^*$ không nằm trong lưới tìm kiếm mà được ước lượng riêng bằng \textit{temperature scaling} trên tập xác thực; độ lệch chuẩn Gaussian $\sigma$ kế thừa từ AutoShotV1 (dò trong khoảng $0.5\to5$, bước $0.5$) và được cố định bằng $2.0$.
+Cấu hình chính của AutoShotV2 (Mục~\ref{sec:extra_param_sweep}) được chọn từ một lượt tìm kiếm siêu tham số cho tầng phân loại Pha 2. Không gian tìm kiếm được tổng hợp ở Bảng~\ref{tab:hparam_space}. Nếu khảo sát toàn bộ lưới siêu tham số sẽ có $4\times3\times3\times2 = 72$ cấu hình; do giới hạn tài nguyên tính toán, khóa luận chỉ huấn luyện $11$ cấu hình đại diện, liệt kê ở Bảng~\ref{tab:hparam_configs}. Hệ số nhiệt độ $T^*$ không nằm trong lưới tìm kiếm mà được ước lượng riêng bằng \textit{hiệu chỉnh nhiệt độ} trên tập xác thực; độ lệch chuẩn Gaussian $\sigma$ được kế thừa từ AutoShotV1 sau khi khảo sát trong khoảng từ $0.5$ đến $5$ với bước $0.5$, rồi được cố định bằng $2.0$.
 
 \begin{table}[H]
 \centering
 \small
 \caption{Không gian tìm kiếm siêu tham số của tầng phân loại Pha 2}
 \label{tab:hparam_space}
-\begin{tabular}{lll}
+\begin{tabularx}{\textwidth}{L{4.1cm}L{4.0cm}X}
 \toprule
 \textbf{Tham số} & \textbf{Giá trị đã thử} & \textbf{Ghi chú} \\
 \midrule
-$\gamma$ (Focal Loss) & $0.5,\ 1.0,\ 1.5,\ 2.0$ & Khoảng $0.5\to2.0$ \\
-$\alpha$ (Focal Loss) & $0.4,\ 0.5,\ 0.6$ & Khoảng $0.4\to0.6$ \\
-Trọng số many-hot & $0.2,\ 0.3,\ 0.4$ & Khoảng $0.2\to0.4$ \\
+$\gamma$ (hàm mất mát Focal) & $0.5,\ 1.0,\ 1.5,\ 2.0$ & Khoảng $0.5\to2.0$ \\
+$\alpha$ (hàm mất mát Focal) & $0.4,\ 0.5,\ 0.6$ & Khoảng $0.4\to0.6$ \\
+Trọng số nhãn nhiều điểm dương & $0.2,\ 0.3,\ 0.4$ & Khoảng $0.2\to0.4$ \\
 Tốc độ học & $7\times10^{-6},\ 1\times10^{-5}$ & Khoảng $7\times10^{-6}\to1\times10^{-5}$ \\
 Suy giảm trọng số & $1\times10^{-4}$ & Cố định \\
-$\sigma$ (Gaussian) & $2.0$ & Kế thừa AutoShotV1 ($0.5\to5$, bước $0.5$) \\
-$T^*$ (nhiệt độ) & --- & Temperature scaling trên tập xác thực \\
+$\sigma$ & $2.0$ & Kế thừa AutoShotV1 sau khi khảo sát từ $0.5$ đến $5$ với bước $0.5$ \\
+$T^*$ (nhiệt độ) & --- & Hiệu chỉnh nhiệt độ trên tập xác thực \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}
 
 \begin{table}[H]
 \centering
 \small
-\caption{Mười một cấu hình siêu tham số đã huấn luyện (trên tổng số 72 của full grid)}
+\caption{Mười một cấu hình siêu tham số đã huấn luyện (trên tổng số 72 tổ hợp có thể có)}
 \label{tab:hparam_configs}
 \begin{tabular}{lcccc}
 \toprule
-\textbf{Tên rút gọn} & \textbf{$\gamma$} & \textbf{$\alpha$} & \textbf{many-hot} & \textbf{Tốc độ học} \\
+\textbf{Tên rút gọn} & \textbf{$\gamma$} & \textbf{$\alpha$} & \textbf{Nhiều điểm dương} & \textbf{Tốc độ học} \\
 \midrule
 \texttt{g0p5\_a0p50\_m0p30\_lr1e5} & 0.5 & 0.5 & 0.3 & $1\times10^{-5}$ \\
 \texttt{g1p0\_a0p40\_m0p30\_lr1e5} & 1.0 & 0.4 & 0.3 & $1\times10^{-5}$ \\
@@ -115,18 +115,3 @@ $T^*$ (nhiệt độ) & --- & Temperature scaling trên tập xác thực \\
 \end{table}
 
 \noindent Cấu hình in đậm (\texttt{g2p0\_a0p60\_m0p30\_lr7e6}) cho F1 cao nhất trên SHOT và được chọn làm cấu hình chính của AutoShotV2.
-
-\section{Các phiên bản phụ trợ: AutoShotV1 và AutoShotV2-HeatMap}
-\label{sec:variants_v1_heatmap}
-
-Phương pháp chính của khóa luận là AutoShotV2 (cấu hình chính). Bên cạnh đó, hai phiên bản phụ trợ dưới đây được thực hiện để làm mốc so sánh; kết quả định lượng của chúng đã được đưa vào Bảng~\ref{tab:autoshotv2_results} ở Chương~\ref{ch:bo_du_lieu_va_thuc_nghiem}. Phụ lục này trình bày chi tiết cấu hình và phân tích của hai phiên bản đó.
-
-\subsection{Phiên bản AutoShotV1 --- chỉ bổ sung làm mượt Gaussian}
-\label{sec:autoshotv1}
-
-AutoShotV1 giữ nguyên toàn bộ trọng số AutoShot@F1 và \textbf{không huấn luyện lại tham số nào}, chỉ bổ sung làm mượt Gaussian 1D ($\sigma = 2.0$, dò trên tập xác thực SHOT) lên chuỗi xác suất trước bước ngưỡng hóa (Mục~\ref{subsec:v2_gaussian}). Chỉ với bước hậu xử lý này, F1 trên SHOT tăng từ $0.8405$ (AutoShot tự chạy lại) lên $0.8477$ ($+0.72$ điểm phần trăm), với Precision $0.8558$ và Recall $0.8398$ --- một điểm vận hành thiên về Precision. Kết quả xác nhận làm mượt Gaussian là thành phần nền tảng có ích; AutoShotV2 đầy đủ bổ sung thêm Focal Loss, nhãn nhiều điểm dương và hiệu chỉnh nhiệt độ chủ yếu để nâng Recall và cân bằng lại Precision--Recall. Lưu ý AutoShotV1 khác cấu hình đối chứng $P1$ ở Mục~\ref{sec:ablation}: $P1$ có huấn luyện lại tầng phân loại bằng BCE, còn AutoShotV1 thì không.
-
-\subsection{Biến thể AutoShotV2-HeatMap --- nhãn mềm dạng heatmap}
-\label{sec:autoshotv2_heatmap}
-
-AutoShotV2-HeatMap giữ nguyên mạng xương sống, chỉ đổi phía nhãn khi huấn luyện lại tầng phân loại: thay nhãn một điểm dương (one-hot) bằng nhãn mềm phân phối Gaussian ($\sigma_{\text{nhãn}}=3.0$) quanh ranh giới, kèm làm trơn nhãn bất đối xứng ($\varepsilon=0.1$, chỉ áp cho nhãn dương), nhằm tăng khả năng bắt chuyển cảnh dần. Trên SHOT tại ngưỡng $\theta=0.10$, biến thể nâng Recall từ $0.8537$ (đầu phân loại cơ sở, không dùng nhãn heatmap) lên $0.8804$ ($+2.67$ điểm phần trăm) trong khi F1 giữ tương đương ($0.8557$), đổi lại Precision giảm còn $0.8324$. Trên ClipShots đạt F1 $0.7560$ (ngưỡng $0.15$). Như vậy HeatMap là một \textit{lựa chọn vận hành thiên về Recall}, phù hợp các kịch bản ưu tiên không bỏ sót ranh giới, chứ không nâng trần F1; BBC chưa được đánh giá do thiếu video gốc ở môi trường cục bộ.

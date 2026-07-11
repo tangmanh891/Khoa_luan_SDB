@@ -25,15 +25,15 @@ Khối lượng dữ liệu khổng lồ này đặt ra thách thức trong vi�
 Theo hướng này, gần đây đã xuất hiện bộ dữ liệu chuyên biệt đầu tiên cho video ngắn \cite{zhu2023autoshot} cùng các mô hình SBD học sâu được tối ưu cho miền dữ liệu mới. Tuy vậy, phần lớn mô hình cơ sở mạnh hiện hành vẫn được thiết kế cho video dài, mở ra dư địa cải thiện thông qua tìm kiếm kiến trúc mạng nơ-ron (NAS) và các kỹ thuật huấn luyện hiện đại --- chi tiết khảo sát ở Chương~\ref{cong_trinh_lien_quan}. Mục tiêu cuối cùng là xây dựng một hệ thống SBD thích ứng tốt với sự năng động của video ngắn, đồng thời tận dụng các kiến trúc học sâu tiên tiến để giải quyết phần bài toán mà các phương pháp truyền thống còn bỏ ngỏ.
 
 \section{Phát biểu bài toán}
-Video được tổ chức theo cấu trúc phân cấp từ lớn đến nhỏ: \textit{scene} (cảnh) chứa nhiều \textit{shot} (cảnh quay), và mỗi shot là tập hợp các \textit{frame} (khung hình) liên tiếp được ghi liền mạch. Phát hiện ranh giới cảnh quay là việc xác định các vị trí trong dòng khung hình nơi một shot kết thúc và một shot mới bắt đầu. Tác vụ này được thực hiện ở mức khung hình: nếu không có thay đổi đáng kể giữa các khung hình liên tiếp, không có ranh giới shot. Với chuyển cảnh dần, hệ thống thường phải quan sát đồng thời nhiều khung hình kế tiếp để xác nhận vì quá trình chuyển diễn ra trải dài theo thời gian.
+Video được tổ chức theo cấu trúc phân cấp từ lớn đến nhỏ: cảnh chứa nhiều cảnh quay, và mỗi cảnh quay là tập hợp các khung hình liên tiếp được ghi liền mạch. Phát hiện ranh giới cảnh quay là việc xác định các vị trí trong dòng khung hình nơi một cảnh quay kết thúc và một cảnh quay mới bắt đầu. Tác vụ này được thực hiện ở mức khung hình: nếu không có thay đổi đáng kể giữa các khung hình liên tiếp, không có ranh giới cảnh quay. Với chuyển cảnh dần, hệ thống thường phải quan sát đồng thời nhiều khung hình kế tiếp để xác nhận vì quá trình chuyển diễn ra trải dài theo thời gian.
 
 \textbf{Xác định đối tượng người dùng cuối.} Người dùng cuối của hệ thống được đề xuất là nhà phát triển phần mềm hoặc kỹ sư xử lý video cần tự động chia tách các video ngắn thành các shot độc lập. Kết quả chia tách này đóng vai trò tiền đề phục vụ các tác vụ phân tích phía sau như lập chỉ mục tìm kiếm, tóm tắt video, biên tập tự động hoặc phân tích nội dung ngữ nghĩa. Việc xác định rõ đối tượng này giúp định hình các tiêu chí đánh giá mô hình trong thực tế, thay vì chỉ tối ưu các chỉ số lý thuyết.
 
 \textbf{Định nghĩa hình thức.} Để phân tích bài toán một cách chặt chẽ, ta phân chia quy trình thực hiện thành hai giai đoạn rõ rệt: giai đoạn ngoại tuyến và giai đoạn trực tuyến.
 \begin{itemize}
-    \item \textbf{Bài toán trực tuyến (Suy diễn trực tiếp):} Đây là bài toán mà người dùng cuối tương tác trực tiếp. Đầu vào trực tuyến là một video thô hoặc chuỗi khung hình liên tục cần phân đoạn $V = \{f_1, f_2, \dots, f_n\}$. Đầu ra trực tuyến là danh sách chỉ số khung hình hoặc mốc thời gian $B = \{b_1, b_2, \dots, b_m\}$ đánh dấu ranh giới bắt đầu của một shot mới, có thể đi kèm một điểm tin cậy đại diện cho xác suất chuyển cảnh. Giai đoạn này tuyệt đối không phụ thuộc vào các thông tin hậu kiểm hay nhãn giám sát của tập kiểm tra.
+    \item \textbf{Bài toán trực tuyến:} Đây là bài toán mà người dùng cuối tương tác trực tiếp. Đầu vào trực tuyến là một video thô hoặc chuỗi khung hình liên tục cần phân đoạn $V = \{f_1, f_2, \dots, f_n\}$. Đầu ra trực tuyến là danh sách chỉ số khung hình hoặc mốc thời gian $B = \{b_1, b_2, \dots, b_m\}$ đánh dấu ranh giới bắt đầu của một shot mới, có thể đi kèm một điểm tin cậy đại diện cho xác suất chuyển cảnh. Giai đoạn này tuyệt đối không phụ thuộc vào các thông tin hậu kiểm hay nhãn giám sát của tập kiểm tra.
     
-    \item \textbf{Bài toán ngoại tuyến (Huấn luyện và hiệu chỉnh ngoại tuyến):} Đây là giai đoạn chuẩn bị và tối ưu hóa hệ thống. Đầu vào bao gồm tập dữ liệu huấn luyện/xác thực đã được gán nhãn, các đặc trưng lưu bộ nhớ đệm, và không gian tham số cần quét. Đầu ra là bộ trọng số tối ưu của mô hình và các ngưỡng quyết định hoặc các tham số hiệu chỉnh được cố định để triển khai thực tế.
+    \item \textbf{Bài toán ngoại tuyến:} Đây là giai đoạn chuẩn bị và tối ưu hóa hệ thống. Đầu vào bao gồm tập dữ liệu huấn luyện/xác thực đã được gán nhãn, các đặc trưng lưu bộ nhớ đệm, và không gian tham số cần quét. Đầu ra là bộ trọng số tối ưu của mô hình và các ngưỡng quyết định hoặc các tham số hiệu chỉnh được cố định để triển khai thực tế.
 \end{itemize}
 
 \begin{figure}[htbp]
@@ -55,17 +55,17 @@ Video được tổ chức theo cấu trúc phân cấp từ lớn đến nhỏ:
 \FloatBarrier
 
 \begin{itemize}
-    \item \textbf{Chuyển tiếp đột ngột -- Cut chuyển cảnh (CT):} Là sự thay đổi tức thì giữa hai shot mà không có hiệu ứng chỉnh sửa nào ở giữa, xảy ra khi hai shot được nối trực tiếp. Đây là loại chuyển cảnh phổ biến và tương đối dễ phát hiện do sự thay đổi đột ngột về nội dung hình ảnh trong một khung hình.
+    \item \textbf{Chuyển cảnh đột ngột:} Là sự thay đổi tức thì giữa hai shot mà không có hiệu ứng chỉnh sửa nào ở giữa, xảy ra khi hai shot được nối trực tiếp. Đây là loại chuyển cảnh phổ biến và tương đối dễ phát hiện do sự thay đổi đột ngột về nội dung hình ảnh trong một khung hình.
 
     \begin{figure}[htbp]
         \centering
         \includegraphics[width=0.6\textwidth]{images/cut_transition.png}
-        \caption{Minh họa chuyển tiếp đột ngột (Cut chuyển cảnh).}
+        \caption{Minh họa chuyển cảnh đột ngột.}
         \label{fig:cut_transition}
     \end{figure}
     \FloatBarrier
 
-    \item \textbf{Chuyển tiếp dần -- chuyển cảnh dần (GT):} Là sự kết hợp giữa hai shot thông qua các hiệu ứng đồ họa, trải dài trên nhiều khung hình. Các dạng phổ biến: \textit{Fade out} (shot mờ dần sang đen), \textit{Fade in} (cảnh xuất hiện dần từ đen), \textit{Dissolve} (hai shot chồng chéo), \textit{Wipe} (shot mới đẩy shot cũ — khó phát hiện nhất do hình thức đa dạng). Xem Hình~\ref{fig:shot_transitions} để so sánh trực quan.
+    \item \textbf{Chuyển cảnh dần dần:} Là sự kết hợp giữa hai shot thông qua các hiệu ứng đồ họa, trải dài trên nhiều khung hình. Các dạng phổ biến gồm hiệu ứng mờ dần sang đen, xuất hiện dần từ nền đen, chồng hình và quét hình. Trong đó, quét hình khó phát hiện hơn do có nhiều hình thức thể hiện. Xem Hình~\ref{fig:shot_transitions} để so sánh trực quan.
 \end{itemize}
 
 Bài toán đặt ra là xây dựng một mô hình học máy có khả năng tự động xác định chính xác vị trí thời gian của mọi ranh giới shot trong video.
@@ -74,7 +74,7 @@ Bài toán đặt ra là xây dựng một mô hình học máy có khả năng 
 Mặc dù SBD là bài toán đã được nghiên cứu lâu năm, việc áp dụng vào thực tế -- đặc biệt với video ngắn -- gặp nhiều thách thức đặc thù:
 
 \begin{itemize}
-    \item \textbf{Đặc thù của video ngắn:} Video ngắn có nhịp độ rất nhanh, độ dài shot trung bình thường dưới 5 giây, ngắn hơn nhiều so với video truyền thống. Người sáng tạo nội dung thường kết hợp nhiều hiệu ứng chuyển cảnh phức tạp để tăng tính hấp dẫn. Ngoài ra, định dạng video dọc (vertical video) thường có các vùng tĩnh ở trên và dưới (như tên thương hiệu, tiêu đề), chỉ phần giữa thay đổi, gây khó khăn cho việc phát hiện thay đổi toàn cục.
+    \item \textbf{Đặc thù của video ngắn:} Video ngắn có nhịp độ rất nhanh, độ dài shot trung bình thường dưới 5 giây, ngắn hơn nhiều so với video truyền thống. Người sáng tạo nội dung thường kết hợp nhiều hiệu ứng chuyển cảnh phức tạp để tăng tính hấp dẫn. Ngoài ra, định dạng video dọc thường có các vùng tĩnh ở trên và dưới, chẳng hạn tên thương hiệu hoặc tiêu đề, chỉ phần giữa thay đổi, gây khó khăn cho việc phát hiện thay đổi toàn cục.
     \begin{figure}[htbp]
         \centering
         \includegraphics[width=0.2\textwidth]{images/tiktok.jpg}
@@ -85,16 +85,16 @@ Mặc dù SBD là bài toán đã được nghiên cứu lâu năm, việc áp d
 
     \item \textbf{Nội dung ảo và game:} Một tỷ lệ đáng kể video ngắn là video game với các cảnh ảo có sự thay đổi rất lớn trong nội bộ một shot do hiệu ứng kỹ xảo, dễ dẫn đến cảnh báo giả.
 
-    \item \textbf{Nhiễu thị giác:} Các yếu tố như thay đổi độ sáng đột ngột (đèn flash), chuyển động nhanh của vật thể hoặc camera (panning, zooming) và nền tương tự nhau giữa hai shot kế tiếp dễ bị nhầm lẫn với chuyển cảnh thật.
+    \item \textbf{Nhiễu thị giác:} Các yếu tố như ánh sáng lóe lên đột ngột, chuyển động nhanh của vật thể hoặc chuyển động lia hoặc thu phóng của máy quay và nền tương tự nhau giữa hai shot kế tiếp dễ bị nhầm lẫn với chuyển cảnh thật.
     \begin{figure}[htbp]
         \centering
         \includegraphics[width=0.6\textwidth]{images/flash.jpg}
-        \caption{Nhiễu thị giác do ánh sáng thay đổi đột ngột (Flash).}
+        \caption{Nhiễu thị giác do hiện tượng lóe sáng đột ngột.}
         \label{fig:visual_noise_flash}
     \end{figure}
     \FloatBarrier
 
-    \item \textbf{Khó khăn khi phát hiện chuyển cảnh dần:} Không giống Cut, GT diễn ra từ từ và có đặc điểm thống kê không rõ ràng. Các phương pháp dựa trên chênh lệch pixel hoặc histogram thường thất bại khi gặp các hiệu ứng dissolve hay wipe phức tạp.
+    \item \textbf{Khó khăn khi phát hiện chuyển cảnh dần:} Không giống chuyển cảnh đột ngột, chuyển cảnh dần diễn ra từ từ và có đặc điểm thống kê không rõ ràng. Các phương pháp dựa trên chênh lệch pixel hoặc histogram thường thất bại khi gặp các hiệu ứng chồng hình hoặc quét hình phức tạp.
     \item \textbf{Thiếu dữ liệu chuẩn cho video ngắn:} Các bộ dữ liệu truyền thống như BBC Planet Earth~\cite{baraldi2015rai} chủ yếu chứa phim tài liệu hoặc tin tức với cảnh quay tương đối tĩnh, không phản ánh được độ phức tạp của video ngắn hiện đại.
 \end{itemize}
 
@@ -117,7 +117,7 @@ Trong khuôn khổ khóa luận này, bài toán được giới hạn theo các
 Để giải quyết các khoảng trống đã nêu, Khóa luận tập trung vào ba câu hỏi nghiên cứu chính:
 \begin{itemize}
     \item \textbf{RQ1:} Việc tối ưu kiến trúc theo hướng NAS có giúp cải thiện hiệu năng phát hiện ranh giới cảnh quay trên video ngắn so với mạng xương sống cố định như TransNetV2 hay không?
-    \item \textbf{RQ2:} Các kỹ thuật huấn luyện và hậu xử lý ở tầng phân loại (hàm mất mát Focal - Focal Loss, nhãn nhiều điểm dương - many-hot labels, hiệu chỉnh nhiệt độ - temperature scaling, làm mượt Gaussian - Gaussian smoothing) có thể cải thiện F1 mà không cần thay đổi mạng xương sống hay không?
+    \item \textbf{RQ2:} Các kỹ thuật huấn luyện và hậu xử lý ở tầng phân loại, gồm hàm mất mát Focal, nhãn nhiều điểm dương, hiệu chỉnh nhiệt độ và làm mượt Gaussian, có thể cải thiện F1 mà không cần thay đổi mạng xương sống hay không?
     \item \textbf{RQ3:} Mức cải thiện đạt được trên SHOT có duy trì khi đánh giá chéo trên các bộ dữ liệu khác như BBC và ClipShots hay không?
 \end{itemize}
 
@@ -148,7 +148,7 @@ Trên cơ sở hướng tiếp cận đã nêu, Khóa luận mang lại các đ�
 \begin{itemize}
     \item \textbf{Hệ thống hóa tri thức:} Trình bày có cấu trúc bối cảnh bài toán SBD cho video ngắn, từ phương pháp cổ điển đến học sâu và NAS, làm rõ khoảng trống nghiên cứu giữa dữ liệu truyền thống và dữ liệu video ngắn hiện đại.
     \item \textbf{Đóng góp về phương pháp:} Khóa luận thiết kế một quy trình tinh chỉnh hai pha cho bài toán phát hiện ranh giới cảnh quay trên video ngắn: tái sử dụng mạng xương sống AutoShot đã được tối ưu hóa bằng NAS, đóng băng trọng số mạng xương sống này để cô lập tác động của tầng đầu ra, huấn luyện lại tầng phân loại mới với hàm mất mát Focal và nhãn nhiều điểm dương, sau đó áp dụng hiệu chỉnh nhiệt độ và làm mượt Gaussian ở bước hậu xử lý. Quy trình này nhằm giảm ảnh hưởng của mất cân bằng lớp cực đoan, sai lệch chú thích thủ công và nhiễu xác suất theo thời gian.
-    \item \textbf{Đóng góp về kết quả thực nghiệm:} Trên tập SHOT, AutoShotV2 đạt F1 = \ASVTwoBestShotFOne{} theo cơ sở đánh giá của AutoShot, cải thiện $+\ASVTwoBestVsTransNetShotPP{}$ điểm phần trăm so với mô hình cơ sở TransNetV2; đồng thời cung cấp phân tích so sánh chéo trên BBC, ClipShots để đánh giá khả năng tổng quát hóa (chi tiết xem Chương~\ref{ch:bo_du_lieu_va_thuc_nghiem}).
+    \item \textbf{Đóng góp về kết quả thực nghiệm:} Trên tập SHOT, AutoShotV2 đạt F1 = \ASVTwoBestShotFOne{} theo lựa chọn tốt nhất trong quy trình đánh giá so sánh chính ($+\ASVTwoBestVsTransNetShotPP{}$ điểm phần trăm so với mô hình cơ sở TransNetV2) -- lưu ý đây là mức trần lạc quan khi chọn ngưỡng tối ưu cho riêng tập SHOT, không phải một cấu hình triển khai duy nhất; đồng thời báo cáo cấu hình triển khai ngưỡng cố định đạt F1 = \ASVTwoShotFOne{} và cung cấp phân tích so sánh chéo trên BBC, ClipShots để đánh giá khả năng tổng quát hóa (chi tiết xem Chương~\ref{ch:bo_du_lieu_va_thuc_nghiem}).
 \end{itemize}
 
 \section{Tổ chức khóa luận}
@@ -157,7 +157,7 @@ Báo cáo được cấu trúc thành 5 chương:
     \item \textbf{Chương 1 -- Tổng quan đề tài:} Giới thiệu bối cảnh, bài toán, thách thức, mục tiêu, phạm vi, câu hỏi nghiên cứu và đóng góp chính của khóa luận.
     \item \textbf{Chương 2 -- Cơ sở lý thuyết và công trình liên quan:} Khảo sát các phương pháp SBD theo ba dòng chính -- cổ điển dựa trên đặc trưng thủ công, học sâu với CNN/Transformer, và NAS -- đồng thời nhận diện khoảng trống nghiên cứu.
     \item \textbf{Chương 3 -- Phương pháp đề xuất:} Trình bày AutoShot như nền tảng kế thừa và phiên bản AutoShotV2 với các cải tiến ở tầng phân loại, hàm mất mát, nhãn giám sát, hiệu chỉnh xác suất và làm mượt hậu xử lý.
-    \item \textbf{Chương 4 -- Bộ dữ liệu và thực nghiệm:} Mô tả các bộ dữ liệu (SHOT, BBC, ClipShots), chỉ số đánh giá, mô hình cơ sở, siêu tham số, kịch bản thực nghiệm, kết quả so sánh, phân tích Precision/Recall/F1 và thực nghiệm phân rã.
+    \item \textbf{Chương 4 -- Bộ dữ liệu và thực nghiệm:} Mô tả các bộ dữ liệu (SHOT, BBC, ClipShots), chỉ số đánh giá, mô hình cơ sở, siêu tham số, kịch bản thực nghiệm, kết quả so sánh, phân tích độ chính xác dương, độ bao phủ, chỉ số F1 và thực nghiệm phân rã.
     \item \textbf{Chương 5 -- Kết luận và hướng phát triển:} Thảo luận kết quả thực nghiệm, tổng kết kết quả chính, nhắc lại đóng góp, nêu hạn chế và đề xuất các hướng phát triển tiếp theo.
 \end{itemize}
 

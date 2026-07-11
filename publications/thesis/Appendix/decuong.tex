@@ -12,8 +12,8 @@
     \item \textbf{Bài toán đặt ra:} xác định ranh giới giữa các shot trong video, bao gồm cả chuyển cảnh đột ngột và chuyển cảnh dần dần.
     \item \textbf{Khó khăn chính:} nhịp cắt nhanh, nội dung biến đổi mạnh trong nội bộ shot, nhiều hiệu ứng biên tập và thiếu dữ liệu chuyên biệt cho video ngắn.
     \item \textbf{Dữ liệu nghiên cứu:} bộ dữ liệu SHOT được dùng làm tập trung tâm, đồng thời tham chiếu thêm các bộ dữ liệu BBC Planet Earth và ClipShots để đối chiếu.
-    \item \textbf{Phương pháp:} khảo sát TransNetV2 và AutoShot; phân tích cơ chế NAS; triển khai hướng cải tiến AutoShotV2 dựa trên tầng phân loại mới, hàm mất mát Focal (Focal Loss), nhãn nhiều điểm dương (many-hot labels), hiệu chỉnh nhiệt độ (temperature scaling) và làm mượt Gaussian (Gaussian smoothing).
-    \item \textbf{Thực nghiệm:} đánh giá bằng các chỉ số Precision, Recall, F1-score; so sánh mô hình cơ sở TransNetV2, AutoShot gốc và AutoShotV2 trên tập SHOT.
-    \item \textbf{Kết quả chính:} Ở ngưỡng cho F1 cao nhất trên từng bộ dữ liệu (đúng giao thức đánh giá của AutoShot gốc), AutoShotV2 đạt F1 = \ASVTwoBestShotFOne{} trên tập kiểm tra SHOT, cao hơn AutoShot tự chạy lại ($0.8405$) và vượt đáng kể mô hình cơ sở TransNetV2 ($0.7993$); đồng thời vẫn tổng quát hóa tốt trên BBC và ClipShots.
+    \item \textbf{Phương pháp:} khảo sát TransNetV2 và AutoShot; phân tích cơ chế NAS; triển khai hướng cải tiến AutoShotV2 dựa trên tầng phân loại mới, hàm mất mát Focal, nhãn nhiều điểm dương, hiệu chỉnh nhiệt độ và làm mượt Gaussian.
+    \item \textbf{Thực nghiệm:} đánh giá bằng các chỉ số độ chính xác dương, độ bao phủ và chỉ số F1; so sánh mô hình cơ sở TransNetV2, AutoShot gốc và AutoShotV2 trên tập SHOT.
+    \item \textbf{Kết quả chính:} Ở ngưỡng cho F1 cao nhất trên từng bộ dữ liệu, AutoShotV2 đạt F1 = \ASVTwoBestShotFOne{} trên tập kiểm tra SHOT, cao hơn AutoShot tự chạy lại ($0.8405$) và vượt đáng kể mô hình cơ sở TransNetV2 ($0.7993$); đồng thời vẫn tổng quát hóa tốt trên BBC và ClipShots.
     \item \textbf{Kết cấu báo cáo:} gồm năm chương, lần lượt trình bày tổng quan, công trình liên quan, phương pháp, dữ liệu và thực nghiệm, kết luận và hướng phát triển.
 \end{enumerate}

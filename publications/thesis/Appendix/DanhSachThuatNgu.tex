@@ -23,26 +23,20 @@
 \endhead
 SBD & Shot Boundary Detection & Phát hiện ranh giới cảnh quay trong video. \\
 SHOT & Short Video Shot Boundary Detection Dataset & Bộ dữ liệu chuyên biệt cho bài toán SBD trên video ngắn. \\
-NAS & Neural Architecture Search & Kỹ thuật tự động tìm kiếm kiến trúc mạng nơ-ron tối ưu. \\
-SPOS & Single-Path One-Shot & Chiến lược NAS một lần bắn với cơ chế lấy mẫu đường đi đơn. \\
+NAS & Neural Architecture Search & Tìm kiếm kiến trúc mạng nơ-ron; kỹ thuật tự động tìm kiến trúc mạng tối ưu. \\
+SPOS & Single-Path One-Shot & Chiến lược NAS một lần theo đường đơn với cơ chế lấy mẫu đường đi đơn. \\
 CNN & Convolutional Neural Network & Mạng nơ-ron tích chập dùng để học đặc trưng hình ảnh. \\
 3D ConvNet & 3D Convolutional Network & Mạng tích chập ba chiều khai thác đồng thời thông tin không gian và thời gian. \\
 DDCNN & Dilated Deep Convolutional Neural Network & Khối tích chập giãn nở dùng trong TransNetV2 và AutoShot. \\
-CT & Cut chuyển cảnh (\textit{transition}) & Chuyển cảnh đột ngột giữa hai shot liên tiếp. \\
-GT & chuyển cảnh dần (\textit{gradual transition}) & Chuyển cảnh dần dần như \textit{fade}, \textit{dissolve} hoặc \textit{wipe}. \\
 TP & True Positive & Số chuyển cảnh được phát hiện đúng. \\
-FP & dương tính giả (\textit{false positive}) & Số báo động giả (mô hình báo có chuyển cảnh nhưng thực tế không có). \\
+FP & False Positive & Dương tính giả; số báo động giả. \\
 FN & False Negative & Số chuyển cảnh có thật nhưng bị bỏ sót. \\
-BCE & Binary Cross-Entropy & Hàm mất mát nhị phân cho bài toán phân loại hai lớp. \\
-FL & Focal Loss & Biến thể của BCE, giảm trọng số mẫu dễ phân loại để tập trung vào mẫu khó. \\
-KD & chưng cất tri thức (\textit{knowledge distillation}) & Chưng cất tri thức từ mô hình giáo viên sang mô hình học sinh. \\
-LS & Label Smoothing & Kỹ thuật làm mượt nhãn \textit{one-hot} để giảm quá khớp (\textit{overfitting}). \\
-TS & Temperature Scaling & Hiệu chỉnh nhiệt độ để hiệu chuẩn (\textit{calibrate}) phân phối xác suất đầu ra. \\
-LR & Learning Rate & Tốc độ học của thuật toán tối ưu. \\
+BCE & Binary Cross-Entropy & Hàm mất mát entropy chéo nhị phân cho bài toán phân loại hai lớp. \\
+KD & Knowledge Distillation & Chưng cất tri thức từ mô hình giáo viên sang mô hình học sinh. \\
+NLL & Negative Log-Likelihood & Âm log-hợp lý; hàm mục tiêu thường dùng khi hiệu chỉnh xác suất bằng hiệu chỉnh nhiệt độ. \\
 EMA & Exponential Moving Average & Trung bình trượt lũy thừa trọng số mô hình qua các bước huấn luyện, giúp làm trơn và ổn định trọng số cuối. \\
-CV & Cross-Validation & Kiểm định chéo; trong khóa luận dùng kiểm định chéo 5 phần để kiểm tra xu hướng kết quả. \\
-NLL & Negative Log-Likelihood & Hàm mục tiêu thường dùng khi hiệu chỉnh xác suất bằng temperature scaling. \\
-F1-score & Harmonic Mean of Precision and Recall & Chỉ số tổng hợp đánh giá cân bằng giữa Precision và Recall. \\
+CV & Cross-Validation & Kiểm định chéo; khóa luận dùng kiểm định chéo 5 phần để kiểm tra xu hướng kết quả. \\
+F1 & F1-score & Chỉ số điều hòa cân bằng giữa độ chính xác dương (Precision) và độ bao phủ (Recall). \\
 \bottomrule
 \end{longtable}
 }
@@ -54,44 +48,43 @@ F1-score & Harmonic Mean of Precision and Recall & Chỉ số tổng hợp đán
 \renewcommand{\arraystretch}{1.2}
 \begin{longtable}{L{4.2cm}L{8.8cm}}
 \toprule
-\textbf{Thuật ngữ} & \textbf{Giải thích ngắn gọn} \\
+\textbf{Thuật ngữ tiếng Anh} & \textbf{Giải thích bằng tiếng Việt} \\
 \midrule
 \endfirsthead
 \toprule
-\textbf{Thuật ngữ} & \textbf{Giải thích ngắn gọn} \\
+\textbf{Thuật ngữ tiếng Anh} & \textbf{Giải thích bằng tiếng Việt} \\
 \midrule
 \endhead
-Shot & Đơn vị cảnh quay liên tục giữa hai ranh giới thời gian kề nhau. \\
-Scene & Tập hợp nhiều shot có cùng ngữ cảnh nội dung hoặc không gian thời gian. \\
-Frame Similarity & Độ tương đồng giữa các khung hình lân cận, dùng để hỗ trợ phát hiện chuyển cảnh. \\
-Color Histogram & Biểu diễn phân bố màu sắc của khung hình dưới dạng số liệu thống kê. \\
-Factorized Convolution & Tách tích chập 3D thành các bước xử lý không gian và thời gian để giảm tham số. \\
-Skip Connection & Kết nối tắt giữa các tầng mạng, giúp truyền thông tin ổn định hơn. \\
-Focal Loss & Biến thể của BCE với nhân tử động $(1-p_t)^{\gamma}$ làm giảm trọng số của các mẫu dễ phân loại; trong SBD, hai siêu tham số chính là $\gamma$ (\textit{focusing parameter}) và $\alpha$ (\textit{balancing parameter}), thường được chọn qua grid search. \\
-Many-hot Label & Kiểu nhãn mở rộng quanh vị trí ranh giới nhằm làm dày tín hiệu học. \\
-Backbone & Mạng xương sống dùng để trích xuất đặc trưng cơ sở từ dữ liệu đầu vào. \\
-Temporal modeling & Quá trình mô hình hóa các biến đổi theo thời gian giữa các khung hình. \\
-Soft Label & Nhãn mềm mang giá trị xác suất (thay vì nhãn cứng 0 hoặc 1), thường dùng trong KD. \\
-Knowledge Distillation & Kỹ thuật chuyển giao tri thức từ mô hình giáo viên sang mô hình học sinh, thường dùng nhãn mềm (\textit{soft label}) để ổn định huấn luyện. \\
-Temperature Scaling & Kỹ thuật hiệu chỉnh xác suất đầu ra sau huấn luyện: chia logit cho hệ số $T^*$ duy nhất, được tìm bằng cách tối thiểu hóa NLL trên validation; giữ nguyên thứ tự xếp hạng dự đoán nên không ảnh hưởng F1 trước/sau ngưỡng hóa nếu ngưỡng cũng được chọn lại. \\
-Calibration & Hiệu chuẩn xác suất, nhằm làm cho xác suất đầu ra của mô hình phản ánh tốt hơn độ tin cậy thực tế của dự đoán. \\
-Logit & Giá trị đầu ra trước khi chuyển thành xác suất bằng sigmoid hoặc softmax. \\
-Gaussian Smoothing & Phép làm mượt chuỗi xác suất theo thời gian để giảm đỉnh nhiễu cô lập. \\
-Threshold & Ngưỡng quyết định dùng để chuyển xác suất đầu ra thành nhãn có/không có ranh giới cảnh quay. \\
-Threshold Sweep & Quá trình quét nhiều ngưỡng để chọn giá trị tối ưu cho Precision, Recall và F1. \\
-SuperNet & Mạng lớn chứa nhiều kiến trúc con trong NAS, cho phép các kiến trúc chia sẻ trọng số khi đánh giá nhanh. \\
-Bayesian Optimization & Phương pháp tối ưu hóa hộp đen dùng mô hình xác suất để chọn ứng viên kiến trúc tiếp theo. \\
-Weight Grafting & Kỹ thuật ghép trọng số từ nhiều mô hình theo tiêu chí entropy nhằm tận dụng biểu diễn tốt ở từng lớp. \\
-DARTS & Phương pháp NAS khả vi, biến lựa chọn kiến trúc rời rạc thành bài toán tối ưu liên tục. \\
-Domain Adaptation & Nhóm kỹ thuật thích nghi miền giúp mô hình hoạt động ổn định hơn khi phân phối dữ liệu thay đổi. \\
-Dropout & Kỹ thuật chính quy hóa bằng cách tắt ngẫu nhiên một phần đơn vị kích hoạt trong quá trình huấn luyện. \\
-Baseline & Mô hình cơ sở dùng làm điểm chuẩn để so sánh hiệu năng. \\
-Checkpoint & Điểm lưu trữ trạng thái trọng số của mô hình trong quá trình huấn luyện. \\
-Weight Decay & Suy giảm trọng số, một kỹ thuật chính quy hóa giúp tránh quá khớp (\textit{overfitting}) bằng cách phạt các trọng số lớn. \\
-Ablation & Nghiên cứu phân rã/thử nghiệm loại trừ để đánh giá đóng góp của từng thành phần trong mô hình. \\
-Grid Search & Tìm kiếm lưới, phương pháp quét qua một tập hợp các siêu tham số được định nghĩa trước để tìm cấu hình tối ưu. \\
-Evaluation Protocol & Giao thức đánh giá: quy ước tính và báo cáo chỉ số. Trong khóa luận, F1 được lấy ở ngưỡng cho giá trị cao nhất trên từng bộ dữ liệu, đúng theo mã đánh giá gốc của AutoShot, để so sánh công bằng giữa các mô hình. \\
-Heatmap Label & Nhãn mềm phân phối dạng Gaussian quanh vị trí ranh giới (thay cho nhãn một điểm dương), giúp mô hình bắt chuyển cảnh dần (\textit{gradual transition}) tốt hơn. \\
+Shot & \textbf{Cảnh quay:} Đoạn cảnh quay liên tục giữa hai ranh giới chuyển cảnh. \\
+Scene & \textbf{Cảnh:} Tập hợp các cảnh quay có cùng nội dung hoặc không gian, thời gian. \\
+Frame Similarity & \textbf{Độ tương đồng khung hình:} Mức độ tương đồng giữa các khung hình kế cận để phát hiện chuyển cảnh. \\
+Color Histogram & \textbf{Biểu đồ màu:} Biểu đồ thống kê biểu diễn phân bố màu sắc của khung hình. \\
+Factorized Convolution & \textbf{Tích chập phân tách:} Tách tích chập ba chiều thành các bước xử lý không gian và thời gian độc lập. \\
+Skip Connection & \textbf{Kết nối tắt:} Kết nối bỏ qua một hoặc nhiều tầng mạng giúp ổn định lan truyền gradient. \\
+Focal Loss & \textbf{Hàm mất mát Focal:} Hàm mất mát tập trung vào các mẫu khó phân loại và giảm trọng số mẫu dễ. \\
+Many-hot Label & \textbf{Nhãn nhiều điểm dương:} Nhãn mở rộng vùng biên quanh ranh giới để tăng tín hiệu giám sát. \\
+Backbone & \textbf{Mạng xương sống:} Thành phần trích xuất đặc trưng cơ bản từ đầu vào. \\
+Temporal Modeling & \textbf{Mô hình hóa thời gian:} Mô hình hóa các biến đổi của đặc trưng hình ảnh theo thời gian. \\
+Soft Label & \textbf{Nhãn mềm:} Nhãn dạng xác suất mang giá trị liên tục từ 0 đến 1 thay vì nhãn cứng. \\
+Temperature Scaling & \textbf{Hiệu chỉnh nhiệt độ:} Hiệu chỉnh xác suất đầu ra bằng cách chia logit cho một hệ số nhiệt độ. \\
+Calibration & \textbf{Hiệu chỉnh độ tin cậy:} Quá trình làm cho xác suất đầu ra khớp với độ tin cậy thực tế của dự đoán. \\
+Logit & \textbf{Logit:} Giá trị đầu ra thô của mô hình trước khi đi qua hàm kích hoạt xác suất. \\
+Gaussian Smoothing & \textbf{Làm mượt Gaussian:} Phép lọc làm mượt chuỗi xác suất theo thời gian để giảm thiểu đỉnh nhiễu. \\
+Decision Threshold & \textbf{Ngưỡng quyết định:} Ngưỡng xác suất để đưa ra quyết định nhị phân về sự tồn tại của ranh giới. \\
+Threshold Sweep & \textbf{Quét ngưỡng:} Quá trình dò tìm ngưỡng quyết định tối ưu dựa trên các chỉ số đánh giá. \\
+SuperNet & \textbf{Siêu mạng:} Kiến trúc mạng tích hợp chứa toàn bộ các mạng con ứng viên trong NAS. \\
+Bayesian Optimization & \textbf{Tối ưu hóa Bayesian:} Phương pháp tối ưu hóa hộp đen bằng cách xây dựng một mô hình xác suất. \\
+Weight Grafting & \textbf{Ghép trọng số:} Phương pháp ghép nối các lớp trọng số tối ưu từ nhiều mô hình khác nhau. \\
+DARTS & \textbf{Tìm kiếm kiến trúc khả vi:} Phương pháp tìm kiếm kiến trúc mạng nơ-ron bằng tối ưu hóa liên tục khả vi. \\
+Domain Adaptation & \textbf{Thích ứng miền:} Phương pháp giúp mô hình hoạt động ổn định khi phân phối dữ liệu thay đổi miền. \\
+Dropout & \textbf{Loại bỏ ngẫu nhiên:} Phương pháp chính quy hóa tắt ngẫu nhiên các nút mạng khi huấn luyện để tránh quá khớp. \\
+Baseline & \textbf{Mô hình cơ sở:} Mô hình đối chứng được sử dụng để so sánh và đánh giá hiệu năng. \\
+Checkpoint & \textbf{Tệp trọng số mô hình:} Tệp lưu trữ các giá trị trọng số của mô hình trong quá trình huấn luyện. \\
+Weight Decay & \textbf{Suy giảm trọng số:} Kỹ thuật chính quy hóa phạt các trọng số lớn để hạn chế quá khớp. \\
+Ablation Study & \textbf{Thực nghiệm phân rã:} Thực nghiệm cô lập hoặc loại bỏ thành phần để đo lường đóng góp của từng thành phần. \\
+Grid Search & \textbf{Tìm kiếm theo lưới:} Phương pháp quét qua một tập hợp siêu tham số định sẵn để tìm cấu hình tốt nhất. \\
+Evaluation Protocol & \textbf{Giao thức đánh giá:} Bộ quy ước chuẩn về cách tính toán, đo đạc và báo cáo hiệu năng mô hình. \\
+Heatmap Label & \textbf{Nhãn dạng bản đồ nhiệt:} Nhãn xác suất phân phối Gaussian quanh vùng biên để hỗ trợ học chuyển cảnh dần. \\
 \bottomrule
 \end{longtable}
 }

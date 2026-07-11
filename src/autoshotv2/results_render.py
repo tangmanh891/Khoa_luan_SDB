@@ -105,10 +105,12 @@ def render_tex_macros(manifest: dict[str, Any]) -> str:
     experiments = experiment_map(manifest)
     comparisons = comparison_map(manifest)
     best = comparisons["autoshotv2_best_sweep"]["metrics"]
+    deploy = comparisons["autoshotv2_deploy"]["metrics"]
     a0 = experiments["A0_autoshot_original"]["metrics"]
     b4 = experiments["B4_temperature_gaussian"]["metrics"]
     transnet = comparisons["transnetv2_reported"]["metrics"]
     definitions = {
+        "ASVTwoShotFOne": f4(deploy["shot"]),
         "ASVTwoBBCFOne": f4(best["bbc"]),
         "ASVTwoBestShotFOne": f4(best["shot"]),
         "ASVTwoBestBBCFOne": f4(best["bbc"]),
@@ -499,3 +501,4 @@ def render_paper_tex_tables(manifest: dict[str, Any]) -> str:
         )
     lines += [r"\newcommand{\PaperClipBreakdownRows}{%", *breakdown_rows, "}", ""]
     return "\n".join(lines)
+
