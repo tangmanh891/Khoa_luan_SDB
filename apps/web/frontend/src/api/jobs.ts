@@ -7,6 +7,14 @@ export type ModelInfo = {
   available: boolean;
 };
 
+export function methodDisplayName(displayName: string | undefined): string | undefined {
+  return displayName?.replace(/^AutoShot\s*V2/, "RefineShot");
+}
+
+export function modelDisplayName(model: ModelInfo): string {
+  return methodDisplayName(model.display_name) ?? model.display_name;
+}
+
 export type JobSummaryItem = {
   id: string;
   status: string;

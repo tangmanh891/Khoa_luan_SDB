@@ -3,7 +3,7 @@ import { FormEvent, useEffect, useState } from "react";
 
 import UploadDropzone from "../components/UploadDropzone";
 import ErrorState from "../components/ErrorState";
-import { createJobFromUpload, listModels, ModelInfo } from "../api/jobs";
+import { createJobFromUpload, listModels, modelDisplayName, ModelInfo } from "../api/jobs";
 
 type Props = {
   onJobCreated: (jobId: string) => void;
@@ -65,7 +65,7 @@ export default function UploadPage({ onJobCreated }: Props) {
               >
                 {models.filter((m) => m.available).map((m) => (
                   <option key={m.preset} value={m.preset}>
-                    {m.display_name}
+                    {modelDisplayName(m)}
                   </option>
                 ))}
               </select>

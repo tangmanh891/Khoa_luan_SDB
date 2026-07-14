@@ -29,7 +29,7 @@ export default function AdvancedSettings({ backend, disabled, onChange }: Props)
               onChange={(event) => onChange(event.target.value as Backend)}
             >
               <option value="auto">Auto (server default)</option>
-              <option value="phase2">AutoShotV2</option>
+              <option value="phase2">RefineShot</option>
               <option value="baseline">OpenCV baseline</option>
             </select>
           </label>

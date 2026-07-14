@@ -1,5 +1,12 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
-import { createCompareFromUpload, getJob, listModels, ModelInfo } from "../api/jobs";
+import {
+  createCompareFromUpload,
+  getJob,
+  listModels,
+  methodDisplayName,
+  modelDisplayName,
+  ModelInfo,
+} from "../api/jobs";
 import { AutoShotJob, Boundary, mediaUrl, formatTime } from "../api/client";
 import UploadDropzone from "../components/UploadDropzone";
 import ErrorState from "../components/ErrorState";
@@ -83,13 +90,13 @@ export default function ComparePage() {
               <label>
                 <span style={{ color: COLOR_A }}>■ Model A</span>
                 <select value={presetA} disabled={isSubmitting} onChange={(e) => setPresetA(e.target.value)}>
-                  {models.map((m) => <option key={m.preset} value={m.preset}>{m.display_name}</option>)}
+                  {models.map((m) => <option key={m.preset} value={m.preset}>{modelDisplayName(m)}</option>)}
                 </select>
               </label>
               <label>
                 <span style={{ color: COLOR_B }}>■ Model B</span>
                 <select value={presetB} disabled={isSubmitting} onChange={(e) => setPresetB(e.target.value)}>
-                  {models.map((m) => <option key={m.preset} value={m.preset}>{m.display_name}</option>)}
+                  {models.map((m) => <option key={m.preset} value={m.preset}>{modelDisplayName(m)}</option>)}
                 </select>
               </label>
             </div>
@@ -136,11 +143,11 @@ export default function ComparePage() {
         {!bothDone && (
           <div className="compare-progress-row">
             <div className="compare-progress-item">
-              <span style={{ color: COLOR_A }}>■ {jobA.processing.display_name ?? "Model A"}</span>
+              <span style={{ color: COLOR_A }}>■ {methodDisplayName(jobA.processing.display_name) ?? "Model A"}</span>
               <span>{Math.round((jobA.progress ?? 0) * 100)}% — {jobA.stage}</span>
             </div>
             <div className="compare-progress-item">
-              <span style={{ color: COLOR_B }}>■ {jobB.processing.display_name ?? "Model B"}</span>
+              <span style={{ color: COLOR_B }}>■ {methodDisplayName(jobB.processing.display_name) ?? "Model B"}</span>
               <span>{Math.round((jobB.progress ?? 0) * 100)}% — {jobB.stage}</span>
             </div>
           </div>
@@ -154,8 +161,8 @@ export default function ComparePage() {
         {/* Legend */}
         {bothDone && (
           <div className="compare-legend">
-            <span style={{ color: COLOR_A }}>■ {jobA.processing.display_name ?? "Model A"} ({boundariesA.length} boundary)</span>
-            <span style={{ color: COLOR_B }}>■ {jobB.processing.display_name ?? "Model B"} ({boundariesB.length} boundary)</span>
+            <span style={{ color: COLOR_A }}>■ {methodDisplayName(jobA.processing.display_name) ?? "Model A"} ({boundariesA.length} boundary)</span>
+            <span style={{ color: COLOR_B }}>■ {methodDisplayName(jobB.processing.display_name) ?? "Model B"} ({boundariesB.length} boundary)</span>
             {overlapSet.size > 0 && (
               <span className="compare-overlap-note">⬡ {overlapSet.size} boundary trùng nhau (± {OVERLAP_THRESHOLD_SEC}s)</span>
             )}
@@ -197,7 +204,7 @@ export default function ComparePage() {
         {bothDone && (
           <div className="compare-scenes-grid">
             <div className="compare-scenes-col">
-              <h3 style={{ color: COLOR_A }}>■ {jobA.processing.display_name ?? "Model A"} — {jobA.summary?.scene_count ?? 0} scene</h3>
+              <h3 style={{ color: COLOR_A }}>■ {methodDisplayName(jobA.processing.display_name) ?? "Model A"} — {jobA.summary?.scene_count ?? 0} scene</h3>
               <ul className="compare-scene-list">
                 {(jobA.scenes ?? []).map((s) => (
                   <li key={s.index} className="compare-scene-item" onClick={() => seekTo(s.start_time_sec)}>
@@ -208,7 +215,7 @@ export default function ComparePage() {
               </ul>
             </div>
             <div className="compare-scenes-col">
-              <h3 style={{ color: COLOR_B }}>■ {jobB.processing.display_name ?? "Model B"} — {jobB.summary?.scene_count ?? 0} scene</h3>
+              <h3 style={{ color: COLOR_B }}>■ {methodDisplayName(jobB.processing.display_name) ?? "Model B"} — {jobB.summary?.scene_count ?? 0} scene</h3>
               <ul className="compare-scene-list">
                 {(jobB.scenes ?? []).map((s) => (
                   <li key={s.index} className="compare-scene-item" onClick={() => seekTo(s.start_time_sec)}>
